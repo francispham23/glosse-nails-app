@@ -48,3 +48,13 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## Convex Authentication Setup
+
+- [Convex Auth documentation](https://labs.convex.dev/auth/setup/)
+
+```bash
+npm install @convex-dev/auth @auth/core@0.37.0
+npx @convex-dev/auth
+npx expo install expo-secure-store
+```
