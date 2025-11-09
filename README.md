@@ -58,3 +58,9 @@ npm install @convex-dev/auth @auth/core@0.37.0
 npx @convex-dev/auth
 npx expo install expo-secure-store
 ```
+
+- [Convex Auth with Google OAuth](https://labs.convex.dev/auth/config/oauth/google)
+
+```bash
+npm i expo-auth-session
+```
