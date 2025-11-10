@@ -1,21 +1,14 @@
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { AppThemeProvider, useAppTheme } from "@/contexts/app-theme-context";
+import SplashScreenProvider from "@/providers/SplashScreenProvider";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
 import { ConvexReactClient } from "convex/react";
-import { Stack } from "expo-router";
+import { Slot } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { StatusBar } from "expo-status-bar";
+import { HeroUINativeProvider } from "heroui-native";
 import { Platform } from "react-native";
-import "react-native-reanimated";
-
-export const unstable_settings = {
-  anchor: "(tabs)",
-};
-
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import "../global.css";
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
   unsavedChangesWarning: false,
 });
@@ -26,28 +19,44 @@ const secureStorage = {
   removeItem: SecureStore.deleteItemAsync,
 };
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
+/* ------------------------------ themed route ------------------------------ */
+function ThemedLayout() {
+  const { currentTheme } = useAppTheme();
   return (
-    <ConvexAuthProvider
-      client={convex}
-      storage={
-        Platform.OS === "android" || Platform.OS === "ios"
-          ? secureStorage
-          : undefined
-      }
+    <HeroUINativeProvider
+      config={{
+        colorScheme: "system",
+        theme: currentTheme,
+        textProps: {
+          allowFontScaling: false,
+        },
+      }}
     >
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="modal"
-            options={{ presentation: "modal", title: "Modal" }}
-          />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </ConvexAuthProvider>
+      <Slot />
+    </HeroUINativeProvider>
+  );
+}
+
+/* ------------------------------- root layout ------------------------------ */
+export default function Layout() {
+  return (
+    <GestureHandlerRootView className="flex-1">
+      <ConvexAuthProvider
+        client={convex}
+        storage={
+          Platform.OS === "android" || Platform.OS === "ios"
+            ? secureStorage
+            : undefined
+        }
+      >
+        <SafeAreaProvider>
+          <SplashScreenProvider>
+            <AppThemeProvider>
+              <ThemedLayout />
+            </AppThemeProvider>
+          </SplashScreenProvider>
+        </SafeAreaProvider>
+      </ConvexAuthProvider>
+    </GestureHandlerRootView>
   );
 }
