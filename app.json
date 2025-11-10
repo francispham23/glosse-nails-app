@@ -2,7 +2,7 @@
   "expo": {
     "name": "glosse-nail-app",
     "slug": "glosse-nail-app",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "glossenailapp",
@@ -33,7 +33,6 @@
       "tsconfigPaths": true
     },
     "newArchEnabled": true,
-
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
