@@ -1,5 +1,7 @@
 const { hairlineWidth } = require("nativewind/theme");
 
+import heroUINativePlugin from "heroui-native/tailwind-plugin";
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
 	darkMode: "class",
@@ -59,5 +61,5 @@ module.exports = {
 			},
 		},
 	},
-	plugins: [require("heroui-native/tailwind-plugin")],
+	plugins: [heroUINativePlugin],
 };
