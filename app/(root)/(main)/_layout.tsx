@@ -1,11 +1,12 @@
-import { ThemeToggle } from "@/components/theme-toggle";
-import { useNavigationOptions } from "@/hooks/useNavigationOptions";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { Ionicons } from "@expo/vector-icons";
-import { Stack, useRouter } from "expo-router";
-import { useTheme } from "heroui-native";
 import { useState } from "react";
 import { Pressable, Text } from "react-native";
+import { Stack, useRouter } from "expo-router";
+import { useThemeColor } from "heroui-native";
+
+import { Ionicons } from "@expo/vector-icons";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { useNavigationOptions } from "@/hooks/useNavigationOptions";
 
 export default function MainLayout() {
   const { standard } = useNavigationOptions();
@@ -39,7 +40,7 @@ export default function MainLayout() {
 }
 
 const SettingsButton = () => {
-  const { colors } = useTheme();
+  const themeColorForeground = useThemeColor("foreground");
   const router = useRouter();
 
   return (
@@ -49,7 +50,7 @@ const SettingsButton = () => {
         router.navigate("/settings");
       }}
     >
-      <Ionicons name="settings-outline" size={18} color={colors.foreground} />
+      <Ionicons name="settings-outline" size={18} color={themeColorForeground} />
     </Pressable>
   );
 };

@@ -1,13 +1,15 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { Link, useLocalSearchParams } from "expo-router";
-import { Button, TextField, useTheme } from "heroui-native";
+import { Button, TextField, Spinner,useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Text, View } from "react-native";
 import FormHeader, { FormContainer } from "@/components/form";
 
 // TODO: Implement password reset logic here
 export default function ResetPasswordRoute() {
-	const { colors } = useTheme();
+	const mutedColor = useThemeColor("muted");
+	const themeColorBackground = useThemeColor("background");
+	const accentForegroundColor = useThemeColor("accent-foreground");
 	// const router = useRouter();
 
 	/**
@@ -26,7 +28,7 @@ export default function ResetPasswordRoute() {
 	/* ---------------------------------- state --------------------------------- */
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
-	// const [isLoading, setIsLoading] = useState(false);
+	const [isLoading] = useState(false);
 
 	/* ------------------------- handle reset password ------------------------- */
 	// TODO: Implement password reset logic here
@@ -87,14 +89,12 @@ export default function ResetPasswordRoute() {
 					</View>
 					<Link href="/(root)/(auth)/email/signin" asChild>
 						<Button className="rounded-3xl">
-							<Button.StartContent>
 								<Ionicons
 									name="arrow-back-outline"
 									size={16}
-									color={colors.defaultForeground}
+									color={accentForegroundColor}
 								/>
-							</Button.StartContent>
-							<Button.LabelContent>Back to Sign In</Button.LabelContent>
+							<Button.Label>Back to Sign In</Button.Label>
 						</Button>
 					</Link>
 				</View>
@@ -123,14 +123,14 @@ export default function ResetPasswordRoute() {
 						<Ionicons
 							name="lock-closed-outline"
 							size={16}
-							color={colors.mutedForeground}
+							color={mutedColor}
 						/>
 					</TextField.InputStartContent>
 					<TextField.InputEndContent className="pointer-events-none">
 						<Ionicons
 							name="eye-outline"
 							size={16}
-							color={colors.mutedForeground}
+							color={mutedColor}
 						/>
 					</TextField.InputEndContent>
 				</TextField.Input>
@@ -148,32 +148,30 @@ export default function ResetPasswordRoute() {
 						<Ionicons
 							name="lock-closed-outline"
 							size={20}
-							color={colors.mutedForeground}
+							color={mutedColor}
 						/>
 					</TextField.InputStartContent>
 					<TextField.InputEndContent className="pointer-events-none pr-2">
 						<Ionicons
 							name="checkmark-outline"
 							size={20}
-							color={colors.mutedForeground}
+							color={mutedColor}
 						/>
 					</TextField.InputEndContent>
 				</TextField.Input>
 			</TextField>
 			{/* submit button */}
-			{/* <Button
-        onPress={handleResetPassword}
-        disabled={isLoading}
+			<Button
+        // onPress={handleResetPassword}
+        isDisabled={isLoading}
         className="rounded-3xl"
         size="lg"
       >
-        <Button.LabelContent>
+        <Button.Label>
           {isLoading ? "Resetting..." : "Reset Password"}
-        </Button.LabelContent>
-        <Button.EndContent>
-          {isLoading ? <Spinner color={colors.background} /> : null}
-        </Button.EndContent>
-      </Button> */}
+        </Button.Label>
+          {isLoading ? <Spinner color={themeColorBackground} /> : null}
+      </Button>
 		</FormContainer>
 	);
 }

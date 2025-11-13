@@ -1,42 +1,45 @@
-import { View } from "react-native";
+import { View, Text } from "react-native";
+import { FlatList } from "react-native-gesture-handler";
+import { Button, Chip, useThemeColor } from "heroui-native";
+import Ionicons from "@expo/vector-icons/build/Ionicons";
+
+import { api } from "@/convex/_generated/api";
+import { useMutation, useQuery } from "convex/react";
 
 export default function HomeRoute() {
-  // TODO: Implement home screen content
-  /*
-  const { colors } = useTheme();
-  const postData = useQuery(api.post.getPostsAndUsers);
-  const createPost = useMutation(api.post.createPost);
+	const themeColorBackground = useThemeColor("background");
+
+  /* ------------------------------ post logic ------------------------------ */
+  // const postData = useQuery(api.post.getPostsAndUsers);
+  // const createPost = useMutation(api.post.createPost);
   const handleCreatePost = () => {
     const randomTitle =
     POST_TITLES[Math.floor(Math.random() * POST_TITLES.length)];
-    createPost({ title: randomTitle, status: "start" });
+    // createPost({ title: randomTitle, status: "start" });
   };
-  */
 
   return (
     <View className="flex-1">
-      {/* <FlatList
+      <FlatList
         contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="gap-4 pt-2 px-3 pb-24"
-        keyExtractor={(item) => item.post._id}
-        data={postData}
+        // keyExtractor={(item) => item.post._id}
+        // data={postData}
+        data={[]}
         renderItem={({ item }) => <PostItem item={item} />}
-      /> */}
-      {/* <Button
+      />
+      <Button
         onPress={handleCreatePost}
         className="absolute bottom-8 self-center overflow-hidden rounded-full"
       >
-        <Button.LabelContent>Create Post</Button.LabelContent>
-        <Button.EndContent className="">
-          <Ionicons name="add-outline" size={18} color={colors.background} />
-        </Button.EndContent>
-      </Button> */}
+        <Button.Label>Create Post</Button.Label>    
+        <Ionicons name="add-outline" size={18} color={themeColorBackground} />
+      </Button>
     </View>
   );
 }
 
 // TODO: Implement PostItem component
-/*
 const POST_TITLES = [
   "Store passwords in the user’s browser and validate client-side. Just send a boolean to your server. Reduces database load by 90% and keeps sensitive data off your servers.",
   "Passwords in plain text are actually more secure because hackers expect encryption",
@@ -47,35 +50,31 @@ const POST_TITLES = [
 const PostItem = ({
   item,
 }: {
-  item: FunctionReturnType<typeof api.post.getPostsAndUsers>[number];
+  // TODO: Fix Type
+  item: any
+  // item: FunctionReturnType<typeof api.post.getPostsAndUsers>[number];
 }) => {
   const renderStatusChip = () => {
     switch (item.post.status) {
       case "start":
         return (
           <Chip layout={undefined} variant="primary" color="default">
-            <Chip.StartContent className="pr-1">
               <View className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-            </Chip.StartContent>
-            <Chip.LabelContent>Started</Chip.LabelContent>
+              <Chip.Label>Started</Chip.Label>
           </Chip>
         );
       case "middle":
         return (
           <Chip layout={undefined} variant="primary" color="default">
-            <Chip.StartContent className="pr-1">
-              <View className="h-1.5 w-1.5 rounded-full bg-yellow-500" />
-            </Chip.StartContent>
-            <Chip.LabelContent>In Progress</Chip.LabelContent>
+            <View className="h-1.5 w-1.5 rounded-full bg-yellow-500" />
+            <Chip.Label>In Progress</Chip.Label>
           </Chip>
         );
       case "end":
         return (
           <Chip layout={undefined} variant="primary" color="default">
-            <Chip.StartContent>
               <View className="mr-1.5 h-1.5 w-1.5 rounded-full bg-green-500" />
-            </Chip.StartContent>
-            <Chip.LabelContent>Completed</Chip.LabelContent>
+            <Chip.Label>Completed</Chip.Label>
           </Chip>
         );
     }
@@ -92,4 +91,3 @@ const PostItem = ({
     </View>
   );
 };
-*/

@@ -1,12 +1,13 @@
 import { Link } from "expo-router";
 import { Button } from "heroui-native";
 import { Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+
 import SignIn from "@/app/SignIn";
+import { Container } from "@/components/container";
 
 export default function Landing() {
 	return (
-		<SafeAreaView className="flex-1 gap-4 px-8">
+		<Container className="p-6 gap-8">
 			<View className="flex-1 justify-end">
 				<Text className="font-extrabold text-6xl text-foreground">
 					Glosse Nails
@@ -21,9 +22,9 @@ export default function Landing() {
 			{/* TODO: Auth with Email */}
 			<Link href="/(root)/(auth)/email/signin" asChild>
 				<Button className="w-full rounded-full" size="lg">
-					<Button.LabelContent>Email</Button.LabelContent>
+					<Button.Label>Email</Button.Label>
 				</Button>
 			</Link>
-		</SafeAreaView>
+		</Container>
 	);
 }

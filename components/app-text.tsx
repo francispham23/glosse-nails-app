@@ -1,6 +1,6 @@
 import React from "react";
 import { Text as RNText, type TextProps as RNTextProps } from "react-native";
-import { cn } from "@/lib/utils";
+import { cn } from "heroui-native";
 
 export const AppText = React.forwardRef<RNText, RNTextProps>((props, ref) => {
 	const { className, ...restProps } = props;

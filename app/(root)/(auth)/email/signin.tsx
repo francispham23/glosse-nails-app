@@ -1,13 +1,15 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { Link } from "expo-router";
-import { Button, Spinner, TextField, useTheme } from "heroui-native";
+import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Alert } from "react-native";
 import FormHeader, { FormContainer } from "@/components/form";
 
 // TODO: Implement sign-in logic with Convex Auth
 export default function SignInRoute() {
-	const { colors } = useTheme();
+	const mutedColor = useThemeColor("muted");
+	const themeColorBackground = useThemeColor("background");
+	const accentForegroundColor = useThemeColor("accent-foreground");
 
 	/* ---------------------------------- state --------------------------------- */
 	const [email, setEmail] = useState("");
@@ -55,7 +57,7 @@ export default function SignInRoute() {
 						<Ionicons
 							name="mail-outline"
 							size={20}
-							color={colors.mutedForeground}
+							color={mutedColor}
 						/>
 					</TextField.InputStartContent>
 				</TextField.Input>
@@ -73,14 +75,14 @@ export default function SignInRoute() {
 						<Ionicons
 							name="lock-closed-outline"
 							size={20}
-							color={colors.mutedForeground}
+							color={mutedColor}
 						/>
 					</TextField.InputStartContent>
 					<TextField.InputEndContent className="pointer-events-none pr-2">
 						<Ionicons
 							name="eye-outline"
 							size={20}
-							color={colors.mutedForeground}
+							color={mutedColor}
 						/>
 					</TextField.InputEndContent>
 				</TextField.Input>
@@ -89,16 +91,12 @@ export default function SignInRoute() {
 			{/* submit button */}
 			<Button
 				onPress={handleSignIn}
-				disabled={isLoading}
+				isDisabled={isLoading}
 				size="lg"
 				className="rounded-3xl"
 			>
-				<Button.LabelContent>
-					{isLoading ? "Signing In..." : "Sign In"}
-				</Button.LabelContent>
-				<Button.EndContent>
-					{isLoading ? <Spinner color={colors.background} /> : null}
-				</Button.EndContent>
+				<Button.Label>{isLoading ? "Signing In..." : "Sign In"}</Button.Label>
+				{isLoading ? <Spinner color={themeColorBackground} /> : null}
 			</Button>
 			{/* forgot password route */}
 			<Link href="/(root)/(auth)/email/(reset)/request-password-reset" asChild>
@@ -107,21 +105,17 @@ export default function SignInRoute() {
 					size="sm"
 					className="self-center rounded-3xl"
 				>
-					<Button.StartContent>
 						<Ionicons
 							name="lock-closed-outline"
 							size={14}
-							color={colors.defaultForeground}
+							color={accentForegroundColor}
 						/>
-					</Button.StartContent>
-					<Button.LabelContent>Forgot Password?</Button.LabelContent>
-					<Button.EndContent>
+						<Button.Label className="mx-1">Forgot Password?</Button.Label>
 						<Ionicons
 							name="chevron-forward"
 							size={16}
-							color={colors.defaultForeground}
+							color={accentForegroundColor}
 						/>
-					</Button.EndContent>
 				</Button>
 			</Link>
 		</FormContainer>

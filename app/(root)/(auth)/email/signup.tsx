@@ -1,13 +1,15 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { Link } from "expo-router";
-import { Button, Spinner, TextField, useTheme } from "heroui-native";
+import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Alert, Text } from "react-native";
+
 import FormHeader, { FormContainer } from "@/components/form";
 
 // TODO: Implement sign-up logic with Convex Auth
 export default function SignUpRoute() {
-	const { colors } = useTheme();
+	const mutedColor = useThemeColor("muted");
+	const themeColorBackground = useThemeColor("background");
 
 	/* ---------------------------------- state --------------------------------- */
 	const [name, setName] = useState("");
@@ -66,7 +68,7 @@ export default function SignUpRoute() {
 						<Ionicons
 							name="person-outline"
 							size={20}
-							color={colors.mutedForeground}
+							color={mutedColor}
 						/>
 					</TextField.InputStartContent>
 				</TextField.Input>
@@ -85,7 +87,7 @@ export default function SignUpRoute() {
 						<Ionicons
 							name="mail-outline"
 							size={20}
-							color={colors.mutedForeground}
+							color={mutedColor}
 						/>
 					</TextField.InputStartContent>
 				</TextField.Input>
@@ -103,14 +105,14 @@ export default function SignUpRoute() {
 						<Ionicons
 							name="lock-closed-outline"
 							size={20}
-							color={colors.mutedForeground}
+							color={mutedColor}
 						/>
 					</TextField.InputStartContent>
 					<TextField.InputEndContent className="pointer-events-none pr-2">
 						<Ionicons
 							name="eye-outline"
 							size={20}
-							color={colors.mutedForeground}
+							color={mutedColor}
 						/>
 					</TextField.InputEndContent>
 				</TextField.Input>
@@ -128,14 +130,14 @@ export default function SignUpRoute() {
 						<Ionicons
 							name="lock-closed-outline"
 							size={20}
-							color={colors.mutedForeground}
+							color={mutedColor}
 						/>
 					</TextField.InputStartContent>
 					<TextField.InputEndContent className="pointer-events-none pr-2">
 						<Ionicons
 							name="checkmark-outline"
 							size={20}
-							color={colors.mutedForeground}
+							color={mutedColor}
 						/>
 					</TextField.InputEndContent>
 				</TextField.Input>
@@ -143,16 +145,14 @@ export default function SignUpRoute() {
 			{/* submit button */}
 			<Button
 				onPress={handleSignUp}
-				disabled={isLoading}
+				isDisabled={isLoading}
 				className="rounded-3xl"
 				size="lg"
 			>
-				<Button.LabelContent>
+				<Button.Label>
 					{isLoading ? "Creating Account..." : "Sign Up"}
-				</Button.LabelContent>
-				<Button.EndContent>
-					{isLoading ? <Spinner color={colors.background} /> : null}
-				</Button.EndContent>
+				</Button.Label>
+					{isLoading ? <Spinner color={themeColorBackground} /> : null}
 			</Button>
 			<Text className="px-14 text-center text-muted-foreground text-sm">
 				by continuing you agree to our{" "}

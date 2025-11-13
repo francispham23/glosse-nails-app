@@ -6,9 +6,9 @@ import { HeroUINativeProvider } from "heroui-native";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { AppThemeProvider, useAppTheme } from "@/contexts/app-theme-context";
-import SplashScreenProvider from "@/providers/SplashScreenProvider";
+import { AppThemeProvider } from "@/contexts/app-theme-context";
 import "../global.css";
+
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
 	unsavedChangesWarning: false,
 });
@@ -21,17 +21,8 @@ const secureStorage = {
 
 /* ------------------------------ themed route ------------------------------ */
 function ThemedLayout() {
-	const { currentTheme } = useAppTheme();
 	return (
-		<HeroUINativeProvider
-			config={{
-				colorScheme: "system",
-				theme: currentTheme,
-				textProps: {
-					allowFontScaling: false,
-				},
-			}}
-		>
+		<HeroUINativeProvider>
 			<Slot />
 		</HeroUINativeProvider>
 	);
@@ -50,11 +41,9 @@ export default function Layout() {
 				}
 			>
 				<SafeAreaProvider>
-					<SplashScreenProvider>
 						<AppThemeProvider>
 							<ThemedLayout />
 						</AppThemeProvider>
-					</SplashScreenProvider>
 				</SafeAreaProvider>
 			</ConvexAuthProvider>
 		</GestureHandlerRootView>

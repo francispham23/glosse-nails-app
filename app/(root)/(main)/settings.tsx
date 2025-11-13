@@ -1,16 +1,19 @@
-import { api } from "@/convex/_generated/api";
+import { useState } from "react";
 import { useQuery } from "convex/react";
-import { ScrollView, Text, View } from "react-native";
+import {  Button, Spinner, useThemeColor } from "heroui-native";
+import { ScrollView, Text, View, Alert } from "react-native";
+import Ionicons from "@expo/vector-icons/build/Ionicons";
+import { api } from "@/convex/_generated/api";
 
 export default function SettingsRoute() {
+	const themeColorForeground = useThemeColor("foreground");
+  const [isDeletingUser, setIsDeletingUser] = useState(false);
   const user = useQuery(api.users.viewer);
 
   if (!user) return null;
 
   // TODO: delete user
   /*
-  // const { colors } = useTheme();
-  // const [isDeletingUser, setIsDeletingUser] = useState(false);
   const handleDeleteUser = async () => {
     const { error, data } = await authClient.deleteUser(
       {},
@@ -49,12 +52,12 @@ export default function SettingsRoute() {
           </Text>
         </View>
         {/* Delete User*/}
-        {/* <View className="flex gap-4">
+        <View className="flex gap-4">
           <Button
             variant="tertiary"
             size="sm"
             className="self-start rounded-full"
-            disabled={isDeletingUser}
+            isDisabled={isDeletingUser}
             onPress={async () => {
               Alert.alert(
                 "Delete User",
@@ -67,28 +70,24 @@ export default function SettingsRoute() {
                   {
                     text: "Delete",
                     onPress: async () => {
-                      await handleDeleteUser();
+                      // await handleDeleteUser();
                     },
                   },
                 ]
               );
             }}
           >
-            <Button.StartContent>
               <Ionicons
                 name="trash-outline"
                 size={18}
-                color={colors.foreground}
+                color={themeColorForeground}
               />
-            </Button.StartContent>
-            <Button.LabelContent>
+            <Button.Label>
               {isDeletingUser ? "Deleting..." : "Delete User"}
-            </Button.LabelContent>
-            <Button.EndContent>
-              {isDeletingUser ? <Spinner color={colors.foreground} /> : null}
-            </Button.EndContent>
+            </Button.Label>
+              {isDeletingUser ? <Spinner color={themeColorForeground} /> : null}
           </Button>
-        </View> */}
+        </View>
       </ScrollView>
     </View>
   );

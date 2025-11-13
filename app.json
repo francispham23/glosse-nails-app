@@ -11,34 +11,11 @@
 			"output": "static",
 			"favicon": "./assets/favicon.png"
 		},
-		"plugins": [
-			"expo-router",
-			[
-				"expo-splash-screen",
-				{
-					"backgroundColor": "#ffffff",
-					"image": "./assets/logo-b.png",
-					"dark": {
-						"image": "./assets/logo-w.png",
-						"backgroundColor": "#000000"
-					}
-				}
-			],
-			"expo-secure-store",
-			"expo-web-browser"
-		],
+		"plugins": [],
 		"experiments": {
 			"typedRoutes": true,
-			"reactCompiler": true,
-			"tsconfigPaths": true
+			"reactCompiler": true
 		},
-		"newArchEnabled": true,
-		"userInterfaceStyle": "automatic",
-		"splash": {
-			"image": "./assets/splash.png",
-			"resizeMode": "contain",
-			"backgroundColor": "#ffffff"
-		},
-		"assetBundlePatterns": ["**/*"]
+		"userInterfaceStyle": "automatic"
 	}
 }

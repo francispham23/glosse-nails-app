@@ -1,11 +1,13 @@
 // hooks/useNavigationOptions.ts
 import type { NativeStackNavigationOptions } from "@react-navigation/native-stack";
-import { useTheme } from "heroui-native";
+import { useThemeColor } from "heroui-native";
 import { useMemo } from "react";
 import { Platform } from "react-native";
 
 export const useNavigationOptions = () => {
-	const { colors } = useTheme();
+	const themeColorForeground = useThemeColor("foreground");
+	const themeColorBackground = useThemeColor("background");
+
 	return useMemo(() => {
 		/**
 		 * NOTE
@@ -16,7 +18,7 @@ export const useNavigationOptions = () => {
 		 */
 		const root: NativeStackNavigationOptions = {
 			contentStyle: {
-				backgroundColor: colors.background,
+				backgroundColor: themeColorBackground,
 			},
 		};
 		/**
@@ -28,15 +30,15 @@ export const useNavigationOptions = () => {
 		 * i love this setup!
 		 */
 		const base: NativeStackNavigationOptions = {
-			headerTintColor: colors.foreground,
+			headerTintColor: themeColorForeground,
 			headerTitleAlign: "center",
 			headerLargeTitleShadowVisible: false,
 			headerLargeTitleStyle: {
-				color: colors.foreground,
+				color: themeColorForeground,
 			},
 
 			headerShadowVisible: false,
-			contentStyle: { backgroundColor: colors.background },
+			contentStyle: { backgroundColor: themeColorBackground },
 		};
 
 		return {
@@ -49,7 +51,7 @@ export const useNavigationOptions = () => {
 					 * header style background color
 					 */
 					backgroundColor:
-						Platform.OS === "ios" ? "transparent" : colors.background,
+						Platform.OS === "ios" ? "transparent" : themeColorBackground,
 				},
 				headerTransparent: Platform.OS === "ios",
 			},
@@ -59,11 +61,11 @@ export const useNavigationOptions = () => {
 				 */
 				...base,
 				headerStyle: {
-					// backgroundColor: colors.background,
+					// backgroundColor: themeColorBackground,
 					backgroundColor:
-						Platform.OS === "ios" ? "transparent" : colors.background,
+						Platform.OS === "ios" ? "transparent" : themeColorBackground,
 				},
 			},
 		};
-	}, [colors]);
+	}, [themeColorBackground]);
 };
