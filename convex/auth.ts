@@ -31,8 +31,20 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 				.filter(Boolean);
 
 			if (allowed.length === 0) {
+				// No explicit allow-list configured. As a safer fallback,
+				// accept the scheme from `EXPO_SCHEME` if present (this is
+				// commonly set for Expo builds). Otherwise, fail with a
+				// helpful error telling the operator how to fix it in prod.
+				const expoScheme = process.env.EXPO_SCHEME;
+				if (expoScheme && uri.startsWith(`${expoScheme}://`)) {
+					console.warn(
+						"ALLOWED_REDIRECT_SCHEMES not set; allowing redirect via EXPO_SCHEME",
+					);
+					return redirectTo;
+				}
+
 				throw new Error(
-					`Invalid redirectTo URI ${redirectTo} — no allowed redirect schemes configured`,
+					`Invalid redirectTo URI ${redirectTo} — no allowed redirect schemes configured. Set the environment variable ALLOWED_REDIRECT_SCHEMES=glossenailapp (comma-separated) in your Convex/runtime environment, or set EXPO_SCHEME to permit a single scheme.`,
 				);
 			}
 
@@ -40,7 +52,9 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 				if (uri.startsWith(`${scheme}://`)) return redirectTo;
 			}
 
-			throw new Error(`Invalid redirectTo URI ${redirectTo}`);
+			throw new Error(
+				`Invalid redirectTo URI ${redirectTo}. Allowed schemes: ${allowed.join(",")}`,
+			);
 		},
 	},
 });
