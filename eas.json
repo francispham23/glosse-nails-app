@@ -15,7 +15,9 @@
 			"autoIncrement": true,
 			"env": {
 				"EXPO_PUBLIC_CONVEX_URL": "https://silent-firefly-314.convex.cloud",
-				"CONVEX_SITE_URL": "https://silent-firefly-314.convex.site"
+				"CONVEX_SITE_URL": "https://silent-firefly-314.convex.site",
+				"EXPO_SCHEME": "glossenailapp",
+				"ALLOWED_REDIRECT_SCHEMES": "glossenailapp"
 			}
 		}
 	},
