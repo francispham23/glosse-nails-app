@@ -14,7 +14,7 @@
 		"production": {
 			"autoIncrement": true,
 			"env": {
-				"EXPO_PUBLIC_CONVEX_URL": "https://rapid-guineapig-653.convex.cloud",
+				"EXPO_PUBLIC_CONVEX_URL": "https://silent-firefly-314.convex.cloud",
 				"EXPO_SCHEME": "glossenailapp",
 				"ALLOWED_REDIRECT_SCHEMES": "glossenailapp"
 			}
