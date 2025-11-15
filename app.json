@@ -1,32 +1,32 @@
 {
-  "expo": {
-    "name": "glosse-nail-app",
-    "slug": "glosse-nail-app",
-    "version": "0.0.1",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "scheme": "glossenailapp",
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [],
-    "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
-    },
-    "userInterfaceStyle": "automatic",
-    "extra": {
-      "eas": {
-        "projectId": "92d651b7-4768-4989-929a-6c8eed497950"
-      }
-    },
-    "ios": {
-      "bundleIdentifier": "com.francispham.glossenailapp",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
-    }
-  }
+	"expo": {
+		"name": "glosse-nail-app",
+		"slug": "glosse-nail-app",
+		"version": "0.0.2",
+		"orientation": "portrait",
+		"icon": "./assets/icon.png",
+		"scheme": "glossenailapp",
+		"web": {
+			"bundler": "metro",
+			"output": "static",
+			"favicon": "./assets/favicon.png"
+		},
+		"plugins": [],
+		"experiments": {
+			"typedRoutes": true,
+			"reactCompiler": true
+		},
+		"userInterfaceStyle": "automatic",
+		"extra": {
+			"eas": {
+				"projectId": "92d651b7-4768-4989-929a-6c8eed497950"
+			}
+		},
+		"ios": {
+			"bundleIdentifier": "com.francispham.glossenailapp",
+			"infoPlist": {
+				"ITSAppUsesNonExemptEncryption": false
+			}
+		}
+	}
 }

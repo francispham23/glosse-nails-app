@@ -9,7 +9,11 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AppThemeProvider } from "@/contexts/app-theme-context";
 import "../global.css";
 
-const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
+const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
+if (!convexUrl) {
+	throw new Error("EXPO_PUBLIC_CONVEX_URL environment variable is not set");
+}
+const convex = new ConvexReactClient(convexUrl, {
 	unsavedChangesWarning: false,
 });
 
@@ -41,9 +45,9 @@ export default function Layout() {
 				}
 			>
 				<SafeAreaProvider>
-						<AppThemeProvider>
-							<ThemedLayout />
-						</AppThemeProvider>
+					<AppThemeProvider>
+						<ThemedLayout />
+					</AppThemeProvider>
 				</SafeAreaProvider>
 			</ConvexAuthProvider>
 		</GestureHandlerRootView>
