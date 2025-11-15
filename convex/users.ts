@@ -20,3 +20,10 @@ export const deleteViewer = mutation({
 		await ctx.db.delete(userId);
 	},
 });
+
+export const users = query({
+	args: {},
+	handler: async (ctx) => {
+		return await ctx.db.query("users").collect();
+	},
+});

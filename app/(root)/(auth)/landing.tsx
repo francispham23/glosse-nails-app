@@ -1,9 +1,8 @@
 import { Link } from "expo-router";
 import { Button } from "heroui-native";
 import { Text, View } from "react-native";
-
-import SignIn from "@/app/SignIn";
 import { Container } from "@/components/container";
+import SignIn from "@/components/SignIn";
 
 export default function Landing() {
 	return (

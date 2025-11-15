@@ -1,34 +1,40 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
-import { useMutation, useQuery } from "convex/react";
-import { Button, Chip, useThemeColor } from "heroui-native";
+import { useQuery } from "convex/react";
+import { Button, cn, useThemeColor } from "heroui-native";
 import { Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
+import { useAppTheme } from "@/contexts/app-theme-context";
+
 import { api } from "@/convex/_generated/api";
+import type { DataModel } from "@/convex/_generated/dataModel";
 
 export default function HomeRoute() {
 	const themeColorBackground = useThemeColor("background");
+	const users = useQuery(api.users.users);
 
 	/* ------------------------------ post logic ------------------------------ */
-	// const postData = useQuery(api.post.getPostsAndUsers);
-	// const createPost = useMutation(api.post.createPost);
+	/*
+	const postData = useQuery(api.post.getPostsAndUsers);
+	const createPost = useMutation(api.post.createPost);
+	
 	const handleCreatePost = () => {
 		const randomTitle =
-			POST_TITLES[Math.floor(Math.random() * POST_TITLES.length)];
-		// createPost({ title: randomTitle, status: "start" });
+		POST_TITLES[Math.floor(Math.random() * POST_TITLES.length)];
+		createPost({ title: randomTitle, status: "start" });
 	};
+	*/
 
 	return (
 		<View className="flex-1">
 			<FlatList
 				contentInsetAdjustmentBehavior="automatic"
 				contentContainerClassName="gap-4 pt-2 px-3 pb-24"
-				// keyExtractor={(item) => item.post._id}
-				// data={postData}
-				data={[]}
-				renderItem={({ item }) => <PostItem item={item} />}
+				keyExtractor={(item) => item._id.toString()}
+				data={users}
+				renderItem={({ item }) => <UserDetails user={item} />}
 			/>
 			<Button
-				onPress={handleCreatePost}
+				onPress={() => {}}
 				className="absolute bottom-8 self-center overflow-hidden rounded-full"
 			>
 				<Button.Label>Create Post</Button.Label>
@@ -38,7 +44,24 @@ export default function HomeRoute() {
 	);
 }
 
+const UserDetails = ({ user }: { user: DataModel["users"]["document"] }) => {
+	const { isLight } = useAppTheme();
+
+	if (!user) return null;
+	return (
+		<View className="flex-row justify-between gap-2">
+			<Text className={cn("text-lg text-muted", !isLight && "-foreground")}>
+				{user.name}
+			</Text>
+			<Text className={cn("text-lg text-muted", !isLight && "-foreground")}>
+				{user.email}
+			</Text>
+		</View>
+	);
+};
+
 // TODO: Implement PostItem component
+/* 
 const POST_TITLES = [
 	"Store passwords in the user’s browser and validate client-side. Just send a boolean to your server. Reduces database load by 90% and keeps sensitive data off your servers.",
 	"Passwords in plain text are actually more secure because hackers expect encryption",
@@ -50,8 +73,7 @@ const PostItem = ({
 	item,
 }: {
 	// TODO: Fix Type
-	item: any;
-	// item: FunctionReturnType<typeof api.post.getPostsAndUsers>[number];
+	item: FunctionReturnType<typeof api.post.getPostsAndUsers>[number];
 }) => {
 	const renderStatusChip = () => {
 		switch (item.post.status) {
@@ -90,3 +112,4 @@ const PostItem = ({
 		</View>
 	);
 };
+*/
