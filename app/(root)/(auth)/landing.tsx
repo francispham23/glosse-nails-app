@@ -7,7 +7,7 @@ import { Container } from "@/components/container";
 
 export default function Landing() {
 	return (
-		<Container className="p-6 gap-8">
+		<Container className="gap-8 p-6">
 			<View className="flex-1 justify-end">
 				<Text className="font-extrabold text-6xl text-foreground">
 					Glosse Nails

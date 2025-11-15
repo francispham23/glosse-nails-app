@@ -1,12 +1,14 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { useMutation, useQuery } from "convex/react";
-import { Button, Spinner, useThemeColor } from "heroui-native";
+import { Button, cn, Spinner, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Alert, ScrollView, Text, View } from "react-native";
+import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 
 export default function SettingsRoute() {
+	const { isLight } = useAppTheme();
 	const themeColorForeground = useThemeColor("foreground");
 	const [isDeletingUser, setIsDeletingUser] = useState(false);
 	const user = useQuery(api.users.viewer);
@@ -28,17 +30,21 @@ export default function SettingsRoute() {
 		}
 	};
 
+	const className = cn("text-lg text-muted", !isLight && "-foreground");
+
 	return (
 		<View className="flex-1">
 			<ScrollView
 				contentInsetAdjustmentBehavior="always"
 				contentContainerClassName="px-6 py-2 gap-4 min-h-full "
 			>
-				<Text className="font-bold text-2xl">User Info Section</Text>
+				<Text className={cn("font-bold text-2xl", !isLight && "text-white")}>
+					User Info Section
+				</Text>
 				<View className="flex">
-					<Text className="text-lg text-muted-foreground">{user.name}</Text>
-					<Text className="text-lg text-muted-foreground">{user.email}</Text>
-					<Text className="text-lg text-muted-foreground">
+					<Text className={className}>{user.name}</Text>
+					<Text className={className}>{user.email}</Text>
+					<Text className={className}>
 						created {new Date(user._creationTime).toDateString()}
 					</Text>
 				</View>

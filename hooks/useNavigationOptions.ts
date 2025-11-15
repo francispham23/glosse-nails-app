@@ -1,4 +1,5 @@
 // hooks/useNavigationOptions.ts
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: intentional theme color dependency */
 import type { NativeStackNavigationOptions } from "@react-navigation/native-stack";
 import { useThemeColor } from "heroui-native";
 import { useMemo } from "react";
