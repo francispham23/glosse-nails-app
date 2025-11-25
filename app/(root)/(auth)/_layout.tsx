@@ -6,7 +6,7 @@ export default function AuthLayout() {
 	return (
 		<Stack>
 			<Stack.Screen
-				name="landing"
+				name="index"
 				options={{
 					headerShown: true,
 					title: "",

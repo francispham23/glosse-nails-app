@@ -1,27 +1,29 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import { Ionicons } from "@expo/vector-icons";
-import { Stack, useRouter } from "expo-router";
-import { useThemeColor } from "heroui-native";
-import { useState } from "react";
-import { Alert, Pressable, Text } from "react-native";
-import { ThemeToggle } from "@/components/theme-toggle";
+import * as NavigationBar from "expo-navigation-bar";
+import { Stack } from "expo-router";
+import { useEffect, useState } from "react";
+import { Alert, Platform, Pressable, Text, useColorScheme } from "react-native";
+
 import { useNavigationOptions } from "@/hooks/useNavigationOptions";
 
 export default function MainLayout() {
+	const colorScheme = useColorScheme();
 	const { standard } = useNavigationOptions();
+
+	useEffect(() => {
+		if (Platform.OS === "android") {
+			NavigationBar.setButtonStyleAsync(
+				colorScheme === "light" ? "dark" : "light",
+			);
+		}
+	}, [colorScheme]);
 
 	return (
 		<Stack>
 			<Stack.Screen
-				name="index"
+				name="(tabs)"
 				options={{
-					title: "Informational",
-					headerTitle: "Informational",
-					headerLargeTitle: true,
-					headerBackTitle: "Home",
-					...standard,
-					headerRight: () => <SettingsButton />,
-					headerLeft: () => <ThemeToggle />,
+					headerShown: false,
 				}}
 			/>
 			<Stack.Screen
@@ -37,26 +39,6 @@ export default function MainLayout() {
 		</Stack>
 	);
 }
-
-const SettingsButton = () => {
-	const themeColorForeground = useThemeColor("foreground");
-	const router = useRouter();
-
-	return (
-		<Pressable
-			className="justify-center rounded-full p-2.5"
-			onPress={() => {
-				router.navigate("/settings");
-			}}
-		>
-			<Ionicons
-				name="settings-outline"
-				size={18}
-				color={themeColorForeground}
-			/>
-		</Pressable>
-	);
-};
 
 const SignOutButton = () => {
 	const [isSigningOut, setIsSigningOut] = useState(false);
