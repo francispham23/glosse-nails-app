@@ -3,7 +3,7 @@ import { Button } from "heroui-native";
 import { Text, View } from "react-native";
 
 import { Container } from "@/components/container";
-import SignIn from "@/components/signin";
+import SignIn from "@/components/sign-in";
 
 export default function Landing() {
 	return (
