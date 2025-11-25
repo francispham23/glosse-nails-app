@@ -11,20 +11,7 @@
 			"output": "static",
 			"favicon": "./assets/favicon.png"
 		},
-		"plugins": [
-			"expo-router",
-			[
-				"expo-navigation-bar",
-				{
-					"backgroundColor": "#0f172a",
-					"barStyle": "light",
-					"borderColor": "#1f2937",
-					"visibility": "visible",
-					"behavior": "inset-swipe",
-					"position": "relative"
-				}
-			]
-		],
+		"plugins": [],
 		"experiments": {
 			"typedRoutes": true,
 			"reactCompiler": true
