@@ -8,7 +8,8 @@ const schema = defineSchema({
 	transactions: defineTable({
 		compensation: v.number(),
 		tip: v.number(),
-		user: v.id("users"),
+		client: v.id("users"),
+		technician: v.id("users"),
 	}),
 });
 

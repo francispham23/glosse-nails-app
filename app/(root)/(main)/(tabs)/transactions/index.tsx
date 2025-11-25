@@ -11,6 +11,10 @@ export default function Bookmarks() {
 	const backgroundColor = useThemeColor("background");
 	const transactions = useQuery(api.transactions.transactions);
 
+	if (!transactions) {
+		return null;
+	}
+
 	return (
 		<Animated.FlatList
 			contentInsetAdjustmentBehavior="automatic"
@@ -24,10 +28,19 @@ export default function Bookmarks() {
 	);
 }
 
+type TransactionWithNames = {
+	_id: DataModel["transactions"]["document"]["_id"];
+	technician: string | null;
+	client: string | null;
+	compensation: number;
+	tip: number;
+	_creationTime: number;
+};
+
 function TransactionDetails({
 	transaction,
 }: {
-	transaction: DataModel["transactions"]["document"];
+	transaction: TransactionWithNames;
 }) {
 	const { isLight } = useAppTheme();
 	const backgroundColor = useThemeColor("background-secondary");
@@ -40,6 +53,16 @@ function TransactionDetails({
 			style={{ backgroundColor }}
 		>
 			{/* Render transaction details here */}
+			<Text className={className}>
+				Technician: {transaction.technician ?? "(unknown)"}
+			</Text>
+			<Text className={className}>
+				Client: {transaction.client ?? "(unknown)"}
+			</Text>
+			<Text className={className}>
+				Compensation: ${transaction.compensation}
+			</Text>
+			<Text className={className}>Tip: ${transaction.tip}</Text>
 			<Text className={className}>
 				Transaction ID: {transaction._id.toString()}
 			</Text>

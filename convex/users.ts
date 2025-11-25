@@ -24,6 +24,31 @@ export const deleteViewer = mutation({
 export const users = query({
 	args: {},
 	handler: async (ctx) => {
-		return await ctx.db.query("users").collect();
+		const technicians = await ctx.db.query("users").collect();
+		// Return all technicians with total tips and compensation
+		const result = await Promise.all(
+			technicians.map(async (tech) => {
+				// Fetch transactions for this technician (fall back to in-memory filtering to avoid relying on a missing typed index)
+				const transactions = (
+					await ctx.db.query("transactions").collect()
+				).filter((t) => t.technician === tech._id);
+
+				const compensation = transactions.reduce(
+					(sum, t) => sum + t.compensation,
+					0,
+				);
+				const tips = transactions.reduce((sum, t) => sum + t.tip, 0);
+
+				return {
+					_id: tech._id,
+					name: tech.name,
+					_creationTime: tech._creationTime,
+					compensation,
+					tips,
+				};
+			}),
+		);
+
+		return result;
 	},
 });

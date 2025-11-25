@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { useQuery } from "convex/react";
 import { Button, cn, useThemeColor } from "heroui-native";
 import { Text, View } from "react-native";
-import { FlatList } from "react-native-gesture-handler";
+import Animated, { LinearTransition } from "react-native-reanimated";
 
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
@@ -15,6 +15,10 @@ export default function HomeRoute() {
 
 	const className = cn("font-bold text-lg", !isLight && "text-white");
 
+	const totalCompensation =
+		users?.reduce((sum, user) => sum + user.compensation, 0) || 0;
+	const totalTips = users?.reduce((sum, user) => sum + user.tips, 0) || 0;
+
 	return (
 		<View className="flex-1">
 			<View className="flex-row justify-between gap-2 px-3 pt-45 pb-4">
@@ -25,23 +29,26 @@ export default function HomeRoute() {
 				</View>
 			</View>
 			{/* Users List */}
-			<FlatList
+			<Animated.FlatList
 				contentInsetAdjustmentBehavior="automatic"
 				contentContainerClassName="gap-4 pt-2 px-3 pb-24"
 				keyExtractor={(item) => item._id.toString()}
 				data={users}
 				renderItem={({ item }) => <UserDetails user={item} />}
+				itemLayoutAnimation={LinearTransition}
 			/>
-			<View className="absolute bottom-60 w-full flex-row justify-between px-3">
-				<Text className={className}>Total: 6,200</Text>
+			<View className="absolute bottom-30 w-full flex-row justify-between border-t px-3 pt-3">
+				<Text className={className}>
+					Total: {totalCompensation + totalTips}
+				</Text>
 				<View className="flex-row justify-between gap-6">
-					<Text className={className}>6000</Text>
-					<Text className={className}>200</Text>
+					<Text className={className}>{totalCompensation}</Text>
+					<Text className={className}>{totalTips}</Text>
 				</View>
 			</View>
 			<Button
 				onPress={() => {}}
-				className="absolute bottom-30 self-center overflow-hidden rounded-full"
+				className="absolute bottom-10 self-center overflow-hidden rounded-full"
 			>
 				<Button.Label>Create Transaction</Button.Label>
 				<Ionicons name="add-outline" size={18} color={themeColorBackground} />
@@ -50,7 +57,15 @@ export default function HomeRoute() {
 	);
 }
 
-const UserDetails = ({ user }: { user: DataModel["users"]["document"] }) => {
+type UserWithEarnings = {
+	_id: DataModel["users"]["document"]["_id"];
+	name?: string;
+	_creationTime: number;
+	compensation: number;
+	tips: number;
+};
+
+const UserDetails = ({ user }: { user: UserWithEarnings }) => {
 	const { isLight } = useAppTheme();
 
 	const className = cn("text-lg text-muted", !isLight && "-foreground");
@@ -59,10 +74,10 @@ const UserDetails = ({ user }: { user: DataModel["users"]["document"] }) => {
 
 	return (
 		<View className="flex-row justify-between gap-2">
-			<Text className={className}>{user.name}</Text>
+			<Text className={className}>{user.name ?? "—"}</Text>
 			<View className="flex-row justify-between gap-8">
-				<Text className={className}>3,000</Text>
-				<Text className={className}>100</Text>
+				<Text className={className}>{user.compensation}</Text>
+				<Text className={className}>{user.tips}</Text>
 			</View>
 		</View>
 	);
