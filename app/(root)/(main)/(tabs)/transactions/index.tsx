@@ -1,15 +1,43 @@
 import { useQuery } from "convex/react";
 import { cn, useThemeColor } from "heroui-native";
-import { Text, View } from "react-native";
-import Animated, { LinearTransition } from "react-native-reanimated";
+import { Text } from "react-native";
+import Animated, {
+	FadeIn,
+	FadeOut,
+	LinearTransition,
+} from "react-native-reanimated";
 
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
-import type { DataModel } from "@/convex/_generated/dataModel";
+import type { Transaction } from "@/utils/types";
 
-export default function Bookmarks() {
+export default function Transactions() {
+	const { isLight } = useAppTheme();
 	const backgroundColor = useThemeColor("background");
+	const backgroundColorSecondary = useThemeColor("background-secondary");
+
 	const transactions = useQuery(api.transactions.transactions);
+
+	const className = cn("text-lg text-muted", !isLight && "-foreground");
+
+	const renderItem = ({ item }: { item: Transaction }) => {
+		return (
+			<Animated.View
+				key={item._id}
+				entering={FadeIn}
+				exiting={FadeOut}
+				className="flex-1 gap-3 rounded-lg border-r-accent p-3"
+				style={{ backgroundColor }}
+			>
+				{/* Render transaction details here */}
+				<Text className={className}>Technician: {item.technician}</Text>
+				<Text className={className}>Client: {item.client}</Text>
+				<Text className={className}>Compensation: ${item.compensation}</Text>
+				<Text className={className}>Tip: ${item.tip}</Text>
+				<Text className={className}>Transaction ID: {item._id.toString()}</Text>
+			</Animated.View>
+		);
+	};
 
 	if (!transactions) {
 		return null;
@@ -19,53 +47,11 @@ export default function Bookmarks() {
 		<Animated.FlatList
 			contentInsetAdjustmentBehavior="automatic"
 			contentContainerClassName="gap-4 pt-2 px-3 pb-24"
-			style={{ backgroundColor }}
+			style={{ backgroundColor: backgroundColorSecondary }}
 			data={transactions}
-			renderItem={({ item }) => <TransactionDetails transaction={item} />}
+			renderItem={renderItem}
 			keyExtractor={(item) => item._id.toString()}
 			itemLayoutAnimation={LinearTransition}
 		/>
-	);
-}
-
-type TransactionWithNames = {
-	_id: DataModel["transactions"]["document"]["_id"];
-	technician: string | null;
-	client: string | null;
-	compensation: number;
-	tip: number;
-	_creationTime: number;
-};
-
-function TransactionDetails({
-	transaction,
-}: {
-	transaction: TransactionWithNames;
-}) {
-	const { isLight } = useAppTheme();
-	const backgroundColor = useThemeColor("background-secondary");
-
-	const className = cn("text-lg text-muted", !isLight && "-foreground");
-
-	return (
-		<View
-			className="flex-1 gap-3 rounded-lg border-r-accent p-3"
-			style={{ backgroundColor }}
-		>
-			{/* Render transaction details here */}
-			<Text className={className}>
-				Technician: {transaction.technician ?? "(unknown)"}
-			</Text>
-			<Text className={className}>
-				Client: {transaction.client ?? "(unknown)"}
-			</Text>
-			<Text className={className}>
-				Compensation: ${transaction.compensation}
-			</Text>
-			<Text className={className}>Tip: ${transaction.tip}</Text>
-			<Text className={className}>
-				Transaction ID: {transaction._id.toString()}
-			</Text>
-		</View>
 	);
 }

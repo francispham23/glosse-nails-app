@@ -25,8 +25,9 @@ export const users = query({
 	args: {},
 	handler: async (ctx) => {
 		const technicians = await ctx.db.query("users").collect();
+
 		// Return all technicians with total tips and compensation
-		const result = await Promise.all(
+		return Promise.all(
 			technicians.map(async (tech) => {
 				// Fetch transactions for this technician (fall back to in-memory filtering to avoid relying on a missing typed index)
 				const transactions = (
@@ -37,18 +38,14 @@ export const users = query({
 					(sum, t) => sum + t.compensation,
 					0,
 				);
-				const tips = transactions.reduce((sum, t) => sum + t.tip, 0);
+				const tip = transactions.reduce((sum, t) => sum + t.tip, 0);
 
 				return {
-					_id: tech._id,
-					name: tech.name,
-					_creationTime: tech._creationTime,
+					...tech,
+					tip,
 					compensation,
-					tips,
 				};
 			}),
 		);
-
-		return result;
 	},
 });
