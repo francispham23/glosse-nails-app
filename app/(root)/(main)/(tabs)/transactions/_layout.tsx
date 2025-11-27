@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 
-import { SettingsButton } from "@/components/settings-button";
+import { SettingsButton } from "@/components/Buttons/settings-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useNavigationOptions } from "@/hooks/useNavigationOptions";
 

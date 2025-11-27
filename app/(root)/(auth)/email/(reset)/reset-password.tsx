@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { Link, useLocalSearchParams } from "expo-router";
-import { Button, TextField, Spinner,useThemeColor } from "heroui-native";
+import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Text, View } from "react-native";
 import FormHeader, { FormContainer } from "@/components/form";
@@ -89,11 +89,11 @@ export default function ResetPasswordRoute() {
 					</View>
 					<Link href="/(root)/(auth)/email/signin" asChild>
 						<Button className="rounded-3xl">
-								<Ionicons
-									name="arrow-back-outline"
-									size={16}
-									color={accentForegroundColor}
-								/>
+							<Ionicons
+								name="arrow-back-outline"
+								size={16}
+								color={accentForegroundColor}
+							/>
 							<Button.Label>Back to Sign In</Button.Label>
 						</Button>
 					</Link>
@@ -120,18 +120,10 @@ export default function ResetPasswordRoute() {
 					onChangeText={setPassword}
 				>
 					<TextField.InputStartContent className="pointer-events-none">
-						<Ionicons
-							name="lock-closed-outline"
-							size={16}
-							color={mutedColor}
-						/>
+						<Ionicons name="lock-closed-outline" size={16} color={mutedColor} />
 					</TextField.InputStartContent>
 					<TextField.InputEndContent className="pointer-events-none">
-						<Ionicons
-							name="eye-outline"
-							size={16}
-							color={mutedColor}
-						/>
+						<Ionicons name="eye-outline" size={16} color={mutedColor} />
 					</TextField.InputEndContent>
 				</TextField.Input>
 			</TextField>
@@ -145,33 +137,25 @@ export default function ResetPasswordRoute() {
 					onChangeText={setConfirmPassword}
 				>
 					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons
-							name="lock-closed-outline"
-							size={20}
-							color={mutedColor}
-						/>
+						<Ionicons name="lock-closed-outline" size={20} color={mutedColor} />
 					</TextField.InputStartContent>
 					<TextField.InputEndContent className="pointer-events-none pr-2">
-						<Ionicons
-							name="checkmark-outline"
-							size={20}
-							color={mutedColor}
-						/>
+						<Ionicons name="checkmark-outline" size={20} color={mutedColor} />
 					</TextField.InputEndContent>
 				</TextField.Input>
 			</TextField>
 			{/* submit button */}
 			<Button
-        // onPress={handleResetPassword}
-        isDisabled={isLoading}
-        className="rounded-3xl"
-        size="lg"
-      >
-        <Button.Label>
-          {isLoading ? "Resetting..." : "Reset Password"}
-        </Button.Label>
-          {isLoading ? <Spinner color={themeColorBackground} /> : null}
-      </Button>
+				// onPress={handleResetPassword}
+				isDisabled={isLoading}
+				className="rounded-3xl"
+				size="lg"
+			>
+				<Button.Label>
+					{isLoading ? "Resetting..." : "Reset Password"}
+				</Button.Label>
+				{isLoading ? <Spinner color={themeColorBackground} /> : null}
+			</Button>
 		</FormContainer>
 	);
 }

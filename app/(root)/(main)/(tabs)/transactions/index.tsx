@@ -1,5 +1,5 @@
 import { useQuery } from "convex/react";
-import { cn, useThemeColor } from "heroui-native";
+import { cn } from "heroui-native";
 import { Text } from "react-native";
 import Animated, {
 	FadeIn,
@@ -13,8 +13,6 @@ import type { Transaction } from "@/utils/types";
 
 export default function Transactions() {
 	const { isLight } = useAppTheme();
-	const backgroundColor = useThemeColor("background");
-	const backgroundColorSecondary = useThemeColor("background-secondary");
 
 	const transactions = useQuery(api.transactions.transactions);
 
@@ -26,8 +24,7 @@ export default function Transactions() {
 				key={item._id}
 				entering={FadeIn}
 				exiting={FadeOut}
-				className="flex-1 gap-3 rounded-lg border-r-accent p-3"
-				style={{ backgroundColor }}
+				className="flex-1 gap-3 rounded-lg border-r-accent bg-background-secondary p-3"
 			>
 				{/* Render transaction details here */}
 				<Text className={className}>Technician: {item.technician}</Text>
@@ -47,7 +44,6 @@ export default function Transactions() {
 		<Animated.FlatList
 			contentInsetAdjustmentBehavior="automatic"
 			contentContainerClassName="gap-4 pt-2 px-3 pb-24"
-			style={{ backgroundColor: backgroundColorSecondary }}
 			data={transactions}
 			renderItem={renderItem}
 			keyExtractor={(item) => item._id.toString()}

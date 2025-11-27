@@ -1,4 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 export const viewer = query({
@@ -27,7 +28,7 @@ export const users = query({
 		const technicians = await ctx.db.query("users").collect();
 
 		// Return all technicians with total tips and compensation
-		return Promise.all(
+		const result = await Promise.all(
 			technicians.map(async (tech) => {
 				// Fetch transactions for this technician (fall back to in-memory filtering to avoid relying on a missing typed index)
 				const transactions = (
@@ -47,5 +48,13 @@ export const users = query({
 				};
 			}),
 		);
+		return result.sort((a, b) => a.compensation - b.compensation);
+	},
+});
+
+export const getUserById = query({
+	args: { userId: v.id("users") },
+	handler: async (ctx, args) => {
+		return await ctx.db.get(args.userId);
 	},
 });

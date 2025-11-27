@@ -8,7 +8,7 @@ import { useNavigationOptions } from "@/hooks/useNavigationOptions";
 
 export default function MainLayout() {
 	const colorScheme = useColorScheme();
-	const { standard } = useNavigationOptions();
+	const { standard, modal } = useNavigationOptions();
 
 	useEffect(() => {
 		if (Platform.OS === "android") {
@@ -24,6 +24,14 @@ export default function MainLayout() {
 				name="(tabs)"
 				options={{
 					headerShown: false,
+				}}
+			/>
+			<Stack.Screen
+				name="technician/[technicianId]"
+				options={{
+					headerShown: false,
+					presentation: "modal",
+					...modal,
 				}}
 			/>
 			<Stack.Screen
