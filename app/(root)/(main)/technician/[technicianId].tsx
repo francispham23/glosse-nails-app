@@ -1,59 +1,58 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { useQuery } from "convex/react";
 import { useLocalSearchParams } from "expo-router";
-import { Stack } from "expo-router/stack";
 import { Button, useThemeColor } from "heroui-native";
-import { Text, View } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
+import { Text } from "react-native";
+import Animated, {
+	FadeIn,
+	FadeOut,
+	LinearTransition,
+} from "react-native-reanimated";
+
+import { TransactionCard } from "@/components/transaction-card";
 import { api } from "@/convex/_generated/api";
-import { useNavigationOptions } from "@/hooks/useNavigationOptions";
-import type { User } from "@/utils/types";
+import type { Transaction, User } from "@/utils/types";
 
 export default function TechnicianDetail() {
-	const { modal } = useNavigationOptions();
 	const params = useLocalSearchParams();
 	const background = useThemeColor("background");
 
 	const userId = params.technicianId as User["_id"];
 
 	const technician = useQuery(api.users.getUserById, { userId });
+	const transactions = useQuery(api.transactions.listByTechnicianId, {
+		userId,
+	});
 
-	return (
-		<>
-			<Stack.Screen
-				options={{
-					title: "Technician Details",
-					headerLargeTitle: true,
-					...modal,
+	return technician && transactions ? (
+		<Animated.View className="flex-1 p-4" entering={FadeIn} exiting={FadeOut}>
+			<Text className="text-center font-bold text-lg">{technician.name}</Text>
+			<Animated.FlatList
+				contentInsetAdjustmentBehavior="automatic"
+				contentContainerClassName="gap-4 pt-2 px-3 pb-24"
+				data={transactions}
+				renderItem={({ item }: { item: Transaction }) => {
+					return <TransactionCard transaction={item} />;
 				}}
+				keyExtractor={(item) => item._id.toString()}
+				itemLayoutAnimation={LinearTransition}
+				ListEmptyComponent={<Text>No Transaction</Text>}
 			/>
-			{technician ? (
-				<>
-					<ScrollView
-						contentInsetAdjustmentBehavior="automatic"
-						showsVerticalScrollIndicator={false}
-						className="flex-1 bg-background"
-					>
-						<View className="flex-1 items-center justify-center p-4">
-							<Text className="font-bold text-lg">{technician.name}</Text>
-							<Text className="mt-2 text-center text-base">
-								Email: {technician.email}
-							</Text>
-						</View>
-					</ScrollView>
-					<Button
-						onPress={() => {}}
-						className="absolute bottom-10 self-center overflow-hidden rounded-full"
-					>
-						<Button.Label>Create Transaction</Button.Label>
-						<Ionicons name="add-outline" size={18} color={background} />
-					</Button>
-				</>
-			) : (
-				<View className="flex-1 items-center justify-center">
-					<Text>Not Found</Text>
-				</View>
-			)}
-		</>
+			<Button
+				onPress={() => {}}
+				className="absolute bottom-10 self-center overflow-hidden rounded-full"
+			>
+				<Button.Label>Create Transaction</Button.Label>
+				<Ionicons name="add-outline" size={18} color={background} />
+			</Button>
+		</Animated.View>
+	) : (
+		<Animated.View
+			className="flex-1 items-center justify-center"
+			entering={FadeIn}
+			exiting={FadeOut}
+		>
+			<Text>Not Found</Text>
+		</Animated.View>
 	);
 }
