@@ -9,6 +9,7 @@ import Animated, {
 	LinearTransition,
 } from "react-native-reanimated";
 
+import { Container } from "@/components/container";
 import { TransactionCard } from "@/components/transaction-card";
 import { api } from "@/convex/_generated/api";
 import type { Transaction, User } from "@/utils/types";
@@ -25,8 +26,14 @@ export default function TechnicianDetail() {
 	});
 
 	return technician && transactions ? (
-		<Animated.View className="flex-1 p-4" entering={FadeIn} exiting={FadeOut}>
-			<Text className="text-center font-bold text-lg">{technician.name}</Text>
+		<Animated.View
+			className="flex-1 gap-2 px-6 pt-18"
+			entering={FadeIn}
+			exiting={FadeOut}
+		>
+			<Text className="font-extrabold text-3xl text-foreground">
+				{technician.name}
+			</Text>
 			<Animated.FlatList
 				contentInsetAdjustmentBehavior="automatic"
 				contentContainerClassName="gap-4 pt-2 px-3 pb-24"
@@ -47,12 +54,12 @@ export default function TechnicianDetail() {
 			</Button>
 		</Animated.View>
 	) : (
-		<Animated.View
+		<Container
 			className="flex-1 items-center justify-center"
 			entering={FadeIn}
 			exiting={FadeOut}
 		>
 			<Text>Not Found</Text>
-		</Animated.View>
+		</Container>
 	);
 }

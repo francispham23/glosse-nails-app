@@ -3,6 +3,7 @@ import { Link } from "expo-router";
 import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Alert } from "react-native";
+
 import FormHeader, { FormContainer } from "@/components/form";
 
 // TODO: Implement sign-in logic with Convex Auth
@@ -54,11 +55,7 @@ export default function SignInRoute() {
 					onChangeText={setEmail}
 				>
 					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons
-							name="mail-outline"
-							size={20}
-							color={mutedColor}
-						/>
+						<Ionicons name="mail-outline" size={20} color={mutedColor} />
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
@@ -72,18 +69,10 @@ export default function SignInRoute() {
 					onChangeText={setPassword}
 				>
 					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons
-							name="lock-closed-outline"
-							size={20}
-							color={mutedColor}
-						/>
+						<Ionicons name="lock-closed-outline" size={20} color={mutedColor} />
 					</TextField.InputStartContent>
 					<TextField.InputEndContent className="pointer-events-none pr-2">
-						<Ionicons
-							name="eye-outline"
-							size={20}
-							color={mutedColor}
-						/>
+						<Ionicons name="eye-outline" size={20} color={mutedColor} />
 					</TextField.InputEndContent>
 				</TextField.Input>
 			</TextField>
@@ -105,17 +94,17 @@ export default function SignInRoute() {
 					size="sm"
 					className="self-center rounded-3xl"
 				>
-						<Ionicons
-							name="lock-closed-outline"
-							size={14}
-							color={accentForegroundColor}
-						/>
-						<Button.Label className="mx-1">Forgot Password?</Button.Label>
-						<Ionicons
-							name="chevron-forward"
-							size={16}
-							color={accentForegroundColor}
-						/>
+					<Ionicons
+						name="lock-closed-outline"
+						size={14}
+						color={accentForegroundColor}
+					/>
+					<Button.Label className="mx-1">Forgot Password?</Button.Label>
+					<Ionicons
+						name="chevron-forward"
+						size={16}
+						color={accentForegroundColor}
+					/>
 				</Button>
 			</Link>
 		</FormContainer>

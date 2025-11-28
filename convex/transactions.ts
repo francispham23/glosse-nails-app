@@ -9,7 +9,8 @@ export const list = query({
 		// For each transaction fetch the referenced user docs and map to names
 		return Promise.all(
 			transactions.map(async (transaction) => {
-				const client = await ctx.db.get(transaction.client);
+				const client =
+					transaction.client && (await ctx.db.get(transaction.client));
 				const technician = await ctx.db.get(transaction.technician);
 
 				return {
@@ -31,7 +32,8 @@ export const listByTechnicianId = query({
 			transactions
 				.filter((transaction) => transaction.technician.toString() === userId)
 				.map(async (transaction) => {
-					const client = await ctx.db.get(transaction.client);
+					const client =
+						transaction.client && (await ctx.db.get(transaction.client));
 
 					return {
 						...transaction,

@@ -1,9 +1,10 @@
 import { cn } from "heroui-native";
 import { Text } from "react-native";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { useAppTheme } from "@/contexts/app-theme-context";
 import type { Transaction } from "@/utils/types";
+import { Container } from "./container";
 
 type Props = {
 	transaction: Transaction;
@@ -14,7 +15,7 @@ export const TransactionCard = ({ transaction }: Props) => {
 	const className = cn("text-lg text-muted", !isLight && "-foreground");
 
 	return (
-		<Animated.View
+		<Container
 			key={transaction._id}
 			entering={FadeIn}
 			exiting={FadeOut}
@@ -30,8 +31,8 @@ export const TransactionCard = ({ transaction }: Props) => {
 				<Text className={className}>Technician: {transaction.technician}</Text>
 			) : null}
 			<Text className={className}>
-				Transaction ID: {transaction._id.toString()}
+				Service Date: {new Date(transaction.serviceDate).toDateString()}
 			</Text>
-		</Animated.View>
+		</Container>
 	);
 };

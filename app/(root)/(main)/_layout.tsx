@@ -4,6 +4,7 @@ import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, Platform, Pressable, Text, useColorScheme } from "react-native";
 
+import { CloseButton } from "@/components/Buttons/close-button";
 import { useNavigationOptions } from "@/hooks/useNavigationOptions";
 
 export default function MainLayout() {
@@ -29,8 +30,12 @@ export default function MainLayout() {
 			<Stack.Screen
 				name="technician/[technicianId]"
 				options={{
-					headerShown: false,
+					title: "",
+					// headerShown: true,
+					// headerLargeTitle: true,
 					presentation: "modal",
+					headerTransparent: true,
+					headerLeft: () => <CloseButton />,
 					...modal,
 				}}
 			/>
