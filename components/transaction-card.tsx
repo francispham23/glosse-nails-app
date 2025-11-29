@@ -8,9 +8,10 @@ import { Container } from "./container";
 
 type Props = {
 	transaction: Transaction;
+	technicianId?: string;
 };
 
-export const TransactionCard = ({ transaction }: Props) => {
+export const TransactionCard = ({ transaction, technicianId }: Props) => {
 	const { isLight } = useAppTheme();
 	const className = cn("text-lg text-muted", !isLight && "-foreground");
 
@@ -27,9 +28,11 @@ export const TransactionCard = ({ transaction }: Props) => {
 				Compensation: ${transaction.compensation}
 			</Text>
 			<Text className={className}>Tip: ${transaction.tip}</Text>
-			{transaction.technician ? (
+			{!technicianId ? (
 				<Text className={className}>Technician: {transaction.technician}</Text>
-			) : null}
+			) : (
+				<Text className={className}>Services: {transaction.services}</Text>
+			)}
 			<Text className={className}>
 				Service Date: {new Date(transaction.serviceDate).toDateString()}
 			</Text>

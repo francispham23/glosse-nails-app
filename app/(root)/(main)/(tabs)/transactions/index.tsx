@@ -6,7 +6,7 @@ import { api } from "@/convex/_generated/api";
 import type { Transaction } from "@/utils/types";
 
 export default function Transactions() {
-	const transactions = useQuery(api.transactions.list);
+	const transactions = useQuery(api.transactions.list, {});
 
 	if (!transactions) {
 		return null;

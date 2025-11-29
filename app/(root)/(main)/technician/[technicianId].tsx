@@ -20,26 +20,25 @@ export default function TechnicianDetail() {
 
 	const userId = params.technicianId as User["_id"];
 
-	const technician = useQuery(api.users.getUserById, { userId });
-	const transactions = useQuery(api.transactions.listByTechnicianId, {
+	const transactions = useQuery(api.transactions.list, {
 		userId,
 	});
 
-	return technician && transactions ? (
+	return transactions ? (
 		<Animated.View
 			className="flex-1 gap-2 px-6 pt-18"
 			entering={FadeIn}
 			exiting={FadeOut}
 		>
 			<Text className="font-extrabold text-3xl text-foreground">
-				{technician.name}
+				{transactions[0].technician}
 			</Text>
 			<Animated.FlatList
 				contentInsetAdjustmentBehavior="automatic"
 				contentContainerClassName="gap-4 pt-2 px-3 pb-24"
 				data={transactions}
 				renderItem={({ item }: { item: Transaction }) => {
-					return <TransactionCard transaction={item} />;
+					return <TransactionCard transaction={item} technicianId={userId} />;
 				}}
 				keyExtractor={(item) => item._id.toString()}
 				itemLayoutAnimation={LinearTransition}
