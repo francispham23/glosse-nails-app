@@ -14,6 +14,13 @@ type Props = {
 export const TransactionCard = ({ transaction, technicianId }: Props) => {
 	const { isLight } = useAppTheme();
 	const className = cn("text-lg text-muted", !isLight && "-foreground");
+	const time = new Date(transaction.serviceDate).toLocaleString();
+	const dayInWeek = new Date(transaction.serviceDate).toLocaleDateString(
+		"en-US",
+		{
+			weekday: "short",
+		},
+	);
 
 	return (
 		<Container
@@ -34,7 +41,7 @@ export const TransactionCard = ({ transaction, technicianId }: Props) => {
 				<Text className={className}>Services: {transaction.services}</Text>
 			)}
 			<Text className={className}>
-				Service Date: {new Date(transaction.serviceDate).toDateString()}
+				Date: {dayInWeek}, {time}.
 			</Text>
 		</Container>
 	);

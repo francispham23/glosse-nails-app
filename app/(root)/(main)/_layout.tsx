@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Alert, Platform, Pressable, Text, useColorScheme } from "react-native";
 
 import { CloseButton } from "@/components/Buttons/close-button";
+import { TransactionsButton } from "@/components/Buttons/transactions-button";
 import { useNavigationOptions } from "@/hooks/useNavigationOptions";
 
 export default function MainLayout() {
@@ -31,11 +32,10 @@ export default function MainLayout() {
 				name="technician/[technicianId]"
 				options={{
 					title: "",
-					// headerShown: true,
-					// headerLargeTitle: true,
 					presentation: "modal",
 					headerTransparent: true,
 					headerLeft: () => <CloseButton />,
+					headerRight: () => <TransactionsButton />,
 					...modal,
 				}}
 			/>

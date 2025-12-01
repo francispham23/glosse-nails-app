@@ -1,6 +1,5 @@
 import { v } from "convex/values";
-
-import { query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 
 export const list = query({
 	args: { userId: v.optional(v.string()) },
@@ -35,5 +34,24 @@ export const list = query({
 				};
 			}),
 		);
+	},
+});
+
+// Add a transaction
+export const addTransaction = mutation({
+	args: {
+		body: v.object({
+			compensation: v.string(),
+			tip: v.string(),
+			technicianId: v.id("users"),
+		}),
+	},
+	handler: async (ctx, { body }) => {
+		await ctx.db.insert("transactions", {
+			compensation: Number(body.compensation),
+			tip: Number(body.tip),
+			technician: body.technicianId,
+			serviceDate: Date.now(),
+		});
 	},
 });
