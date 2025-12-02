@@ -4,13 +4,11 @@ import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, Platform, Pressable, Text, useColorScheme } from "react-native";
 
-import { CloseButton } from "@/components/Buttons/close-button";
-import { TransactionsButton } from "@/components/Buttons/transactions-button";
 import { useNavigationOptions } from "@/hooks/useNavigationOptions";
 
 export default function MainLayout() {
 	const colorScheme = useColorScheme();
-	const { standard, modal } = useNavigationOptions();
+	const { standard, root } = useNavigationOptions();
 
 	useEffect(() => {
 		if (Platform.OS === "android") {
@@ -29,14 +27,11 @@ export default function MainLayout() {
 				}}
 			/>
 			<Stack.Screen
-				name="technician/[technicianId]"
+				name="technician"
 				options={{
-					title: "",
+					headerShown: false,
 					presentation: "modal",
-					headerTransparent: true,
-					headerLeft: () => <CloseButton />,
-					headerRight: () => <TransactionsButton />,
-					...modal,
+					...root,
 				}}
 			/>
 			<Stack.Screen

@@ -1,96 +1,46 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { useMutation, useQuery } from "convex/react";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
-import { Alert, Text } from "react-native";
-import Animated, {
-	FadeIn,
-	FadeOut,
-	LinearTransition,
-} from "react-native-reanimated";
+import { Alert } from "react-native";
 
 import FormHeader, { FormContainer } from "@/components/form";
-import { TransactionCard } from "@/components/transaction-card";
 import { api } from "@/convex/_generated/api";
-import type { Transaction, User } from "@/utils/types";
+import type { User } from "@/utils/types";
 
-export default function TechnicianDetail() {
-	const params = useLocalSearchParams();
+export default function FormRoute() {
 	const background = useThemeColor("background");
 	const mutedColor = useThemeColor("muted");
+
+	const router = useRouter();
+	const params = useLocalSearchParams();
 	const technicianId = params.technicianId as User["_id"];
 	const technician = useQuery(api.users.getUserById, {
 		userId: technicianId,
 	});
+	const addTransaction = useMutation(api.transactions.addTransaction);
 
 	/* ---------------------------------- state --------------------------------- */
-	const [openForm, setOpenForm] = useState(true);
-	const [earning, setEarning] = useState({
+	const initialEarningState = {
 		compensation: "",
 		tip: "",
 		technicianId,
-	});
-
-	const transactions = useQuery(api.transactions.list, {
-		userId: technicianId,
-	});
-	const addTransaction = useMutation(api.transactions.addTransaction);
-
+	};
+	const [earning, setEarning] = useState(initialEarningState);
 	const [isLoading] = useState(false);
 
 	/* ----------------------------- handle sign in ----------------------------- */
 	const handleSubmit = async () => {
-		/**
-		 * FEAT: Add your own form validation validation here
-		 * i've been using tanstack form for react native with zod
-		 *
-		 * but this is just a base for you to get started
-		 */
 		if (!earning.compensation) {
 			Alert.alert("Error", "Please enter your earning");
 			return;
 		}
-		addTransaction({ body: earning });
-		console.log("Earning submitted:", earning);
-		setOpenForm(false);
+		await addTransaction({ body: earning });
+		setEarning(initialEarningState);
+		Alert.alert("Success", "Earning submitted successfully");
+		router.push(`/technician/${technicianId}`);
 	};
-
-	/* --------------------------------- return --------------------------------- */
-	// TODO: Fix transaction update when adding new transaction
-	if (!openForm && transactions) {
-		return (
-			<Animated.View
-				className="flex-1 gap-2 px-6 pt-18"
-				entering={FadeIn}
-				exiting={FadeOut}
-			>
-				<Text className="font-extrabold text-3xl text-foreground">
-					{transactions[0].technician}
-				</Text>
-				<Animated.FlatList
-					contentInsetAdjustmentBehavior="automatic"
-					contentContainerClassName="gap-4 pt-2 px-3 pb-24"
-					data={transactions}
-					renderItem={({ item }: { item: Transaction }) => {
-						return (
-							<TransactionCard transaction={item} technicianId={technicianId} />
-						);
-					}}
-					keyExtractor={(item) => item._id.toString()}
-					itemLayoutAnimation={LinearTransition}
-					ListEmptyComponent={<Text>No Transaction</Text>}
-				/>
-				<Button
-					onPress={() => setOpenForm(true)}
-					className="absolute bottom-10 self-center overflow-hidden rounded-full"
-				>
-					<Button.Label>Create Transaction</Button.Label>
-					<Ionicons name="add-outline" size={18} color={background} />
-				</Button>
-			</Animated.View>
-		);
-	}
 
 	return (
 		<FormContainer>

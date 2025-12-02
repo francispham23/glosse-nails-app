@@ -4,6 +4,7 @@ import { cn } from "heroui-native";
 import { Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+
 import { useAppTheme } from "@/contexts/app-theme-context";
 import type { User } from "@/utils/types";
 
@@ -26,7 +27,7 @@ export const TechnicianCard = ({ item }: Props) => {
 			.runOnJS(true)
 			.onEnd(() => {
 				Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-				router.navigate(`/technician/${item._id}`);
+				router.navigate(`/technician/${item._id}/form`);
 			});
 
 	return (
