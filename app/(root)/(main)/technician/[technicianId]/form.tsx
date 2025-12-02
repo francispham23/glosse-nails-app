@@ -26,6 +26,8 @@ export default function FormRoute() {
 		compensation: "",
 		tip: "",
 		technicianId,
+		clientId: undefined,
+		services: [],
 	};
 	const [earning, setEarning] = useState(initialEarningState);
 	const [isLoading] = useState(false);

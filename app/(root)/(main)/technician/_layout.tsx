@@ -30,7 +30,7 @@ export default function TechnicianLayout() {
 			<Stack.Screen
 				name="[technicianId]/index"
 				options={{
-					headerLeft: () => <CloseButton />,
+					headerBackButtonDisplayMode: "generic",
 					headerShown: true,
 					title: "",
 				}}

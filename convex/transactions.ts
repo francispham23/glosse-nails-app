@@ -22,7 +22,7 @@ export const list = query({
 			return {
 				...transaction,
 				services: services.join(", "),
-				client: client ? client.name : transaction.client,
+				client: client ? client.name : (transaction.client ?? "Unknown"),
 				technician: technician ? technician.name : transaction.technician,
 			};
 		};
@@ -45,6 +45,8 @@ export const addTransaction = mutation({
 			compensation: v.string(),
 			tip: v.string(),
 			technicianId: v.id("users"),
+			services: v.array(v.id("services")),
+			clientId: v.optional(v.id("users")),
 		}),
 	},
 	handler: async (ctx, { body }) => {
@@ -52,6 +54,8 @@ export const addTransaction = mutation({
 			compensation: Number(body.compensation),
 			tip: Number(body.tip),
 			technician: body.technicianId,
+			services: body.services,
+			client: body.clientId,
 			serviceDate: Date.now(),
 		});
 	},

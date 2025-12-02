@@ -30,16 +30,17 @@ export const TransactionCard = ({ transaction, technicianId }: Props) => {
 			className="flex-1 gap-3 rounded-lg border-r-accent bg-background-secondary p-3"
 		>
 			{/* Render transaction details here */}
-			<Text className={className}>Client: {transaction.client}</Text>
+			{!technicianId ? (
+				<Text className={className}>Technician: {transaction.technician}</Text>
+			) : null}
 			<Text className={className}>
 				Compensation: ${transaction.compensation}
 			</Text>
 			<Text className={className}>Tip: ${transaction.tip}</Text>
-			{!technicianId ? (
-				<Text className={className}>Technician: {transaction.technician}</Text>
-			) : (
+			<Text className={className}>Client: {transaction.client}</Text>
+			{transaction.services && transaction.services.length > 0 ? (
 				<Text className={className}>Services: {transaction.services}</Text>
-			)}
+			) : null}
 			<Text className={className}>
 				Date: {dayInWeek}, {time}.
 			</Text>
