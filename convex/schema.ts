@@ -11,7 +11,7 @@ const schema = defineSchema({
 		client: v.optional(v.id("users")),
 		technician: v.id("users"),
 		services: v.optional(v.array(v.id("services"))),
-		serviceDate: v.number(),
+		serviceDate: v.optional(v.number()),
 	}),
 	categories: defineTable({
 		name: v.string(),
