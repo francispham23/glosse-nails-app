@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 
+import { CalendarButton } from "@/components/Buttons/calendar-button";
 import { SettingsButton } from "@/components/Buttons/settings-button";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { useNavigationOptions } from "@/hooks/useNavigationOptions";
 
 export default function Layout() {
@@ -17,8 +17,8 @@ export default function Layout() {
 					headerLargeTitle: true,
 					headerBackTitle: "Home",
 					...standard,
+					headerLeft: () => <CalendarButton />,
 					headerRight: () => <SettingsButton />,
-					headerLeft: () => <ThemeToggle />,
 				}}
 			/>
 		</Stack>

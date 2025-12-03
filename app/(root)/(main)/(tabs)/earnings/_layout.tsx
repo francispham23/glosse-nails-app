@@ -17,8 +17,8 @@ export default function MainLayout() {
 					headerLargeTitle: true,
 					headerBackTitle: "Home",
 					...standard,
-					headerRight: () => <SettingsButton />,
 					headerLeft: () => <CalendarButton />,
+					headerRight: () => <SettingsButton />,
 				}}
 			/>
 		</Stack>
