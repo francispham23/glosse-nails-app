@@ -48,8 +48,8 @@ export default function FormRoute() {
 		<FormContainer>
 			{/* header */}
 			<FormHeader
-				title={`${technician?.name?.split(" ")[0]}'s Turn Earning`}
-				description="Enter the earning you want to turn into transaction"
+				title={`${technician?.name?.split(" ")[0]}'s Earning`}
+				description="Add a new earning for this technician"
 			/>
 
 			{/* compensation text-field*/}

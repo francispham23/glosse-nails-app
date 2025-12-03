@@ -4,16 +4,19 @@ import { useMutation, useQuery } from "convex/react";
 import { Button, cn, Spinner, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Alert, ScrollView, Text, View } from "react-native";
+
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 
 export default function SettingsRoute() {
 	const { isLight } = useAppTheme();
 	const themeColorForeground = useThemeColor("foreground");
-	const [isDeletingUser, setIsDeletingUser] = useState(false);
 	const user = useQuery(api.users.viewer);
 	const deleteViewer = useMutation(api.users.deleteViewer);
 	const { signOut } = useAuthActions();
+
+	const [isDeletingUser, setIsDeletingUser] = useState(false);
+	const [isSigningOut, setIsSigningOut] = useState(false);
 
 	if (!user) return null;
 
@@ -49,7 +52,7 @@ export default function SettingsRoute() {
 					</Text>
 				</View>
 				{/* Delete User*/}
-				<View className="flex gap-4">
+				<View className="flex-row justify-between gap-4">
 					<Button
 						variant="tertiary"
 						size="sm"
@@ -83,6 +86,34 @@ export default function SettingsRoute() {
 							{isDeletingUser ? "Deleting..." : "Delete User"}
 						</Button.Label>
 						{isDeletingUser ? <Spinner color={themeColorForeground} /> : null}
+					</Button>
+					{/* Sign Out */}
+					<Button
+						variant="tertiary"
+						size="sm"
+						className="self-start rounded-full"
+						isDisabled={isSigningOut}
+						onPress={async () => {
+							setIsSigningOut(true);
+							Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+								{
+									text: "Cancel",
+									style: "cancel",
+								},
+								{
+									text: "Sign Out",
+									onPress: () => {
+										void signOut();
+									},
+								},
+							]);
+							setIsSigningOut(false);
+						}}
+					>
+						<Button.Label>
+							{isSigningOut ? "Signing Out..." : "Sign Out"}
+						</Button.Label>
+						{isSigningOut ? <Spinner color={themeColorForeground} /> : null}
 					</Button>
 				</View>
 			</ScrollView>
