@@ -6,13 +6,14 @@ import { HeroUINativeProvider } from "heroui-native";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+
 import { AppThemeProvider } from "@/contexts/app-theme-context";
 import "../global.css";
 
 const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
-if (!convexUrl) {
+if (!convexUrl)
 	throw new Error("EXPO_PUBLIC_CONVEX_URL environment variable is not set");
-}
+
 const convex = new ConvexReactClient(convexUrl, {
 	unsavedChangesWarning: false,
 });

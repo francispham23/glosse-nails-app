@@ -1,8 +1,12 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useThemeColor } from "heroui-native";
 import { useState } from "react";
-import { Alert, Pressable, Text } from "react-native";
+import { Alert, Pressable } from "react-native";
 
 export const CalendarButton = () => {
 	const [open, setOpen] = useState(false);
+	const themeColorForeground = useThemeColor("foreground");
+
 	const handleOnPress = () => {
 		setOpen(true);
 		Alert.alert("Calendar Button Pressed", "You pressed the calendar button.", [
@@ -16,7 +20,7 @@ export const CalendarButton = () => {
 			disabled={open}
 			onPress={handleOnPress}
 		>
-			<Text className="text-foreground">Calendar</Text>
+			<Ionicons name="calendar" size={18} color={themeColorForeground} />
 		</Pressable>
 	);
 };

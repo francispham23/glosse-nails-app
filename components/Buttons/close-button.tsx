@@ -5,6 +5,7 @@ import { Pressable } from "react-native";
 
 export const CloseButton = () => {
 	const themeColorForeground = useThemeColor("foreground");
+
 	return (
 		<Link href=".." asChild>
 			<Pressable className="justify-center rounded-full p-2">

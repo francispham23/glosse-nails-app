@@ -24,9 +24,8 @@ export default function TechnicianId() {
 	});
 
 	/* --------------------------------- return --------------------------------- */
-	if (!transactions) {
+	if (!transactions)
 		return <Spinner className="flex-1 items-center justify-center" />;
-	}
 
 	return (
 		<Animated.View

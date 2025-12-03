@@ -18,8 +18,6 @@ export default function SettingsRoute() {
 	const [isDeletingUser, setIsDeletingUser] = useState(false);
 	const [isSigningOut, setIsSigningOut] = useState(false);
 
-	if (!user) return null;
-
 	const handleDeleteUser = async () => {
 		setIsDeletingUser(true);
 		try {
@@ -34,6 +32,8 @@ export default function SettingsRoute() {
 	};
 
 	const className = cn("text-lg text-muted", !isLight && "-foreground");
+
+	if (!user) return <Spinner className="flex-1 items-center justify-center" />;
 
 	return (
 		<View className="flex-1">

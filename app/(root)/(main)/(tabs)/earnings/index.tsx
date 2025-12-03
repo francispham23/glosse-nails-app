@@ -1,5 +1,5 @@
 import { useQuery } from "convex/react";
-import { cn } from "heroui-native";
+import { cn, Spinner } from "heroui-native";
 import { Text, View } from "react-native";
 import Animated, {
 	FadeIn,
@@ -17,14 +17,12 @@ export default function HomeRoute() {
 
 	const users = useQuery(api.users.users);
 
-	const renderItem = ({ item }: { item: User }) => {
-		return <TechnicianCard key={item._id} item={item} />;
-	};
-
 	const className = cn(
 		"min-w-[50] text-right font-bold text-lg",
 		!isLight && "text-white",
 	);
+
+	if (!users) return <Spinner className="flex-1 items-center justify-center" />;
 
 	return (
 		<Animated.View className="flex-1 p-2" entering={FadeIn} exiting={FadeOut}>
@@ -41,7 +39,9 @@ export default function HomeRoute() {
 				contentContainerClassName="gap-4 pt-2 px-5 pb-24"
 				keyExtractor={(item) => item._id.toString()}
 				data={users}
-				renderItem={renderItem}
+				renderItem={({ item }: { item: User }) => {
+					return <TechnicianCard key={item._id} item={item} />;
+				}}
 				itemLayoutAnimation={LinearTransition}
 			/>
 		</Animated.View>
