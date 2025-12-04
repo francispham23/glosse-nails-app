@@ -40,7 +40,11 @@ export default function TechnicianId() {
 				data={transactions}
 				renderItem={({ item }: { item: Transaction }) => {
 					return (
-						<TransactionCard transaction={item} technicianId={technicianId} />
+						<TransactionCard
+							key={item._id}
+							transaction={item}
+							technicianId={technicianId}
+						/>
 					);
 				}}
 				keyExtractor={(item) => item._id.toString()}

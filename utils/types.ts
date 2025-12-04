@@ -6,7 +6,7 @@ type ReplaceType<T, Keys extends keyof T, NewType> = {
 
 export type Transaction = ReplaceType<
 	DataModel["transactions"]["document"],
-	"client" | "technician" | "services" | "serviceDate",
+	"client" | "technician" | "services",
 	string | undefined
 >;
 

@@ -20,7 +20,7 @@ export const TransactionCard = ({ transaction, technicianId }: Props) => {
 			key={transaction._id}
 			entering={FadeIn}
 			exiting={FadeOut}
-			className="flex-1 gap-3 rounded-lg border-r-accent bg-background-secondary p-3"
+			className="gap-3 rounded-lg border-r-accent bg-background-secondary p-3"
 		>
 			{/* Render transaction details here */}
 			{!technicianId ? (
@@ -34,7 +34,18 @@ export const TransactionCard = ({ transaction, technicianId }: Props) => {
 			{transaction.services ? (
 				<Text className={className}>Services: {transaction.services}</Text>
 			) : null}
-			<Text className={className}>Date: {transaction.serviceDate}</Text>
+			<Text className={className}>
+				Date: {getServiceDateString(transaction.serviceDate)}
+			</Text>
 		</Container>
 	);
+};
+
+const getServiceDateString = (timestamp: number | undefined) => {
+	if (!timestamp) return "";
+	const time = new Date(timestamp).toLocaleString();
+	const dayInWeek = new Date(timestamp).toLocaleDateString("en-US", {
+		weekday: "short",
+	});
+	return `${dayInWeek}, ${time}.`;
 };

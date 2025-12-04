@@ -25,7 +25,7 @@ export const list = query({
 
 				return {
 					...transaction,
-					serviceDate: getServiceDateString(transaction.serviceDate),
+					serviceDate: transaction.serviceDate,
 					services: services.join(", "),
 					client: client ? client.name : (transaction.client ?? "Unknown"),
 					technician: technician ? technician.name : transaction.technician,
@@ -60,7 +60,7 @@ export const listByTechnician = query({
 
 				return {
 					...transaction,
-					serviceDate: getServiceDateString(transaction.serviceDate),
+					serviceDate: transaction.serviceDate,
 					services: services.join(", "),
 					client: client ? client.name : (transaction.client ?? "Unknown"),
 					technician: technician ? technician.name : transaction.technician,
@@ -92,12 +92,3 @@ export const addTransaction = mutation({
 		});
 	},
 });
-
-const getServiceDateString = (timestamp: number | undefined) => {
-	if (!timestamp) return "";
-	const time = new Date(timestamp).toLocaleString();
-	const dayInWeek = new Date(timestamp).toLocaleDateString("en-US", {
-		weekday: "short",
-	});
-	return `${dayInWeek}, ${time}.`;
-};
