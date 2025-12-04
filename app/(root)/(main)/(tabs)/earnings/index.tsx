@@ -1,12 +1,12 @@
 import { useQuery } from "convex/react";
-import { cn, Spinner } from "heroui-native";
+import { cn } from "heroui-native";
 import { Text, View } from "react-native";
 import Animated, {
 	FadeIn,
 	FadeOut,
 	LinearTransition,
 } from "react-native-reanimated";
-
+import { ListEmptyComponent } from "@/components/list-empty";
 import { TechnicianCard } from "@/components/technician-card";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
@@ -15,14 +15,12 @@ import type { User } from "@/utils/types";
 export default function HomeRoute() {
 	const { isLight } = useAppTheme();
 
-	const users = useQuery(api.users.users);
+	const users = useQuery(api.users.users) || [];
 
 	const className = cn(
 		"min-w-[50] text-right font-bold text-lg",
 		!isLight && "text-white",
 	);
-
-	if (!users) return <Spinner className="flex-1 items-center justify-center" />;
 
 	return (
 		<Animated.View className="flex-1 p-2" entering={FadeIn} exiting={FadeOut}>
@@ -43,6 +41,7 @@ export default function HomeRoute() {
 					return <TechnicianCard key={item._id} item={item} />;
 				}}
 				itemLayoutAnimation={LinearTransition}
+				ListEmptyComponent={<ListEmptyComponent item="technician" />}
 			/>
 		</Animated.View>
 	);

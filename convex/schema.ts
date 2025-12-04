@@ -12,7 +12,7 @@ const schema = defineSchema({
 		technician: v.id("users"),
 		services: v.optional(v.array(v.id("services"))),
 		serviceDate: v.optional(v.number()),
-	}),
+	}).index("by_technician", ["technician"]),
 	categories: defineTable({
 		name: v.string(),
 		description: v.string(),

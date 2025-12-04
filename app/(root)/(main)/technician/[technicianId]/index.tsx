@@ -1,7 +1,7 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Button, Spinner, useThemeColor } from "heroui-native";
+import { Button, useThemeColor } from "heroui-native";
 import { Text } from "react-native";
 import Animated, {
 	FadeIn,
@@ -9,6 +9,7 @@ import Animated, {
 	LinearTransition,
 } from "react-native-reanimated";
 
+import { ListEmptyComponent } from "@/components/list-empty";
 import { TransactionCard } from "@/components/transaction-card";
 import { api } from "@/convex/_generated/api";
 import type { Transaction, User } from "@/utils/types";
@@ -19,13 +20,10 @@ export default function TechnicianId() {
 
 	const params = useLocalSearchParams();
 	const technicianId = params.technicianId as User["_id"];
-	const transactions = useQuery(api.transactions.list, {
-		userId: technicianId,
+	const transactions = useQuery(api.transactions.listByTechnician, {
+		technicianId,
 	});
-
-	/* --------------------------------- return --------------------------------- */
-	if (!transactions)
-		return <Spinner className="flex-1 items-center justify-center" />;
+	const technician = useQuery(api.users.getUserById, { userId: technicianId });
 
 	return (
 		<Animated.View
@@ -34,7 +32,7 @@ export default function TechnicianId() {
 			exiting={FadeOut}
 		>
 			<Text className="font-extrabold text-3xl text-foreground">
-				{transactions[0].technician}
+				{technician?.name}
 			</Text>
 			<Animated.FlatList
 				contentInsetAdjustmentBehavior="automatic"
@@ -47,7 +45,7 @@ export default function TechnicianId() {
 				}}
 				keyExtractor={(item) => item._id.toString()}
 				itemLayoutAnimation={LinearTransition}
-				ListEmptyComponent={<Text>No Transaction</Text>}
+				ListEmptyComponent={<ListEmptyComponent item="transaction" />}
 			/>
 			<Button
 				onPress={() => router.push(`/technician/${technicianId}/form`)}
