@@ -1,7 +1,7 @@
+import type { Route } from "expo-router";
 import { Stack, useLocalSearchParams } from "expo-router";
 
-import { CloseButton } from "@/components/Buttons/close-button";
-import { TransactionsButton } from "@/components/Buttons/transactions-button";
+import { HeaderButton } from "@/components/Buttons/header-button";
 import { useNavigationOptions } from "@/hooks/useNavigationOptions";
 import type { User } from "@/utils/types";
 
@@ -9,6 +9,7 @@ export default function TechnicianLayout() {
 	const { modal } = useNavigationOptions();
 	const params = useLocalSearchParams();
 	const technicianId = params.technicianId as User["_id"];
+	const technicianRoute = `/(root)/(main)/technician/${technicianId}` as Route;
 
 	return (
 		<Stack
@@ -21,8 +22,13 @@ export default function TechnicianLayout() {
 			<Stack.Screen
 				name="[technicianId]/form"
 				options={{
-					headerLeft: () => <CloseButton />,
-					headerRight: () => <TransactionsButton technicianId={technicianId} />,
+					headerLeft: () => <HeaderButton iconName="close" />,
+					headerRight: () => (
+						<HeaderButton
+							iconName="swap-horizontal-outline"
+							route={technicianRoute}
+						/>
+					),
 					headerShown: true,
 					title: "",
 				}}

@@ -1,7 +1,6 @@
 import { Stack } from "expo-router";
 
-import { PickDateButton } from "@/components/Buttons/pick-date-button";
-import { SettingsButton } from "@/components/Buttons/settings-button";
+import { HeaderButton } from "@/components/Buttons/header-button";
 import { useNavigationOptions } from "@/hooks/useNavigationOptions";
 
 export default function Layout() {
@@ -17,8 +16,12 @@ export default function Layout() {
 					headerLargeTitle: true,
 					headerBackTitle: "Home",
 					...standard,
-					headerLeft: () => <PickDateButton />,
-					headerRight: () => <SettingsButton />,
+					headerLeft: () => (
+						<HeaderButton iconName="calendar-outline" route="/pick-date" />
+					),
+					headerRight: () => (
+						<HeaderButton iconName="settings-outline" route="/settings" />
+					),
 				}}
 			/>
 		</Stack>

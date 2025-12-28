@@ -1,7 +1,7 @@
 import { Link, Stack } from "expo-router";
 import { Pressable, Text } from "react-native";
 
-import { CloseButton } from "@/components/Buttons/close-button";
+import { HeaderButton } from "@/components/Buttons/header-button";
 import { useNavigationOptions } from "@/hooks/useNavigationOptions";
 
 export default function EmailLayout() {
@@ -17,7 +17,7 @@ export default function EmailLayout() {
 			<Stack.Screen
 				name="signin"
 				options={{
-					headerLeft: () => <CloseButton />,
+					headerLeft: () => <HeaderButton iconName="close" />,
 					headerRight: () => <SignUpButton />,
 					title: "",
 				}}

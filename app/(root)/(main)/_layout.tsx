@@ -3,7 +3,7 @@ import { Stack } from "expo-router";
 import { useEffect } from "react";
 import { Platform, useColorScheme } from "react-native";
 
-import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemeToggleButton } from "@/components/Buttons/theme-toggle-button";
 import { useNavigationOptions } from "@/hooks/useNavigationOptions";
 
 export default function MainLayout() {
@@ -49,7 +49,7 @@ export default function MainLayout() {
 					headerBackButtonDisplayMode: "generic",
 					headerLargeTitle: true,
 					...standard,
-					headerRight: () => <ThemeToggle />,
+					headerRight: () => <ThemeToggleButton />,
 				}}
 			/>
 		</Stack>
