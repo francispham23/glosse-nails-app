@@ -35,6 +35,14 @@ export default function MainLayout() {
 				}}
 			/>
 			<Stack.Screen
+				name="pick-date"
+				options={{
+					headerShown: false,
+					presentation: "transparentModal",
+					animation: "fade",
+				}}
+			/>
+			<Stack.Screen
 				name="settings"
 				options={{
 					title: "Settings",

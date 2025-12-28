@@ -1,10 +1,9 @@
 import { cn } from "heroui-native";
 import { Text } from "react-native";
-import { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { useAppTheme } from "@/contexts/app-theme-context";
 import type { Transaction } from "@/utils/types";
-import { Container } from "./container";
 
 type Props = {
 	transaction: Transaction;
@@ -16,7 +15,7 @@ export const TransactionCard = ({ transaction, technicianId }: Props) => {
 	const className = cn("text-lg text-muted", !isLight && "-foreground");
 
 	return (
-		<Container
+		<Animated.View
 			key={transaction._id}
 			entering={FadeIn}
 			exiting={FadeOut}
@@ -34,18 +33,26 @@ export const TransactionCard = ({ transaction, technicianId }: Props) => {
 			{transaction.services ? (
 				<Text className={className}>Services: {transaction.services}</Text>
 			) : null}
-			<Text className={className}>
-				Date: {getServiceDateString(transaction.serviceDate)}
-			</Text>
-		</Container>
+			{transaction.serviceDate ? (
+				<Text className={className}>
+					{getServiceDateString(transaction.serviceDate, true)}
+				</Text>
+			) : null}
+		</Animated.View>
 	);
 };
 
-const getServiceDateString = (timestamp: number | undefined) => {
+const getServiceDateString = (
+	timestamp: number | undefined,
+	isCurrent: boolean,
+) => {
 	if (!timestamp) return "";
 	const time = new Date(timestamp).toLocaleString();
 	const dayInWeek = new Date(timestamp).toLocaleDateString("en-US", {
 		weekday: "short",
 	});
-	return `${dayInWeek}, ${time}.`;
+	if (isCurrent) {
+		return `At: ${time.split(", ")[1]}.`;
+	}
+	return `Date: ${dayInWeek}, ${time}.`;
 };

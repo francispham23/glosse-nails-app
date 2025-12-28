@@ -3,20 +3,16 @@ import { useRouter } from "expo-router";
 import { useThemeColor } from "heroui-native";
 import { Pressable } from "react-native";
 
-export const SettingsButton = () => {
+export const PickDateButton = () => {
 	const router = useRouter();
 	const themeColorForeground = useThemeColor("foreground");
 
 	return (
 		<Pressable
-			className="justify-center rounded-full p-2.5"
-			onPress={() => router.navigate("/settings")}
+			className="justify-center rounded-full px-3"
+			onPress={() => router.navigate("/pick-date")}
 		>
-			<Ionicons
-				name="settings-outline"
-				size={18}
-				color={themeColorForeground}
-			/>
+			<Ionicons name="calendar" size={18} color={themeColorForeground} />
 		</Pressable>
 	);
 };

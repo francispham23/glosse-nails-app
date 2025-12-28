@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { Button, cn, Spinner, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Alert, ScrollView, Text, View } from "react-native";
-
+import Animated from "react-native-reanimated";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 
@@ -23,8 +23,8 @@ export default function SettingsRoute() {
 		try {
 			await deleteViewer();
 			// Optionally, you might want to sign the user out or navigate away after deletion
-		} catch (error) {
-			console.error("Error deleting user:", error);
+		} catch (_) {
+			Alert.alert("Error", "There was an error deleting your account.");
 		} finally {
 			setIsDeletingUser(false);
 			signOut();
@@ -36,7 +36,7 @@ export default function SettingsRoute() {
 	if (!user) return <Spinner className="flex-1 items-center justify-center" />;
 
 	return (
-		<View className="flex-1">
+		<Animated.View className="flex-1">
 			<ScrollView
 				contentInsetAdjustmentBehavior="always"
 				contentContainerClassName="px-6 py-2 gap-4 min-h-full "
@@ -117,6 +117,6 @@ export default function SettingsRoute() {
 					</Button>
 				</View>
 			</ScrollView>
-		</View>
+		</Animated.View>
 	);
 }
