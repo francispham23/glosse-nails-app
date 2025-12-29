@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { useQuery } from "convex/react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
 import { Text } from "react-native";
 import Animated, {
@@ -15,7 +15,6 @@ import { api } from "@/convex/_generated/api";
 import type { Transaction, User } from "@/utils/types";
 
 export default function TechnicianId() {
-	const router = useRouter();
 	const background = useThemeColor("background");
 
 	const params = useLocalSearchParams();
@@ -51,13 +50,12 @@ export default function TechnicianId() {
 				itemLayoutAnimation={LinearTransition}
 				ListEmptyComponent={<ListEmptyComponent item="transaction" />}
 			/>
-			<Button
-				onPress={() => router.push(`/technician/${technicianId}/form`)}
-				className="absolute bottom-10 self-center overflow-hidden rounded-full"
-			>
-				<Button.Label>Create Transaction</Button.Label>
-				<Ionicons name="add-outline" size={18} color={background} />
-			</Button>
+			<Link href=".." asChild>
+				<Button className="absolute bottom-10 self-center overflow-hidden rounded-full">
+					<Button.Label>Create Transaction</Button.Label>
+					<Ionicons name="add-outline" size={18} color={background} />
+				</Button>
+			</Link>
 		</Animated.View>
 	);
 }

@@ -1,4 +1,5 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
@@ -28,7 +29,11 @@ export default function FormRoute() {
 		technicianId,
 		clientId: technicianId, // Default client ID
 	};
-	const [earning, setEarning] = useState(initialEarningState);
+	const [earning, setEarning] = useState({
+		...initialEarningState,
+		serviceDate: Date.now(),
+	});
+	const [open, setOpen] = useState(false);
 	const [isLoading] = useState(false);
 
 	/* ----------------------------- handle sign in ----------------------------- */
@@ -38,7 +43,7 @@ export default function FormRoute() {
 			return;
 		}
 		await addTransaction({ body: earning });
-		setEarning(initialEarningState);
+		setEarning({ ...initialEarningState, serviceDate: Date.now() });
 		Alert.alert("Success", "Earning submitted successfully");
 		router.push(`/technician/${technicianId}`);
 	};
@@ -50,7 +55,6 @@ export default function FormRoute() {
 				title={`${technician?.name?.split(" ")[0]}'s Earning`}
 				description="Add a new earning for this technician"
 			/>
-
 			{/* compensation text-field*/}
 			<TextField isRequired className="focus">
 				<TextField.Input
@@ -69,7 +73,6 @@ export default function FormRoute() {
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
-
 			{/* tip text-field*/}
 			<TextField isRequired>
 				<TextField.Input
@@ -85,8 +88,37 @@ export default function FormRoute() {
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
-
-			{/* submit button */}
+			{/* service time field */}
+			<TextField>
+				<TextField.Input
+					className="h-16 rounded-3xl"
+					placeholder="Select service time"
+					value={new Date(earning.serviceDate).toLocaleTimeString([], {
+						hour: "2-digit",
+						minute: "2-digit",
+					})}
+					editable={false}
+					onPressIn={() => setOpen(!open)}
+				>
+					<TextField.InputStartContent className="pointer-events-none pl-2">
+						<Ionicons name="time-outline" size={20} color={mutedColor} />
+					</TextField.InputStartContent>
+				</TextField.Input>
+			</TextField>
+			{open && (
+				<DateTimePicker
+					mode="time"
+					value={new Date(earning.serviceDate)}
+					maximumDate={new Date(earning.serviceDate)}
+					display="spinner"
+					onChange={(_, selectedDate) => {
+						setEarning({
+							...earning,
+							serviceDate: selectedDate ? selectedDate.getTime() : Date.now(),
+						});
+					}}
+				/>
+			)}
 			<Button
 				onPress={handleSubmit}
 				isDisabled={isLoading}

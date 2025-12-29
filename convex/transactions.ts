@@ -1,5 +1,32 @@
 import { v } from "convex/values";
+import type { Doc } from "./_generated/dataModel";
+import type { QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
+
+// Helper function to transform a transaction with related data
+async function transformTransaction(
+	ctx: QueryCtx,
+	transaction: Doc<"transactions">,
+) {
+	const client = transaction.client && (await ctx.db.get(transaction.client));
+	const technician = await ctx.db.get(transaction.technician);
+	const services =
+		transaction.services && transaction.services.length > 0
+			? await Promise.all(
+					transaction.services.map((serviceId) =>
+						ctx.db.get(serviceId).then((s) => s?.name),
+					),
+				)
+			: [];
+
+	return {
+		...transaction,
+		serviceDate: transaction.serviceDate,
+		services: services.join(", "),
+		client: client ? client.name : (transaction.client ?? "Unknown"),
+		technician: technician ? technician.name : transaction.technician,
+	};
+}
 
 export const list = query({
 	args: {},
@@ -10,27 +37,7 @@ export const list = query({
 			.collect();
 
 		return Promise.all(
-			transactions.map(async (transaction) => {
-				const client =
-					transaction.client && (await ctx.db.get(transaction.client));
-				const technician = await ctx.db.get(transaction.technician);
-				const services =
-					transaction.services && transaction.services?.length > 0
-						? await Promise.all(
-								transaction.services.map((serviceId) =>
-									ctx.db.get(serviceId).then((s) => s?.name),
-								),
-							)
-						: [];
-
-				return {
-					...transaction,
-					serviceDate: transaction.serviceDate,
-					services: services.join(", "),
-					client: client ? client.name : (transaction.client ?? "Unknown"),
-					technician: technician ? technician.name : transaction.technician,
-				};
-			}),
+			transactions.map((transaction) => transformTransaction(ctx, transaction)),
 		);
 	},
 });
@@ -45,27 +52,7 @@ export const listByTechnician = query({
 			.collect();
 
 		return Promise.all(
-			transactions.map(async (transaction) => {
-				const client =
-					transaction.client && (await ctx.db.get(transaction.client));
-				const technician = await ctx.db.get(transaction.technician);
-				const services =
-					transaction.services && transaction.services?.length > 0
-						? await Promise.all(
-								transaction.services.map((serviceId) =>
-									ctx.db.get(serviceId).then((s) => s?.name),
-								),
-							)
-						: [];
-
-				return {
-					...transaction,
-					serviceDate: transaction.serviceDate,
-					services: services.join(", "),
-					client: client ? client.name : (transaction.client ?? "Unknown"),
-					technician: technician ? technician.name : transaction.technician,
-				};
-			}),
+			transactions.map((transaction) => transformTransaction(ctx, transaction)),
 		);
 	},
 });
@@ -79,6 +66,7 @@ export const addTransaction = mutation({
 			technicianId: v.id("users"),
 			services: v.optional(v.array(v.id("services"))),
 			clientId: v.optional(v.id("users")),
+			serviceDate: v.number(),
 		}),
 	},
 	handler: async (ctx, { body }) => {
@@ -88,7 +76,7 @@ export const addTransaction = mutation({
 			technician: body.technicianId,
 			services: body.services || [],
 			client: body.clientId,
-			serviceDate: Date.now(),
+			serviceDate: body.serviceDate,
 		});
 	},
 });

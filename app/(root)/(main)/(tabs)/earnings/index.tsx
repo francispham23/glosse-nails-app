@@ -6,6 +6,7 @@ import Animated, {
 	FadeOut,
 	LinearTransition,
 } from "react-native-reanimated";
+
 import { ListEmptyComponent } from "@/components/list-empty";
 import { TechnicianCard } from "@/components/technician-card";
 import { useAppTheme } from "@/contexts/app-theme-context";
