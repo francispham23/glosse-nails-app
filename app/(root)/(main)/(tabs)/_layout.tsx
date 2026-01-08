@@ -90,6 +90,16 @@ export default function TabLayout() {
 					headerShown: false,
 				}}
 			/>
+			<Tabs.Screen
+				name="report"
+				options={{
+					title: "Report",
+					tabBarIcon: ({ color, size }) => (
+						<Ionicons name="stats-chart-outline" color={color} size={size} />
+					),
+					headerShown: false,
+				}}
+			/>
 		</Tabs>
 	);
 }

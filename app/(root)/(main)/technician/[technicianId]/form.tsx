@@ -129,7 +129,7 @@ export default function FormRoute() {
 					}}
 				/>
 			)}
-			{/* <ChipExample /> */}
+			{/* service categories */}
 			<View className="flex-row flex-wrap gap-2">
 				{categories?.map((category) => (
 					<Chip
