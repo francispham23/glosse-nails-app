@@ -10,7 +10,7 @@ const schema = defineSchema({
 		tip: v.float64(),
 		client: v.optional(v.id("users")),
 		technician: v.id("users"),
-		services: v.optional(v.array(v.id("services"))),
+		services: v.optional(v.array(v.id("categories"))),
 		serviceDate: v.optional(v.number()),
 	}).index("by_technician", ["technician"]),
 	categories: defineTable({

@@ -14,3 +14,5 @@ export type User = DataModel["users"]["document"] & {
 	tip: number;
 	compensation: number;
 };
+
+export type Category = DataModel["categories"]["document"];

@@ -64,7 +64,7 @@ export const addTransaction = mutation({
 			compensation: v.string(),
 			tip: v.string(),
 			technicianId: v.id("users"),
-			services: v.optional(v.array(v.id("services"))),
+			services: v.optional(v.array(v.id("categories"))),
 			clientId: v.optional(v.id("users")),
 			serviceDate: v.number(),
 		}),

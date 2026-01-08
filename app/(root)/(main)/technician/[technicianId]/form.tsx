@@ -2,13 +2,13 @@ import Ionicons from "@expo/vector-icons/build/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
+import { Button, Chip, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
-import { Alert } from "react-native";
+import { Alert, View } from "react-native";
 
 import FormHeader, { FormContainer } from "@/components/form";
 import { api } from "@/convex/_generated/api";
-import type { User } from "@/utils/types";
+import type { Category, User } from "@/utils/types";
 
 export default function FormRoute() {
 	const background = useThemeColor("background");
@@ -21,12 +21,14 @@ export default function FormRoute() {
 		userId: technicianId,
 	});
 	const addTransaction = useMutation(api.transactions.addTransaction);
+	const categories = useQuery(api.categories.getAllCategories);
 
 	/* ---------------------------------- state --------------------------------- */
 	const initialEarningState = {
 		compensation: "",
 		tip: "",
 		technicianId,
+		services: [] as Category["_id"][],
 		clientId: technicianId, // Default client ID
 	};
 	const [earning, setEarning] = useState({
@@ -47,6 +49,14 @@ export default function FormRoute() {
 		Alert.alert("Success", "Earning submitted successfully");
 		router.push(`/technician/${technicianId}`);
 	};
+
+	const handleSelectServices = (categoryId: Category["_id"]) =>
+		setEarning((prev) => {
+			const services = prev.services.includes(categoryId)
+				? prev.services.filter((id) => id !== categoryId)
+				: [...prev.services, categoryId];
+			return { ...prev, services };
+		});
 
 	return (
 		<FormContainer>
@@ -119,6 +129,20 @@ export default function FormRoute() {
 					}}
 				/>
 			)}
+			{/* <ChipExample /> */}
+			<View className="flex-row flex-wrap gap-2">
+				{categories?.map((category) => (
+					<Chip
+						key={category._id}
+						variant={
+							earning.services.includes(category._id) ? "primary" : "secondary"
+						}
+						onPress={() => handleSelectServices(category._id)}
+					>
+						<Chip.Label>{category.name}</Chip.Label>
+					</Chip>
+				))}
+			</View>
 			<Button
 				onPress={handleSubmit}
 				isDisabled={isLoading}
