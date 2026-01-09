@@ -1,6 +1,13 @@
-import type React from "react";
-import { createContext, useCallback, useContext, useMemo } from "react";
+import {
+	createContext,
+	type ReactNode,
+	useCallback,
+	useContext,
+	useMemo,
+} from "react";
 import { Uniwind, useUniwind } from "uniwind";
+
+import { useReturnContext } from "@/hooks/useReturnContext";
 
 type ThemeName = "light" | "dark";
 
@@ -16,11 +23,7 @@ const AppThemeContext = createContext<AppThemeContextType | undefined>(
 	undefined,
 );
 
-export const AppThemeProvider = ({
-	children,
-}: {
-	children: React.ReactNode;
-}) => {
+export const AppThemeProvider = ({ children }: { children: ReactNode }) => {
 	const { theme } = useUniwind();
 
 	const isLight = useMemo(() => {
@@ -57,10 +60,4 @@ export const AppThemeProvider = ({
 	);
 };
 
-export function useAppTheme() {
-	const context = useContext(AppThemeContext);
-	if (!context) {
-		throw new Error("useAppTheme must be used within AppThemeProvider");
-	}
-	return context;
-}
+export const useAppTheme = () => useReturnContext(AppThemeContext);

@@ -7,6 +7,7 @@ import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { AppDateProvider } from "@/contexts/app-date-context";
 import { AppThemeProvider } from "@/contexts/app-theme-context";
 import "../global.css";
 
@@ -46,9 +47,11 @@ export default function Layout() {
 				}
 			>
 				<SafeAreaProvider>
-					<AppThemeProvider>
-						<ThemedLayout />
-					</AppThemeProvider>
+					<AppDateProvider>
+						<AppThemeProvider>
+							<ThemedLayout />
+						</AppThemeProvider>
+					</AppDateProvider>
 				</SafeAreaProvider>
 			</ConvexAuthProvider>
 		</GestureHandlerRootView>

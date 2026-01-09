@@ -22,9 +22,12 @@ export const deleteViewer = mutation({
 	},
 });
 
-export const users = query({
-	args: {},
-	handler: async (ctx) => {
+export const usersByDateRange = query({
+	args: {
+		startDate: v.number(),
+		endDate: v.number(),
+	},
+	handler: async (ctx, { startDate, endDate }) => {
 		const technicians = await ctx.db.query("users").collect();
 
 		// Return all technicians with total tips and compensation
@@ -32,7 +35,12 @@ export const users = query({
 			technicians.map(async (tech) => {
 				// Fetch transactions for this technician (fall back to in-memory filtering to avoid relying on a missing typed index)
 				const transactions = (
-					await ctx.db.query("transactions").collect()
+					await ctx.db
+						.query("transactions")
+						.withIndex("by_service_date", (q) =>
+							q.gte("serviceDate", startDate).lte("serviceDate", endDate),
+						)
+						.collect()
 				).filter((t) => t.technician === tech._id);
 
 				const compensation = transactions.reduce(

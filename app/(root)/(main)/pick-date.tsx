@@ -5,16 +5,17 @@ import BottomSheet, {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import { cn } from "heroui-native";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 
 export default function PickDateRoute() {
 	const router = useRouter();
 	const { isLight } = useAppTheme();
 	const bottomSheetRef = useRef<BottomSheet>(null);
-
-	const [date, setDate] = useState(new Date());
+	const { date, setDate } = useAppDate();
 
 	const className = cn(!isLight && "bg-black");
 

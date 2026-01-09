@@ -28,11 +28,17 @@ async function transformTransaction(
 	};
 }
 
-export const list = query({
-	args: {},
-	handler: async (ctx) => {
+export const listByDateRange = query({
+	args: {
+		startDate: v.number(),
+		endDate: v.number(),
+	},
+	handler: async (ctx, { startDate, endDate }) => {
 		const transactions = await ctx.db
 			.query("transactions")
+			.withIndex("by_service_date", (q) =>
+				q.gte("serviceDate", startDate).lte("serviceDate", endDate),
+			)
 			.order("desc")
 			.collect();
 
@@ -42,12 +48,21 @@ export const list = query({
 	},
 });
 
-export const listByTechnician = query({
-	args: { technicianId: v.id("users") },
-	handler: async (ctx, { technicianId }) => {
+export const listByTechnicianAndDateRange = query({
+	args: {
+		technicianId: v.id("users"),
+		startDate: v.number(),
+		endDate: v.number(),
+	},
+	handler: async (ctx, { technicianId, startDate, endDate }) => {
 		const transactions = await ctx.db
 			.query("transactions")
-			.withIndex("by_technician", (q) => q.eq("technician", technicianId))
+			.withIndex("by_technician_and_date", (q) =>
+				q
+					.eq("technician", technicianId)
+					.gte("serviceDate", startDate)
+					.lte("serviceDate", endDate),
+			)
 			.order("desc")
 			.collect();
 

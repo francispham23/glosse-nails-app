@@ -9,14 +9,20 @@ import Animated, {
 
 import { ListEmptyComponent } from "@/components/list-empty";
 import { TechnicianCard } from "@/components/technician-card";
+import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import type { User } from "@/utils/types";
 
 export default function HomeRoute() {
 	const { isLight } = useAppTheme();
+	const { startOfDay, endOfDay } = useAppDate();
 
-	const users = useQuery(api.users.users) || [];
+	const users =
+		useQuery(api.users.usersByDateRange, {
+			startDate: startOfDay.getTime(),
+			endDate: endOfDay.getTime(),
+		}) || [];
 
 	const className = cn(
 		"min-w-[50] text-right font-bold text-lg",
