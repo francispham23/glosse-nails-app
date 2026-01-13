@@ -2,8 +2,9 @@ import { useQuery } from "convex/react";
 import type { FunctionReference } from "convex/server";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { useAppDate } from "@/contexts/app-date-context";
 
+import { useAppDate } from "@/contexts/app-date-context";
+import { api as ConvexAPI } from "@/convex/_generated/api";
 import { isToday } from "@/utils";
 import { getTodayTransactions } from "@/utils/transaction-storage";
 import type { Technician, Transaction } from "@/utils/types";
@@ -26,7 +27,18 @@ export const useLoadTransactions = (
 			endDate: endOfDay.getTime(),
 		}) || [];
 
+	// Fetch all users at the top level to look up technician names
+	const users = useQuery(ConvexAPI.users.list) || [];
+	const categories = useQuery(ConvexAPI.categories.getAllCategories);
+
 	const isSelectedDateToday = isToday(endOfDay.getTime());
+
+	const findUser = useCallback(
+		(userId: Technician["_id"]) => {
+			return users.find((user) => user._id === userId);
+		},
+		[users],
+	);
 
 	// Load transactions from AsyncStorage when screen is focused
 	useFocusEffect(
@@ -38,24 +50,34 @@ export const useLoadTransactions = (
 			const loadTransactions = async () => {
 				const stored = await getTodayTransactions();
 
-				// Transform StoredTransaction to Transaction format
-				const formatted: FilteredTransactions[] = stored.map((tx) => ({
-					_id: tx._id as Transaction["_id"],
-					_creationTime: tx._creationTime,
-					compensation: tx.compensation,
-					tip: tx.tip,
-					technician: tx.technician || "Unknown",
-					technicianId: tx.technicianId,
-					client: tx.client || "Unknown",
-					services: tx.servicesText,
-					serviceDate: tx.serviceDate,
-				}));
+				const formattedTransactions = stored.map((transaction) => {
+					const technician = findUser(transaction.technicianId);
+					const client = transaction.clientId && findUser(transaction.clientId);
+					const filteredServices = categories?.filter((cat) =>
+						transaction.services.includes(cat._id),
+					);
+					const services = filteredServices?.map((cat) => cat.name).join(", ");
+
+					return {
+						_id: transaction._id,
+						technician: technician?.name,
+						tip: transaction.tip,
+						compensation: transaction.compensation,
+						services: services,
+						serviceDate: transaction.serviceDate,
+						_creationTime: transaction._creationTime,
+						client: client?.name,
+					} as unknown as FilteredTransactions;
+				});
+
 				setTransactions(
-					id ? formatted.filter((tx) => tx.technicianId === id) : formatted,
+					id
+						? formattedTransactions.filter((tx) => tx.technicianId !== id)
+						: formattedTransactions,
 				);
 			};
 			loadTransactions();
-		}, [isSelectedDateToday, convexTransactions, id]),
+		}, [isSelectedDateToday, convexTransactions, id, findUser, categories]),
 	);
 
 	return { transactions };

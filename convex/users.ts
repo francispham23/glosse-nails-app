@@ -61,8 +61,17 @@ export const usersByDateRange = query({
 });
 
 export const getUserById = query({
-	args: { userId: v.id("users") },
-	handler: async (ctx, args) => {
-		return await ctx.db.get(args.userId);
+	args: { userId: v.optional(v.id("users")) },
+	handler: async (ctx, { userId }) => {
+		if (userId) {
+			return await ctx.db.get(userId);
+		}
+	},
+});
+
+export const list = query({
+	args: {},
+	handler: async (ctx) => {
+		return await ctx.db.query("users").collect();
 	},
 });

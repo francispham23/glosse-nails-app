@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Button, Chip, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
@@ -9,8 +9,8 @@ import { Alert, View } from "react-native";
 import FormHeader, { FormContainer } from "@/components/form";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
-import { addTodayTransaction } from "@/utils/transaction-storage";
-import type { Category, User } from "@/utils/types";
+import { storeEarningForCheckout } from "@/utils/transaction-storage";
+import type { Category, EarningFormState, User } from "@/utils/types";
 
 export default function FormRoute() {
 	const background = useThemeColor("background");
@@ -22,7 +22,6 @@ export default function FormRoute() {
 	const technician = useQuery(api.users.getUserById, {
 		userId: technicianId,
 	});
-	const addTransaction = useMutation(api.transactions.addTransaction);
 	const categories = useQuery(api.categories.getAllCategories);
 
 	const { date, endOfDay } = useAppDate();
@@ -33,9 +32,10 @@ export default function FormRoute() {
 		tip: "",
 		technicianId,
 		services: [] as Category["_id"][],
+		// TODO: allow selecting client ID later
 		clientId: technicianId, // Default client ID
 	};
-	const [earning, setEarning] = useState({
+	const [earning, setEarning] = useState<EarningFormState>({
 		...initialEarningState,
 		serviceDate: date.getTime(),
 	});
@@ -50,37 +50,15 @@ export default function FormRoute() {
 		}
 
 		try {
-			// Save to Convex backend
-			await addTransaction({ body: earning });
-
-			// Prepare readable names for storage
-			const selectedCategories = categories?.filter((cat) =>
-				earning.services.includes(cat._id),
-			);
-			const servicesText = selectedCategories
-				?.map((cat) => cat.name)
-				.join(", ");
-			const clientName = technician?.name;
-
-			// Save to device storage if it's today's transaction
-			await addTodayTransaction({
-				compensation: Number(earning.compensation),
-				tip: Number(earning.tip),
-				technicianId: earning.technicianId,
-				technician: technician?.name,
-				services: earning.services,
-				servicesText,
-				clientId: earning.clientId,
-				client: clientName,
-				serviceDate: earning.serviceDate,
-			});
+			// Store earning in AsyncStorage for later bulk insertion at checkout
+			await storeEarningForCheckout(earning);
 
 			setEarning({ ...initialEarningState, serviceDate: Date.now() });
-			Alert.alert("Success", "Earning submitted successfully");
+			Alert.alert("Success", "Earning saved successfully");
 			router.push(`/technician/${technicianId}`);
 		} catch (error) {
-			console.error("Error submitting transaction:", error);
-			Alert.alert("Error", "Failed to submit earning. Please try again.");
+			console.error("Error storing earning:", error);
+			Alert.alert("Error", "Failed to save earning. Please try again.");
 		}
 	};
 

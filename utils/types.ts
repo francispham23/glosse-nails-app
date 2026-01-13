@@ -1,4 +1,4 @@
-import type { DataModel } from "@/convex/_generated/dataModel";
+import type { DataModel, Id } from "@/convex/_generated/dataModel";
 
 type ReplaceType<T, Keys extends keyof T, NewType> = {
 	[K in keyof T]: K extends Keys ? NewType : T[K];
@@ -18,3 +18,12 @@ export type User = DataModel["users"]["document"] & {
 export type Technician = DataModel["users"]["document"];
 
 export type Category = DataModel["categories"]["document"];
+
+export type EarningFormState = {
+	compensation: string;
+	tip: string;
+	clientId?: Id<"users">;
+	technicianId: Id<"users">;
+	services: Id<"categories">[];
+	serviceDate: number;
+};

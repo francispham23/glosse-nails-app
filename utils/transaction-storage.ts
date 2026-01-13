@@ -1,30 +1,22 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Id } from "@/convex/_generated/dataModel";
 import { isBeforeToday, isToday } from "./index";
+import type { EarningFormState } from "./types";
 
-export type StoredTransaction = {
+export type StoredTransaction = EarningFormState & {
 	_id: string;
-	compensation: number;
-	tip: number;
-	technicianId: Id<"users">;
-	technician?: string;
-	services: Id<"categories">[];
-	servicesText?: string;
-	clientId?: Id<"users">;
-	client?: string;
-	serviceDate: number;
-	storedAt: number;
+	_storeTime: number;
 	_creationTime: number;
 };
 
-const STORAGE_KEY = "today_transactions";
+const EARNINGS_STORAGE_KEY = "today_earnings";
 
 /**
  * Get all today's transactions from storage
  */
 export async function getTodayTransactions(): Promise<StoredTransaction[]> {
 	try {
-		const stored = await AsyncStorage.getItem(STORAGE_KEY);
+		const stored = await AsyncStorage.getItem(EARNINGS_STORAGE_KEY);
 		if (!stored) return [];
 
 		const transactions: StoredTransaction[] = JSON.parse(stored);
@@ -43,7 +35,7 @@ export async function getTodayTransactions(): Promise<StoredTransaction[]> {
 				`Deleting ${pastTransactions.length} past transaction(s) from storage`,
 			);
 			await AsyncStorage.setItem(
-				STORAGE_KEY,
+				EARNINGS_STORAGE_KEY,
 				JSON.stringify(todayTransactions),
 			);
 		}
@@ -56,37 +48,79 @@ export async function getTodayTransactions(): Promise<StoredTransaction[]> {
 }
 
 /**
- * Add a transaction to storage if it's from today
+ * Store an earning form state to AsyncStorage for later bulk insertion
  */
-export async function addTodayTransaction(transaction: {
-	compensation: number;
-	tip: number;
-	technicianId: Id<"users">;
-	technician?: string;
-	services: Id<"categories">[];
-	servicesText?: string;
-	clientId?: Id<"users">;
-	client?: string;
-	serviceDate: number;
-}): Promise<void> {
+export async function storeEarningForCheckout(
+	earning: EarningFormState,
+): Promise<void> {
 	try {
 		// Only store if the transaction is from today
-		if (!isToday(transaction.serviceDate)) {
+		if (!isToday(earning.serviceDate)) {
 			return;
 		}
 
-		const existing = await getTodayTransactions();
+		const stored = await AsyncStorage.getItem(EARNINGS_STORAGE_KEY);
+		const existing: EarningFormState[] = stored ? JSON.parse(stored) : [];
+
 		const newTransaction: StoredTransaction = {
-			_id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-			...transaction,
-			storedAt: Date.now(),
+			...earning,
+			_id: `local_${earning.serviceDate}_${earning.technicianId}_${earning.tip}_${earning.compensation}`,
+			_storeTime: Date.now(),
 			_creationTime: Date.now(),
 		};
 
 		const updated = [...existing, newTransaction];
-		await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+		await AsyncStorage.setItem(EARNINGS_STORAGE_KEY, JSON.stringify(updated));
 	} catch (error) {
-		console.error("Error adding today's transaction:", error);
+		console.error("Error storing earning:", error);
+		throw error;
+	}
+}
+
+/**
+ * Get all stored earnings for checkout
+ */
+export async function getStoredEarningsForCheckout(): Promise<
+	EarningFormState[]
+> {
+	try {
+		const stored = await AsyncStorage.getItem(EARNINGS_STORAGE_KEY);
+		if (!stored) return [];
+
+		const earnings: StoredTransaction[] = JSON.parse(stored);
+
+		// Filter only today's earnings
+		const todayEarnings = earnings.filter((earning) =>
+			isToday(earning.serviceDate),
+		);
+		// Remove _id, _storeTime, _creationTime before returning
+		const cleanedEarnings = todayEarnings.map(
+			({ _id, _storeTime, _creationTime, ...rest }) => rest,
+		);
+
+		// Update storage if we filtered out any old earnings
+		if (cleanedEarnings.length !== earnings.length) {
+			await AsyncStorage.setItem(
+				EARNINGS_STORAGE_KEY,
+				JSON.stringify(cleanedEarnings),
+			);
+		}
+
+		return cleanedEarnings;
+	} catch (error) {
+		console.error("Error getting stored earnings:", error);
+		return [];
+	}
+}
+
+/**
+ * Clear stored earnings after successful checkout
+ */
+export async function clearStoredEarnings(): Promise<void> {
+	try {
+		await AsyncStorage.removeItem(EARNINGS_STORAGE_KEY);
+	} catch (error) {
+		console.error("Error clearing stored earnings:", error);
 		throw error;
 	}
 }
@@ -96,7 +130,7 @@ export async function addTodayTransaction(transaction: {
  */
 export async function clearTodayTransactions(): Promise<void> {
 	try {
-		await AsyncStorage.removeItem(STORAGE_KEY);
+		await AsyncStorage.removeItem(EARNINGS_STORAGE_KEY);
 	} catch (error) {
 		console.error("Error clearing today's transactions:", error);
 		throw error;
@@ -109,7 +143,7 @@ export async function clearTodayTransactions(): Promise<void> {
  */
 export async function cleanupOldTransactions(): Promise<void> {
 	try {
-		const stored = await AsyncStorage.getItem(STORAGE_KEY);
+		const stored = await AsyncStorage.getItem(EARNINGS_STORAGE_KEY);
 		if (!stored) return;
 
 		const transactions: StoredTransaction[] = JSON.parse(stored);
@@ -118,7 +152,10 @@ export async function cleanupOldTransactions(): Promise<void> {
 
 		if (pastCount > 0) {
 			console.log(`Cleaning up ${pastCount} past transaction(s) from storage`);
-			await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(todayOnly));
+			await AsyncStorage.setItem(
+				EARNINGS_STORAGE_KEY,
+				JSON.stringify(todayOnly),
+			);
 		}
 	} catch (error) {
 		console.error("Error cleaning up old transactions:", error);
@@ -131,7 +168,6 @@ export async function cleanupOldTransactions(): Promise<void> {
 export async function getUsersFromTodayTransactions(): Promise<
 	Array<{
 		_id: Id<"users">;
-		name: string;
 		tip: number;
 		compensation: number;
 	}>
@@ -140,23 +176,19 @@ export async function getUsersFromTodayTransactions(): Promise<
 		const transactions = await getTodayTransactions();
 
 		// Group transactions by technician
-		const userMap = new Map<
-			string,
-			{ name: string; tip: number; compensation: number }
-		>();
+		const userMap = new Map<string, { tip: number; compensation: number }>();
 
 		for (const tx of transactions) {
 			const userId = tx.technicianId;
 			const existing = userMap.get(userId);
 
 			if (existing) {
-				existing.tip += tx.tip;
-				existing.compensation += tx.compensation;
+				existing.tip += Number(tx.tip);
+				existing.compensation += Number(tx.compensation);
 			} else {
 				userMap.set(userId, {
-					name: tx.technician || "Unknown",
-					tip: tx.tip,
-					compensation: tx.compensation,
+					tip: Number(tx.tip),
+					compensation: Number(tx.compensation),
 				});
 			}
 		}

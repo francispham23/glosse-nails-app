@@ -1,3 +1,4 @@
+import { useQuery } from "convex/react";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { cn } from "heroui-native";
@@ -6,6 +7,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { useAppTheme } from "@/contexts/app-theme-context";
+import { api } from "@/convex/_generated/api";
 import type { User } from "@/utils/types";
 
 interface Props {
@@ -15,6 +17,10 @@ interface Props {
 export const TechnicianCard = ({ item }: Props) => {
 	const { isLight } = useAppTheme();
 	const router = useRouter();
+
+	const technician = useQuery(api.users.getUserById, {
+		userId: item._id,
+	});
 
 	const className = cn(
 		"min-w-[50] text-right text-lg text-muted",
@@ -39,7 +45,7 @@ export const TechnicianCard = ({ item }: Props) => {
 		>
 			<GestureDetector key={item._id} gesture={createSpeakerTapGesture(item)}>
 				<View className="w-full flex-row justify-between">
-					<Text className={className}>{item.name ?? "Unknown"}</Text>
+					<Text className={className}>{technician?.name ?? "Unknown"}</Text>
 					<View className="flex-row justify-between gap-6">
 						<Text className={className}>${item.compensation}</Text>
 						<Text className={className}>${item.tip}</Text>
