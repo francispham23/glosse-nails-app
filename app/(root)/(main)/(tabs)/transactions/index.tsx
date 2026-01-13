@@ -1,20 +1,15 @@
-import { useQuery } from "convex/react";
 import Animated from "react-native-reanimated";
 
 import { ListEmptyComponent } from "@/components/list-empty";
 import { TransactionCard } from "@/components/transaction-card";
-import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
+import { useLoadTransactions } from "@/hooks/useLoadTransactions";
 import type { Transaction } from "@/utils/types";
 
 export default function Transactions() {
-	const { startOfDay, endOfDay } = useAppDate();
-
-	const transactions =
-		useQuery(api.transactions.listByDateRange, {
-			startDate: startOfDay.getTime(),
-			endDate: endOfDay.getTime(),
-		}) || [];
+	const { transactions } = useLoadTransactions(
+		api.transactions.listByDateRange,
+	);
 
 	return (
 		<Animated.FlatList

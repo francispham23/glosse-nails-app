@@ -1,5 +1,6 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation, useQuery } from "convex/react";
 import { Button, cn, Spinner, useThemeColor } from "heroui-native";
 import { useState } from "react";
@@ -7,27 +8,44 @@ import { Alert, ScrollView, Text, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { useLoadTransactions } from "@/hooks/useLoadTransactions";
 
 export default function SettingsRoute() {
 	const { isLight } = useAppTheme();
 	const themeColorForeground = useThemeColor("foreground");
 	const user = useQuery(api.users.viewer);
-	const deleteViewer = useMutation(api.users.deleteViewer);
+
+	const postTransactions = useMutation(api.transactions.bulkInsertTransactions);
 	const { signOut } = useAuthActions();
 
-	const [isDeletingUser, setIsDeletingUser] = useState(false);
+	const [checkout, setCheckout] = useState(false);
 	const [isSigningOut, setIsSigningOut] = useState(false);
+	// get today's transactions from async storage
+	const { transactions } = useLoadTransactions(
+		api.transactions.listByDateRange,
+	);
 
-	const handleDeleteUser = async () => {
-		setIsDeletingUser(true);
+	const handleCheckout = async () => {
+		setCheckout(true);
 		try {
-			await deleteViewer();
+			const formattedTransactions = transactions.map((tx) => ({
+				technicianId: tx.technician as Id<"users">, // Convert technician to technicianId
+				clientId: tx.client as Id<"users">, // Convert client to clientId
+				compensation: String(tx.compensation), // Convert to string
+				tip: String(tx.tip), // Convert to string
+				serviceDate: tx.serviceDate ?? Date.now(), // Ensure serviceDate is present
+				services: tx.services as Id<"categories">[] | undefined, // Keep services array
+			}));
+			// Post transactions to Convex backend
+			await postTransactions({ transactions: formattedTransactions });
 			// Optionally, you might want to sign the user out or navigate away after deletion
 		} catch (_) {
 			Alert.alert("Error", "There was an error deleting your account.");
 		} finally {
-			setIsDeletingUser(false);
-			signOut();
+			// Clear local storage of today's transactions
+			await AsyncStorage.removeItem("todayTransactions");
+			setCheckout(false);
 		}
 	};
 
@@ -57,11 +75,11 @@ export default function SettingsRoute() {
 						variant="tertiary"
 						size="sm"
 						className="self-start rounded-full"
-						isDisabled={isDeletingUser}
+						isDisabled={checkout}
 						onPress={async () => {
 							Alert.alert(
-								"Delete User",
-								"Are you sure you want to delete your account?",
+								"Checkout",
+								"Are you sure you want to checkout for today?",
 								[
 									{
 										text: "Cancel",
@@ -70,7 +88,7 @@ export default function SettingsRoute() {
 									{
 										text: "Delete",
 										onPress: async () => {
-											await handleDeleteUser();
+											await handleCheckout();
 										},
 									},
 								],
@@ -78,14 +96,14 @@ export default function SettingsRoute() {
 						}}
 					>
 						<Ionicons
-							name="trash-outline"
+							name="log-out-outline"
 							size={18}
 							color={themeColorForeground}
 						/>
 						<Button.Label>
-							{isDeletingUser ? "Deleting..." : "Delete User"}
+							{checkout ? "Checking Out..." : "Checkout"}
 						</Button.Label>
-						{isDeletingUser ? <Spinner color={themeColorForeground} /> : null}
+						{checkout ? <Spinner color={themeColorForeground} /> : null}
 					</Button>
 					{/* Sign Out */}
 					<Button

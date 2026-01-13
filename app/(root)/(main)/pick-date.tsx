@@ -44,7 +44,7 @@ export default function PickDateRoute() {
 				<BottomSheetView className={`items-center ${className}`}>
 					<DateTimePicker
 						value={date}
-						maximumDate={date}
+						maximumDate={new Date()}
 						mode="date"
 						display="spinner"
 						onChange={(_, selectedDate) => {

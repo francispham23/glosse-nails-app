@@ -1,5 +1,7 @@
 import { useQuery } from "convex/react";
+import { useFocusEffect } from "expo-router";
 import { cn } from "heroui-native";
+import { useCallback, useState } from "react";
 import { Text, View } from "react-native";
 import Animated, {
 	FadeIn,
@@ -12,17 +14,36 @@ import { TechnicianCard } from "@/components/technician-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
+import { isToday } from "@/utils/index";
+import { getUsersFromTodayTransactions } from "@/utils/transaction-storage";
 import type { User } from "@/utils/types";
 
 export default function HomeRoute() {
 	const { isLight } = useAppTheme();
-	const { startOfDay, endOfDay } = useAppDate();
+	const { startOfDay, endOfDay, date } = useAppDate();
+	// Query Convex only when not showing today's data
+	const convexUsers = useQuery(api.users.usersByDateRange, {
+		startDate: startOfDay.getTime(),
+		endDate: endOfDay.getTime(),
+	});
+	const [users, setUsers] = useState<User[]>([]);
 
-	const users =
-		useQuery(api.users.usersByDateRange, {
-			startDate: startOfDay.getTime(),
-			endDate: endOfDay.getTime(),
-		}) || [];
+	// Check if the selected date is today
+	const isSelectedDateToday = isToday(date.getTime());
+
+	// Load users from AsyncStorage when it's today
+	useFocusEffect(
+		useCallback(() => {
+			if (isSelectedDateToday) {
+				const loadLocalUsers = async () => {
+					const users = await getUsersFromTodayTransactions();
+					const newUsers = users.length === 0 ? convexUsers : users;
+					setUsers(newUsers as User[]);
+				};
+				loadLocalUsers();
+			} else setUsers(convexUsers || []);
+		}, [isSelectedDateToday, convexUsers]),
+	);
 
 	const className = cn(
 		"min-w-[50] text-right font-bold text-lg",

@@ -15,4 +15,6 @@ export type User = DataModel["users"]["document"] & {
 	compensation: number;
 };
 
+export type Technician = DataModel["users"]["document"];
+
 export type Category = DataModel["categories"]["document"];

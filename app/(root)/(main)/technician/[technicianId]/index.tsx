@@ -11,29 +11,19 @@ import Animated, {
 
 import { ListEmptyComponent } from "@/components/list-empty";
 import { TransactionCard } from "@/components/transaction-card";
-import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
+import { useLoadTransactions } from "@/hooks/useLoadTransactions";
 import type { Transaction, User } from "@/utils/types";
 
 export default function TechnicianId() {
 	const background = useThemeColor("background");
-	const { date } = useAppDate();
-
 	const params = useLocalSearchParams();
 	const technicianId = params.technicianId as User["_id"];
-
-	// Calculate start and end of day for the selected date
-	const startOfDay = new Date(date);
-	startOfDay.setHours(0, 0, 0, 0);
-	const endOfDay = new Date(date);
-	endOfDay.setHours(23, 59, 59, 999);
-
-	const transactions = useQuery(api.transactions.listByTechnicianAndDateRange, {
-		technicianId,
-		startDate: startOfDay.getTime(),
-		endDate: endOfDay.getTime(),
-	});
 	const technician = useQuery(api.users.getUserById, { userId: technicianId });
+	const { transactions } = useLoadTransactions(
+		api.transactions.listByTechnicianAndDateRange,
+		technicianId,
+	);
 
 	return (
 		<Animated.View

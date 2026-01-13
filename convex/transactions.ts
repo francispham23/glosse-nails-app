@@ -95,3 +95,32 @@ export const addTransaction = mutation({
 		});
 	},
 });
+
+export const bulkInsertTransactions = mutation({
+	args: {
+		transactions: v.array(
+			v.object({
+				compensation: v.string(),
+				tip: v.string(),
+				technicianId: v.id("users"),
+				services: v.optional(v.array(v.id("categories"))),
+				clientId: v.optional(v.id("users")),
+				serviceDate: v.number(),
+			}),
+		),
+	},
+	handler: async (ctx, args) => {
+		const { transactions } = args;
+
+		for (const transaction of transactions) {
+			await ctx.db.insert("transactions", {
+				compensation: Number(transaction.compensation),
+				tip: Number(transaction.tip),
+				technician: transaction.technicianId,
+				services: transaction.services || [],
+				client: transaction.clientId,
+				serviceDate: transaction.serviceDate,
+			});
+		}
+	},
+});

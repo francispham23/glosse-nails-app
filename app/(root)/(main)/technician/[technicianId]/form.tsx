@@ -7,7 +7,9 @@ import { useState } from "react";
 import { Alert, View } from "react-native";
 
 import FormHeader, { FormContainer } from "@/components/form";
+import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
+import { addTodayTransaction } from "@/utils/transaction-storage";
 import type { Category, User } from "@/utils/types";
 
 export default function FormRoute() {
@@ -23,6 +25,8 @@ export default function FormRoute() {
 	const addTransaction = useMutation(api.transactions.addTransaction);
 	const categories = useQuery(api.categories.getAllCategories);
 
+	const { date, endOfDay } = useAppDate();
+
 	/* ---------------------------------- state --------------------------------- */
 	const initialEarningState = {
 		compensation: "",
@@ -33,7 +37,7 @@ export default function FormRoute() {
 	};
 	const [earning, setEarning] = useState({
 		...initialEarningState,
-		serviceDate: Date.now(),
+		serviceDate: date.getTime(),
 	});
 	const [open, setOpen] = useState(false);
 	const [isLoading] = useState(false);
@@ -44,10 +48,40 @@ export default function FormRoute() {
 			Alert.alert("Error", "Please enter your earning");
 			return;
 		}
-		await addTransaction({ body: earning });
-		setEarning({ ...initialEarningState, serviceDate: Date.now() });
-		Alert.alert("Success", "Earning submitted successfully");
-		router.push(`/technician/${technicianId}`);
+
+		try {
+			// Save to Convex backend
+			await addTransaction({ body: earning });
+
+			// Prepare readable names for storage
+			const selectedCategories = categories?.filter((cat) =>
+				earning.services.includes(cat._id),
+			);
+			const servicesText = selectedCategories
+				?.map((cat) => cat.name)
+				.join(", ");
+			const clientName = technician?.name;
+
+			// Save to device storage if it's today's transaction
+			await addTodayTransaction({
+				compensation: Number(earning.compensation),
+				tip: Number(earning.tip),
+				technicianId: earning.technicianId,
+				technician: technician?.name,
+				services: earning.services,
+				servicesText,
+				clientId: earning.clientId,
+				client: clientName,
+				serviceDate: earning.serviceDate,
+			});
+
+			setEarning({ ...initialEarningState, serviceDate: Date.now() });
+			Alert.alert("Success", "Earning submitted successfully");
+			router.push(`/technician/${technicianId}`);
+		} catch (error) {
+			console.error("Error submitting transaction:", error);
+			Alert.alert("Error", "Failed to submit earning. Please try again.");
+		}
 	};
 
 	const handleSelectServices = (categoryId: Category["_id"]) =>
@@ -119,12 +153,14 @@ export default function FormRoute() {
 				<DateTimePicker
 					mode="time"
 					value={new Date(earning.serviceDate)}
-					maximumDate={new Date(earning.serviceDate)}
+					maximumDate={endOfDay}
 					display="spinner"
 					onChange={(_, selectedDate) => {
 						setEarning({
 							...earning,
-							serviceDate: selectedDate ? selectedDate.getTime() : Date.now(),
+							serviceDate: selectedDate
+								? selectedDate.getTime()
+								: date.getTime(),
 						});
 					}}
 				/>
