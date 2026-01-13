@@ -4,9 +4,10 @@ import { useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Button, Chip, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
-import { Alert, View } from "react-native";
+import { Alert, Keyboard, View } from "react-native";
 
-import FormHeader, { FormContainer } from "@/components/form";
+import FormHeader from "@/components/form";
+import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import { storeEarningForCheckout } from "@/utils/transaction-storage";
@@ -71,7 +72,11 @@ export default function FormRoute() {
 		});
 
 	return (
-		<FormContainer>
+		<ScreenScrollView
+			contentContainerClassName="gap-4"
+			keyboardShouldPersistTaps="handled"
+			onScrollBeginDrag={Keyboard.dismiss}
+		>
 			{/* header */}
 			<FormHeader
 				title={`${technician?.name?.split(" ")[0]}'s Earning`}
@@ -168,6 +173,6 @@ export default function FormRoute() {
 				</Button.Label>
 				{isLoading ? <Spinner color={background} /> : null}
 			</Button>
-		</FormContainer>
+		</ScreenScrollView>
 	);
 }
