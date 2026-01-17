@@ -35,9 +35,12 @@ function prepareTransactionData(transaction: {
 	tip: string;
 	tipMethods: string[];
 	technicianId: Id<"users">;
-	services?: Id<"categories">[];
-	clientId?: Id<"users">;
 	serviceDate: number;
+	clientId?: Id<"users">;
+	services?: Id<"categories">[];
+	discount?: string;
+	gift?: string;
+	giftCode?: Id<"giftCards">;
 }) {
 	return {
 		compensation: Number.parseFloat(
@@ -50,6 +53,11 @@ function prepareTransactionData(transaction: {
 		services: transaction.services,
 		client: transaction.clientId,
 		serviceDate: transaction.serviceDate,
+		discount: transaction.discount
+			? Number.parseFloat(transaction.discount)
+			: undefined,
+		gift: transaction.gift ? Number.parseFloat(transaction.gift) : undefined,
+		giftCode: transaction.giftCode,
 	};
 }
 
@@ -62,9 +70,12 @@ async function insertTransaction(
 		tip: string;
 		tipMethods: string[];
 		technicianId: Id<"users">;
+		serviceDate: number;
 		services?: Id<"categories">[];
 		clientId?: Id<"users">;
-		serviceDate: number;
+		discount?: string;
+		gift?: string;
+		giftCode?: Id<"giftCards">;
 	},
 ) {
 	await ctx.db.insert("transactions", prepareTransactionData(transaction));
@@ -123,6 +134,8 @@ export const addTransaction = mutation({
 			tip: v.string(),
 			tipMethods: v.array(v.string()),
 			discount: v.optional(v.string()),
+			gift: v.optional(v.string()),
+			giftCode: v.optional(v.string()),
 			technicianId: v.id("users"),
 			services: v.optional(v.array(v.id("categories"))),
 			clientId: v.optional(v.id("users")),
@@ -130,7 +143,32 @@ export const addTransaction = mutation({
 		}),
 	},
 	handler: async (ctx, { body }) => {
-		await insertTransaction(ctx, body);
+		const giftCode = body.giftCode;
+		let giftCardId: Id<"giftCards"> | undefined;
+		// If a gift code is provided, find giftCard id from giftCards table
+		if (giftCode) {
+			const giftCard = await ctx.db
+				.query("giftCards")
+				.filter((q) => q.eq(q.field("code"), giftCode))
+				.first();
+			if (giftCard) {
+				giftCardId = giftCard._id;
+			}
+		}
+
+		await insertTransaction(ctx, { ...body, giftCode: giftCardId });
+
+		// Reduce gift card balance if a gift card was used
+		if (giftCardId && body.gift) {
+			const giftCard = await ctx.db.get(giftCardId);
+			if (giftCard) {
+				const giftAmount = Number.parseFloat(body.gift);
+				const newBalance = Number.parseFloat(
+					(giftCard.balance - giftAmount).toFixed(2),
+				);
+				await ctx.db.patch(giftCardId, { balance: newBalance });
+			}
+		}
 	},
 });
 
@@ -143,6 +181,8 @@ export const bulkInsertTransactions = mutation({
 				tip: v.string(),
 				tipMethods: v.array(v.string()),
 				discount: v.optional(v.string()),
+				gift: v.optional(v.string()),
+				giftCode: v.optional(v.string()),
 				technicianId: v.id("users"),
 				services: v.optional(v.array(v.id("categories"))),
 				clientId: v.optional(v.id("users")),
@@ -152,9 +192,32 @@ export const bulkInsertTransactions = mutation({
 	},
 	handler: async (ctx, args) => {
 		await Promise.all(
-			args.transactions.map((transaction) =>
-				insertTransaction(ctx, transaction),
-			),
+			args.transactions.map(async (transaction) => {
+				let giftCardId: Id<"giftCards"> | undefined;
+				if (transaction.giftCode) {
+					const giftCard = await ctx.db
+						.query("giftCards")
+						.filter((q) => q.eq(q.field("code"), transaction.giftCode))
+						.first();
+					if (giftCard) {
+						giftCardId = giftCard._id;
+					}
+				}
+
+				await insertTransaction(ctx, { ...transaction, giftCode: giftCardId });
+
+				// Reduce gift card balance if a gift card was used
+				if (giftCardId && transaction.gift) {
+					const giftCard = await ctx.db.get(giftCardId);
+					if (giftCard) {
+						const giftAmount = Number.parseFloat(transaction.gift);
+						const newBalance = Number.parseFloat(
+							(giftCard.balance - giftAmount).toFixed(2),
+						);
+						await ctx.db.patch(giftCardId, { balance: newBalance });
+					}
+				}
+			}),
 		);
 	},
 });

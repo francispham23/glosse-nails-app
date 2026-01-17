@@ -11,6 +11,8 @@ const schema = defineSchema({
 		tip: v.float64(),
 		tipMethods: v.array(v.string()),
 		discount: v.optional(v.float64()),
+		gift: v.optional(v.float64()),
+		giftCode: v.optional(v.id("giftCards")),
 		client: v.optional(v.id("users")),
 		technician: v.id("users"),
 		services: v.optional(v.array(v.id("categories"))),
@@ -28,6 +30,10 @@ const schema = defineSchema({
 		description: v.optional(v.string()),
 		price: v.float64(),
 		category: v.id("categories"),
+	}),
+	giftCards: defineTable({
+		code: v.string(),
+		balance: v.float64(),
 	}),
 });
 

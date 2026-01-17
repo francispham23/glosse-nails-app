@@ -26,9 +26,11 @@ export type EarningFormState = {
 	compensationMethods: PaymentMethod[];
 	tip: string;
 	tipMethods: PaymentMethod[];
-	discount: string;
-	clientId?: Id<"users">;
 	technicianId: Id<"users">;
 	services: Id<"categories">[];
 	serviceDate: number;
+	gift?: string;
+	giftCode?: string;
+	discount?: string;
+	clientId?: Id<"users">;
 };

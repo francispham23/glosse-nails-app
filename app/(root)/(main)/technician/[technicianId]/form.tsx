@@ -37,6 +37,8 @@ export default function FormRoute() {
 		tip: "",
 		tipMethods: ["Card"] as PaymentMethod[],
 		discount: "",
+		gift: "",
+		giftCode: "",
 		technicianId,
 		services: [] as Category["_id"][],
 		// TODO: allow selecting client ID later
@@ -116,7 +118,7 @@ export default function FormRoute() {
 			<TextField isRequired className="focus">
 				<TextField.Input
 					className="h-16 rounded-3xl"
-					placeholder="Enter compensation"
+					placeholder="Enter Compensation"
 					keyboardType="numeric"
 					autoCapitalize="none"
 					autoFocus={true}
@@ -149,7 +151,7 @@ export default function FormRoute() {
 			<TextField isRequired>
 				<TextField.Input
 					className="h-16 rounded-3xl"
-					placeholder="Enter amount"
+					placeholder="Enter Tip"
 					keyboardType="numeric"
 					autoCapitalize="none"
 					value={earning.tip.toString()}
@@ -220,7 +222,7 @@ export default function FormRoute() {
 					</Chip>
 				))}
 			</View>
-			{/* compensation text-field*/}
+			{/* discount text-field*/}
 			<TextField isRequired className="focus">
 				<TextField.Input
 					className="h-16 rounded-3xl"
@@ -228,7 +230,7 @@ export default function FormRoute() {
 					keyboardType="numeric"
 					autoCapitalize="none"
 					autoFocus={true}
-					value={earning.discount.toString()}
+					value={earning.discount?.toString()}
 					onChangeText={(value) => setEarning({ ...earning, discount: value })}
 				>
 					<TextField.InputStartContent className="pointer-events-none pl-2">
@@ -236,6 +238,44 @@ export default function FormRoute() {
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
+			{/* gift text-field*/}
+			{earning.compensationMethods.includes("Gift Card") ||
+			earning.tipMethods.includes("Gift Card") ? (
+				<>
+					<TextField isRequired className="focus">
+						<TextField.Input
+							className="h-16 rounded-3xl"
+							placeholder="Enter Gift Card Code"
+							keyboardType="numeric"
+							autoCapitalize="none"
+							autoFocus={true}
+							value={earning.giftCode?.toString()}
+							onChangeText={(value) =>
+								setEarning({ ...earning, giftCode: value })
+							}
+						>
+							<TextField.InputStartContent className="pointer-events-none pl-2">
+								<Ionicons name="code-outline" size={20} color={mutedColor} />
+							</TextField.InputStartContent>
+						</TextField.Input>
+					</TextField>
+					<TextField isRequired className="focus">
+						<TextField.Input
+							className="h-16 rounded-3xl"
+							placeholder="Enter amount from Gift Card"
+							keyboardType="numeric"
+							autoCapitalize="none"
+							autoFocus={true}
+							value={earning.gift?.toString()}
+							onChangeText={(value) => setEarning({ ...earning, gift: value })}
+						>
+							<TextField.InputStartContent className="pointer-events-none pl-2">
+								<Ionicons name="cash-outline" size={20} color={mutedColor} />
+							</TextField.InputStartContent>
+						</TextField.Input>
+					</TextField>
+				</>
+			) : null}
 			<Button
 				onPress={handleSubmit}
 				isDisabled={isLoading}
