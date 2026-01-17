@@ -43,11 +43,12 @@ export const usersByDateRange = query({
 						.collect()
 				).filter((t) => t.technician === tech._id);
 
-				const compensation = transactions.reduce(
-					(sum, t) => sum + t.compensation,
-					0,
+				const compensation = Number.parseFloat(
+					transactions.reduce((sum, t) => sum + t.compensation, 0).toFixed(2),
 				);
-				const tip = transactions.reduce((sum, t) => sum + t.tip, 0);
+				const tip = Number.parseFloat(
+					transactions.reduce((sum, t) => sum + t.tip, 0).toFixed(2),
+				);
 
 				return {
 					...tech,

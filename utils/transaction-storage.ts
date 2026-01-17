@@ -183,12 +183,23 @@ export async function getUsersFromTodayTransactions(): Promise<
 			const existing = userMap.get(userId);
 
 			if (existing) {
-				existing.tip += Number(tx.tip);
-				existing.compensation += Number(tx.compensation);
+				existing.tip = Number.parseFloat(
+					(existing.tip + Number.parseFloat(tx.tip.toString())).toFixed(2),
+				);
+				existing.compensation = Number.parseFloat(
+					(
+						existing.compensation +
+						Number.parseFloat(tx.compensation.toString())
+					).toFixed(2),
+				);
 			} else {
 				userMap.set(userId, {
-					tip: Number(tx.tip),
-					compensation: Number(tx.compensation),
+					tip: Number.parseFloat(
+						Number.parseFloat(tx.tip.toString()).toFixed(2),
+					),
+					compensation: Number.parseFloat(
+						Number.parseFloat(tx.compensation.toString()).toFixed(2),
+					),
 				});
 			}
 		}

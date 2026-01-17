@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Button, Chip, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
@@ -11,7 +11,19 @@ import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import { storeEarningForCheckout } from "@/utils/transaction-storage";
-import type { Category, EarningFormState, User } from "@/utils/types";
+import type {
+	Category,
+	EarningFormState,
+	PaymentMethod,
+	User,
+} from "@/utils/types";
+
+const paymentMethods = [
+	"Card",
+	"Cash",
+	"Gift Card",
+	"Online",
+] as PaymentMethod[];
 
 export default function FormRoute() {
 	const background = useThemeColor("background");
@@ -23,14 +35,12 @@ export default function FormRoute() {
 	const technician = useQuery(api.users.getUserById, {
 		userId: technicianId,
 	});
-	const categories = useQuery(api.categories.getAllCategories);
-
 	const { date, endOfDay } = useAppDate();
-
-	/* ---------------------------------- state --------------------------------- */
 	const initialEarningState = {
 		compensation: "",
+		compensationMethods: ["Card"] as PaymentMethod[],
 		tip: "",
+		tipMethods: ["Card"] as PaymentMethod[],
 		technicianId,
 		services: [] as Category["_id"][],
 		// TODO: allow selecting client ID later
@@ -40,6 +50,10 @@ export default function FormRoute() {
 		...initialEarningState,
 		serviceDate: date.getTime(),
 	});
+	const categories = useQuery(api.categories.getFormCategories);
+	const addTransaction = useMutation(api.transactions.addTransaction);
+
+	/* ---------------------------------- state --------------------------------- */
 	const [open, setOpen] = useState(false);
 	const [isLoading] = useState(false);
 
@@ -51,6 +65,8 @@ export default function FormRoute() {
 		}
 
 		try {
+			// Store earning in Convex
+			await addTransaction({ body: earning });
 			// Store earning in AsyncStorage for later bulk insertion at checkout
 			await storeEarningForCheckout(earning);
 
@@ -69,6 +85,24 @@ export default function FormRoute() {
 				? prev.services.filter((id) => id !== categoryId)
 				: [...prev.services, categoryId];
 			return { ...prev, services };
+		});
+
+	const handleSelectMethods = (
+		method: PaymentMethod,
+		type: "compensation" | "tip",
+	) =>
+		setEarning((prev) => {
+			const methods =
+				type === "compensation"
+					? prev.compensationMethods.includes(method)
+						? prev.compensationMethods.filter((m) => m !== method)
+						: [...prev.compensationMethods, method]
+					: prev.tipMethods.includes(method)
+						? prev.tipMethods.filter((m) => m !== method)
+						: [...prev.tipMethods, method];
+			return type === "compensation"
+				? { ...prev, compensationMethods: methods }
+				: { ...prev, tipMethods: methods };
 		});
 
 	return (
@@ -100,6 +134,21 @@ export default function FormRoute() {
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
+			<View className="flex-row flex-wrap gap-2">
+				{paymentMethods.map((method) => (
+					<Chip
+						key={method}
+						variant={
+							earning.compensationMethods.includes(method)
+								? "primary"
+								: "secondary"
+						}
+						onPress={() => handleSelectMethods(method, "compensation")}
+					>
+						<Chip.Label>{method}</Chip.Label>
+					</Chip>
+				))}
+			</View>
 			{/* tip text-field*/}
 			<TextField isRequired>
 				<TextField.Input
@@ -115,6 +164,19 @@ export default function FormRoute() {
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
+			<View className="flex-row flex-wrap gap-2">
+				{paymentMethods.map((method) => (
+					<Chip
+						key={method}
+						variant={
+							earning.tipMethods.includes(method) ? "primary" : "secondary"
+						}
+						onPress={() => handleSelectMethods(method, "tip")}
+					>
+						<Chip.Label>{method}</Chip.Label>
+					</Chip>
+				))}
+			</View>
 			{/* service time field */}
 			<TextField>
 				<TextField.Input
@@ -149,7 +211,7 @@ export default function FormRoute() {
 				/>
 			)}
 			{/* service categories */}
-			<View className="flex-row flex-wrap gap-2">
+			<View className="mt-4 mb-4 flex-row flex-wrap gap-2">
 				{categories?.map((category) => (
 					<Chip
 						key={category._id}
@@ -158,7 +220,7 @@ export default function FormRoute() {
 						}
 						onPress={() => handleSelectServices(category._id)}
 					>
-						<Chip.Label>{category.name}</Chip.Label>
+						<Chip.Label>{category.name.split(" ")[0]}</Chip.Label>
 					</Chip>
 				))}
 			</View>

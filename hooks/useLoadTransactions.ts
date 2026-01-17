@@ -29,7 +29,7 @@ export const useLoadTransactions = (
 
 	// Fetch all users at the top level to look up technician names
 	const users = useQuery(ConvexAPI.users.list) || [];
-	const categories = useQuery(ConvexAPI.categories.getAllCategories);
+	const categories = useQuery(ConvexAPI.categories.getFormCategories);
 
 	const isSelectedDateToday = isToday(endOfDay.getTime());
 
@@ -43,40 +43,51 @@ export const useLoadTransactions = (
 	// Load transactions from AsyncStorage when screen is focused
 	useFocusEffect(
 		useCallback(() => {
-			if (!isSelectedDateToday) {
+			// Always prefer Convex data when available
+			if (convexTransactions.length > 0) {
 				setTransactions(convexTransactions);
 				return;
 			}
-			const loadTransactions = async () => {
-				const stored = await getTodayTransactions();
 
-				const formattedTransactions = stored.map((transaction) => {
-					const technician = findUser(transaction.technicianId);
-					const client = transaction.clientId && findUser(transaction.clientId);
-					const filteredServices = categories?.filter((cat) =>
-						transaction.services.includes(cat._id),
+			// Only load from local storage if it's today and no Convex data available
+			if (isSelectedDateToday) {
+				const loadTransactions = async () => {
+					const stored = await getTodayTransactions();
+
+					const formattedTransactions = stored.map((transaction) => {
+						const technician = findUser(transaction.technicianId);
+						const client =
+							transaction.clientId && findUser(transaction.clientId);
+						const filteredServices = categories?.filter((cat) =>
+							transaction.services.includes(cat._id),
+						);
+						const services = filteredServices
+							?.map((cat) => cat.name)
+							.join(", ");
+
+						return {
+							_id: transaction._id,
+							technician: technician?.name,
+							tip: transaction.tip,
+							compensation: transaction.compensation,
+							services: services,
+							serviceDate: transaction.serviceDate,
+							_creationTime: transaction._creationTime,
+							client: client?.name,
+						} as unknown as FilteredTransactions;
+					});
+
+					setTransactions(
+						id
+							? formattedTransactions.filter((tx) => tx.technicianId !== id)
+							: formattedTransactions,
 					);
-					const services = filteredServices?.map((cat) => cat.name).join(", ");
-
-					return {
-						_id: transaction._id,
-						technician: technician?.name,
-						tip: transaction.tip,
-						compensation: transaction.compensation,
-						services: services,
-						serviceDate: transaction.serviceDate,
-						_creationTime: transaction._creationTime,
-						client: client?.name,
-					} as unknown as FilteredTransactions;
-				});
-
-				setTransactions(
-					id
-						? formattedTransactions.filter((tx) => tx.technicianId !== id)
-						: formattedTransactions,
-				);
-			};
-			loadTransactions();
+				};
+				loadTransactions();
+			} else {
+				// No Convex data and not today, set empty array
+				setTransactions([]);
+			}
 		}, [isSelectedDateToday, convexTransactions, id, findUser, categories]),
 	);
 

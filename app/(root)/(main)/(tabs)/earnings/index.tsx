@@ -31,17 +31,26 @@ export default function HomeRoute() {
 	// Check if the selected date is today
 	const isSelectedDateToday = isToday(date.getTime());
 
-	// Load users from AsyncStorage when it's today
+	// Load users - prefer Convex data, fall back to local storage only when needed
 	useFocusEffect(
 		useCallback(() => {
+			// Always prefer Convex data when available
+			if (convexUsers && convexUsers.length > 0) {
+				setUsers(convexUsers);
+				return;
+			}
+
+			// Only load from local storage if it's today and no Convex data available
 			if (isSelectedDateToday) {
 				const loadLocalUsers = async () => {
-					const users = await getUsersFromTodayTransactions();
-					const newUsers = users.length === 0 ? convexUsers : users;
-					setUsers(newUsers as User[]);
+					const localUsers = await getUsersFromTodayTransactions();
+					setUsers(localUsers as User[]);
 				};
 				loadLocalUsers();
-			} else setUsers(convexUsers || []);
+			} else {
+				// No Convex data and not today, set empty array
+				setUsers([]);
+			}
 		}, [isSelectedDateToday, convexUsers]),
 	);
 

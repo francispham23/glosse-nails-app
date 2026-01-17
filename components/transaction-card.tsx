@@ -14,6 +14,9 @@ export const TransactionCard = ({ transaction, technicianId }: Props) => {
 	const { isLight } = useAppTheme();
 	const className = cn("text-lg text-muted", !isLight && "-foreground");
 
+	const showClient =
+		transaction.client && transaction.client !== transaction.technician;
+
 	return (
 		<Animated.View
 			key={transaction._id}
@@ -29,7 +32,9 @@ export const TransactionCard = ({ transaction, technicianId }: Props) => {
 				Compensation: ${transaction.compensation}
 			</Text>
 			<Text className={className}>Tip: ${transaction.tip}</Text>
-			<Text className={className}>Client: {transaction.client}</Text>
+			{showClient ? (
+				<Text className={className}>Client: {transaction.client}</Text>
+			) : null}
 			{transaction.services ? (
 				<Text className={className}>Services: {transaction.services}</Text>
 			) : null}

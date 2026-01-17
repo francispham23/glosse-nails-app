@@ -1,8 +1,10 @@
 import { query } from "./_generated/server";
 
-export const getAllCategories = query({
+export const getFormCategories = query({
 	args: {},
 	handler: async (ctx) => {
-		return await ctx.db.query("categories").collect();
+		const allCat = await ctx.db.query("categories").collect();
+		const notUseCat = ["Special Discounts", "Add-ons", "Extension"];
+		return allCat.filter((cat) => !notUseCat.includes(cat.name));
 	},
 });
