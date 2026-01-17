@@ -1,6 +1,7 @@
+import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { useQuery } from "convex/react";
 import { useFocusEffect } from "expo-router";
-import { cn } from "heroui-native";
+import { Button, cn, useThemeColor } from "heroui-native";
 import { useCallback, useState } from "react";
 import { Text, View } from "react-native";
 import Animated, {
@@ -20,6 +21,8 @@ import type { User } from "@/utils/types";
 
 export default function HomeRoute() {
 	const { isLight } = useAppTheme();
+	const background = useThemeColor("background");
+
 	const { startOfDay, endOfDay, date } = useAppDate();
 	// Query Convex only when not showing today's data
 	const convexUsers = useQuery(api.users.usersByDateRange, {
@@ -27,6 +30,8 @@ export default function HomeRoute() {
 		endDate: endOfDay.getTime(),
 	});
 	const [users, setUsers] = useState<User[]>([]);
+	const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+	const [isSelecting, setIsSelecting] = useState(false);
 
 	// Check if the selected date is today
 	const isSelectedDateToday = isToday(date.getTime());
@@ -37,6 +42,7 @@ export default function HomeRoute() {
 			// Always prefer Convex data when available
 			if (convexUsers && convexUsers.length > 0) {
 				setUsers(convexUsers);
+				setSelectedUsers(convexUsers);
 				return;
 			}
 
@@ -45,11 +51,13 @@ export default function HomeRoute() {
 				const loadLocalUsers = async () => {
 					const localUsers = await getUsersFromTodayTransactions();
 					setUsers(localUsers as User[]);
+					setSelectedUsers(localUsers as User[]);
 				};
 				loadLocalUsers();
 			} else {
 				// No Convex data and not today, set empty array
 				setUsers([]);
+				setSelectedUsers([]);
 			}
 		}, [isSelectedDateToday, convexUsers]),
 	);
@@ -71,15 +79,42 @@ export default function HomeRoute() {
 			{/* Technician List */}
 			<Animated.FlatList
 				contentInsetAdjustmentBehavior="automatic"
-				contentContainerClassName="gap-4 pt-2 px-5 pb-24"
+				contentContainerClassName="gap-4 pt-2 px-4 pb-24"
 				keyExtractor={(item) => item._id.toString()}
-				data={users}
+				data={isSelecting ? users : selectedUsers}
 				renderItem={({ item }: { item: User }) => {
-					return <TechnicianCard key={item._id} item={item} />;
+					const isSelected = selectedUsers.some((u) => u._id === item._id);
+					return (
+						<TechnicianCard
+							key={item._id}
+							item={item}
+							isSelecting={isSelecting}
+							isSelected={isSelected}
+							onToggleSelect={(user) => {
+								if (isSelected) {
+									setSelectedUsers((prev) =>
+										prev.filter((u) => u._id !== user._id),
+									);
+								} else {
+									setSelectedUsers((prev) => [...prev, user]);
+								}
+							}}
+						/>
+					);
 				}}
 				itemLayoutAnimation={LinearTransition}
 				ListEmptyComponent={<ListEmptyComponent item="technician" />}
 			/>
+			<Button
+				onPress={() => setIsSelecting(!isSelecting)}
+				className="absolute bottom-30 self-center overflow-hidden rounded-full"
+			>
+				<Ionicons
+					name={isSelecting ? "checkmark-outline" : "add-outline"}
+					size={18}
+					color={background}
+				/>
+			</Button>
 		</Animated.View>
 	);
 }

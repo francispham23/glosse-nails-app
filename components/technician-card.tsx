@@ -12,15 +12,27 @@ import type { User } from "@/utils/types";
 
 interface Props {
 	item: User;
+	isSelecting?: boolean;
+	isSelected?: boolean;
+	onToggleSelect?: (user: User) => void;
 }
 
-export const TechnicianCard = ({ item }: Props) => {
+export const TechnicianCard = ({
+	item,
+	isSelecting = false,
+	isSelected = false,
+	onToggleSelect,
+}: Props) => {
 	const { isLight } = useAppTheme();
 	const router = useRouter();
 
 	const technician = useQuery(api.users.getUserById, {
 		userId: item._id,
 	});
+	const technicianClassName = cn(
+		"min-w-[50] text-left text-lg text-muted",
+		!isLight && "-foreground",
+	);
 
 	const className = cn(
 		"min-w-[50] text-right text-lg text-muted",
@@ -33,7 +45,11 @@ export const TechnicianCard = ({ item }: Props) => {
 			.runOnJS(true)
 			.onEnd(() => {
 				Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-				router.navigate(`/technician/${item._id}/form`);
+				if (isSelecting && onToggleSelect) {
+					onToggleSelect(item);
+				} else {
+					router.navigate(`/technician/${item._id}/form`);
+				}
 			});
 
 	return (
@@ -41,11 +57,16 @@ export const TechnicianCard = ({ item }: Props) => {
 			key={item._id}
 			entering={FadeIn}
 			exiting={FadeOut}
-			className="flex-row justify-between rounded-lg border-r-accent bg-background-secondary p-2"
+			className={cn(
+				"flex-row justify-between rounded-lg border-r-accent bg-background-secondary p-2",
+				isSelecting && isSelected && "border border-primary",
+			)}
 		>
 			<GestureDetector key={item._id} gesture={createSpeakerTapGesture(item)}>
 				<View className="w-full flex-row justify-between">
-					<Text className={className}>{technician?.name ?? "Unknown"}</Text>
+					<Text className={technicianClassName}>
+						{technician?.name ?? "Unknown"}
+					</Text>
 					<View className="flex-row justify-between gap-6">
 						<Text className={className}>${item.compensation}</Text>
 						<Text className={className}>${item.tip}</Text>

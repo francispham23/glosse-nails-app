@@ -1,8 +1,9 @@
 import { cn } from "heroui-native";
 import { Text } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-
+import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
+import { isToday } from "@/utils";
 import type { Transaction } from "@/utils/types";
 
 type Props = {
@@ -13,6 +14,9 @@ type Props = {
 export const TransactionCard = ({ transaction, technicianId }: Props) => {
 	const { isLight } = useAppTheme();
 	const className = cn("text-lg text-muted", !isLight && "-foreground");
+
+	const { endOfDay } = useAppDate();
+	const isSelectedDateToday = isToday(endOfDay.getTime());
 
 	const showClient =
 		transaction.client && transaction.client !== transaction.technician;
@@ -40,7 +44,7 @@ export const TransactionCard = ({ transaction, technicianId }: Props) => {
 			) : null}
 			{transaction.serviceDate ? (
 				<Text className={className}>
-					{getServiceDateString(transaction.serviceDate, true)}
+					{getServiceDateString(transaction.serviceDate, isSelectedDateToday)}
 				</Text>
 			) : null}
 		</Animated.View>
