@@ -52,12 +52,18 @@ const getServiceDateString = (
 	isCurrent: boolean,
 ) => {
 	if (!timestamp) return "";
-	const time = new Date(timestamp).toLocaleString();
-	const dayInWeek = new Date(timestamp).toLocaleDateString("en-US", {
+	const date = new Date(timestamp);
+	const time = date.toLocaleString("en-US", {
+		hour: "numeric",
+		minute: "2-digit",
+		hour12: true,
+	});
+	const dayInWeek = date.toLocaleDateString("en-US", {
 		weekday: "short",
 	});
 	if (isCurrent) {
-		return `At: ${time.split(", ")[1]}.`;
+		return `At: ${time}.`;
 	}
-	return `Date: ${dayInWeek}, ${time}.`;
+	const fullDate = date.toLocaleDateString("en-US");
+	return `Date: ${dayInWeek}, ${fullDate} ${time}.`;
 };

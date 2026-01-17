@@ -1,6 +1,6 @@
 import { v } from "convex/values";
-import type { Doc } from "./_generated/dataModel";
-import type { QueryCtx } from "./_generated/server";
+import type { Doc, Id } from "./_generated/dataModel";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 
 // Helper function to transform a transaction with related data
@@ -26,6 +26,48 @@ async function transformTransaction(
 		client: client ? client.name : (transaction.client ?? "Unknown"),
 		technician: technician ? technician.name : transaction.technician,
 	};
+}
+
+// Helper function to prepare transaction data for insertion
+function prepareTransactionData(transaction: {
+	compensation: string;
+	compensationMethods: string[];
+	tip: string;
+	tipMethods: string[];
+	technicianId: Id<"users">;
+	services?: Id<"categories">[];
+	clientId?: Id<"users">;
+	serviceDate: number;
+}) {
+	return {
+		compensation: Number.parseFloat(
+			Number.parseFloat(transaction.compensation).toFixed(2),
+		),
+		compensationMethods: transaction.compensationMethods,
+		tip: Number.parseFloat(Number.parseFloat(transaction.tip).toFixed(2)),
+		tipMethods: transaction.tipMethods,
+		technician: transaction.technicianId,
+		services: transaction.services,
+		client: transaction.clientId,
+		serviceDate: transaction.serviceDate,
+	};
+}
+
+// Helper function to insert a single transaction
+async function insertTransaction(
+	ctx: MutationCtx,
+	transaction: {
+		compensation: string;
+		compensationMethods: string[];
+		tip: string;
+		tipMethods: string[];
+		technicianId: Id<"users">;
+		services?: Id<"categories">[];
+		clientId?: Id<"users">;
+		serviceDate: number;
+	},
+) {
+	await ctx.db.insert("transactions", prepareTransactionData(transaction));
 }
 
 export const listByDateRange = query({
@@ -80,6 +122,7 @@ export const addTransaction = mutation({
 			compensationMethods: v.array(v.string()),
 			tip: v.string(),
 			tipMethods: v.array(v.string()),
+			discount: v.optional(v.string()),
 			technicianId: v.id("users"),
 			services: v.optional(v.array(v.id("categories"))),
 			clientId: v.optional(v.id("users")),
@@ -87,14 +130,7 @@ export const addTransaction = mutation({
 		}),
 	},
 	handler: async (ctx, { body }) => {
-		await ctx.db.insert("transactions", {
-			compensation: Number(body.compensation),
-			tip: Number(body.tip),
-			technician: body.technicianId,
-			services: body.services || [],
-			client: body.clientId,
-			serviceDate: body.serviceDate,
-		});
+		await insertTransaction(ctx, body);
 	},
 });
 
@@ -103,7 +139,10 @@ export const bulkInsertTransactions = mutation({
 		transactions: v.array(
 			v.object({
 				compensation: v.string(),
+				compensationMethods: v.array(v.string()),
 				tip: v.string(),
+				tipMethods: v.array(v.string()),
+				discount: v.optional(v.string()),
 				technicianId: v.id("users"),
 				services: v.optional(v.array(v.id("categories"))),
 				clientId: v.optional(v.id("users")),
@@ -112,17 +151,10 @@ export const bulkInsertTransactions = mutation({
 		),
 	},
 	handler: async (ctx, args) => {
-		const { transactions } = args;
-
-		for (const transaction of transactions) {
-			await ctx.db.insert("transactions", {
-				compensation: Number(transaction.compensation),
-				tip: Number(transaction.tip),
-				technician: transaction.technicianId,
-				services: transaction.services || [],
-				client: transaction.clientId,
-				serviceDate: transaction.serviceDate,
-			});
-		}
+		await Promise.all(
+			args.transactions.map((transaction) =>
+				insertTransaction(ctx, transaction),
+			),
+		);
 	},
 });

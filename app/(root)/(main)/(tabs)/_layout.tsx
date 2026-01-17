@@ -91,6 +91,16 @@ export default function TabLayout() {
 				}}
 			/>
 			<Tabs.Screen
+				name="gift-card"
+				options={{
+					title: "Gift Card",
+					tabBarIcon: ({ color, size }) => (
+						<Ionicons name="gift-outline" color={color} size={size} />
+					),
+					headerShown: false,
+				}}
+			/>
+			<Tabs.Screen
 				name="report"
 				options={{
 					title: "Report",

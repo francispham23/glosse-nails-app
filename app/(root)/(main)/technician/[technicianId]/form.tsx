@@ -18,12 +18,7 @@ import type {
 	User,
 } from "@/utils/types";
 
-const paymentMethods = [
-	"Card",
-	"Cash",
-	"Gift Card",
-	"Online",
-] as PaymentMethod[];
+const paymentMethods = ["Card", "Cash", "Gift Card"] as PaymentMethod[];
 
 export default function FormRoute() {
 	const background = useThemeColor("background");
@@ -41,6 +36,7 @@ export default function FormRoute() {
 		compensationMethods: ["Card"] as PaymentMethod[],
 		tip: "",
 		tipMethods: ["Card"] as PaymentMethod[],
+		discount: "",
 		technicianId,
 		services: [] as Category["_id"][],
 		// TODO: allow selecting client ID later
@@ -193,23 +189,23 @@ export default function FormRoute() {
 						<Ionicons name="time-outline" size={20} color={mutedColor} />
 					</TextField.InputStartContent>
 				</TextField.Input>
+				{open && (
+					<DateTimePicker
+						mode="time"
+						value={new Date(earning.serviceDate)}
+						maximumDate={endOfDay}
+						display="spinner"
+						onChange={(_, selectedDate) => {
+							setEarning({
+								...earning,
+								serviceDate: selectedDate
+									? selectedDate.getTime()
+									: date.getTime(),
+							});
+						}}
+					/>
+				)}
 			</TextField>
-			{open && (
-				<DateTimePicker
-					mode="time"
-					value={new Date(earning.serviceDate)}
-					maximumDate={endOfDay}
-					display="spinner"
-					onChange={(_, selectedDate) => {
-						setEarning({
-							...earning,
-							serviceDate: selectedDate
-								? selectedDate.getTime()
-								: date.getTime(),
-						});
-					}}
-				/>
-			)}
 			{/* service categories */}
 			<View className="mt-4 mb-4 flex-row flex-wrap gap-2">
 				{categories?.map((category) => (
@@ -224,6 +220,22 @@ export default function FormRoute() {
 					</Chip>
 				))}
 			</View>
+			{/* compensation text-field*/}
+			<TextField isRequired className="focus">
+				<TextField.Input
+					className="h-16 rounded-3xl"
+					placeholder="Enter discount"
+					keyboardType="numeric"
+					autoCapitalize="none"
+					autoFocus={true}
+					value={earning.discount.toString()}
+					onChangeText={(value) => setEarning({ ...earning, discount: value })}
+				>
+					<TextField.InputStartContent className="pointer-events-none pl-2">
+						<Ionicons name="cash-outline" size={20} color={mutedColor} />
+					</TextField.InputStartContent>
+				</TextField.Input>
+			</TextField>
 			<Button
 				onPress={handleSubmit}
 				isDisabled={isLoading}
