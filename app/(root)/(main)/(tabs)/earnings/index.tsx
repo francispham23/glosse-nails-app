@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { useQuery } from "convex/react";
 import { useFocusEffect } from "expo-router";
 import { Button, cn, useThemeColor } from "heroui-native";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import Animated, {
 	FadeIn,
@@ -31,7 +31,6 @@ export default function HomeRoute() {
 		endDate: endOfDay.getTime(),
 	});
 
-	// const [users, setUsers] = useState<User[]>([]);
 	const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 	const [isSelecting, setIsSelecting] = useState(false);
 
@@ -51,6 +50,19 @@ export default function HomeRoute() {
 			}
 		}, [isSelectedDateToday, isOffline]),
 	);
+
+	useEffect(() => {
+		// Update selected users when Convex data changes and not selecting
+		if (!isSelecting && convexUsers) {
+			setSelectedUsers((prev) =>
+				prev.map((u) => {
+					// Update selected users info with new Convex data
+					const updated = convexUsers.find((cu) => cu._id === u._id);
+					return updated || u;
+				}),
+			);
+		}
+	}, [convexUsers, isSelecting]);
 
 	const className = cn(
 		"min-w-[50] text-right font-bold text-lg",

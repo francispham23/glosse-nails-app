@@ -4,7 +4,7 @@ export const getFormCategories = query({
 	args: {},
 	handler: async (ctx) => {
 		const allCat = await ctx.db.query("categories").collect();
-		const notUseCat = ["Special Discounts", "Add-ons", "Extension", "Combo"];
+		const notUseCat = ["Special Discounts", "Add-ons", "Combo"];
 		return allCat.filter((cat) => !notUseCat.includes(cat.name));
 	},
 });

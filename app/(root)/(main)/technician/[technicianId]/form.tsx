@@ -175,6 +175,74 @@ export default function FormRoute() {
 					</Chip>
 				))}
 			</View>
+			{/* discount text-field*/}
+			<TextField isRequired>
+				<TextField.Input
+					className="h-16 rounded-3xl"
+					placeholder="Enter discount"
+					keyboardType="numeric"
+					autoCapitalize="none"
+					value={earning.discount?.toString()}
+					onChangeText={(value) => setEarning({ ...earning, discount: value })}
+				>
+					<TextField.InputStartContent className="pointer-events-none pl-2">
+						<Ionicons name="cash-outline" size={20} color={mutedColor} />
+					</TextField.InputStartContent>
+				</TextField.Input>
+			</TextField>
+			{/* service categories */}
+			<View className="mt-4 mb-4 flex-row flex-wrap gap-2">
+				{categories?.map((category) => (
+					<Chip
+						key={category._id}
+						variant={
+							earning.services.includes(category._id) ? "primary" : "secondary"
+						}
+						onPress={() => handleSelectServices(category._id)}
+					>
+						<Chip.Label>
+							{category.name.split(" ")[0].split("ing")[0]}
+						</Chip.Label>
+					</Chip>
+				))}
+			</View>
+
+			{/* gift text-field*/}
+			{earning.compensationMethods.includes("Gift Card") ||
+			earning.tipMethods.includes("Gift Card") ? (
+				<>
+					<TextField isRequired>
+						<TextField.Input
+							className="h-16 rounded-3xl"
+							placeholder="Enter Gift Card Code"
+							keyboardType="numeric"
+							autoCapitalize="none"
+							value={earning.giftCode?.toString()}
+							onChangeText={(value) =>
+								setEarning({ ...earning, giftCode: value })
+							}
+						>
+							<TextField.InputStartContent className="pointer-events-none pl-2">
+								<Ionicons name="code-outline" size={20} color={mutedColor} />
+							</TextField.InputStartContent>
+						</TextField.Input>
+					</TextField>
+					<TextField isRequired>
+						<TextField.Input
+							className="h-16 rounded-3xl"
+							placeholder="Enter amount from Gift Card"
+							keyboardType="numeric"
+							autoCapitalize="none"
+							value={earning.gift?.toString()}
+							onChangeText={(value) => setEarning({ ...earning, gift: value })}
+						>
+							<TextField.InputStartContent className="pointer-events-none pl-2">
+								<Ionicons name="cash-outline" size={20} color={mutedColor} />
+							</TextField.InputStartContent>
+						</TextField.Input>
+					</TextField>
+				</>
+			) : null}
 			{/* service time field */}
 			<TextField>
 				<TextField.Input
@@ -208,74 +276,6 @@ export default function FormRoute() {
 					/>
 				)}
 			</TextField>
-			{/* service categories */}
-			<View className="mt-4 mb-4 flex-row flex-wrap gap-2">
-				{categories?.map((category) => (
-					<Chip
-						key={category._id}
-						variant={
-							earning.services.includes(category._id) ? "primary" : "secondary"
-						}
-						onPress={() => handleSelectServices(category._id)}
-					>
-						<Chip.Label>{category.name.split(" ")[0]}</Chip.Label>
-					</Chip>
-				))}
-			</View>
-			{/* discount text-field*/}
-			<TextField isRequired className="focus">
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Enter discount"
-					keyboardType="numeric"
-					autoCapitalize="none"
-					autoFocus={true}
-					value={earning.discount?.toString()}
-					onChangeText={(value) => setEarning({ ...earning, discount: value })}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="cash-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-				</TextField.Input>
-			</TextField>
-			{/* gift text-field*/}
-			{earning.compensationMethods.includes("Gift Card") ||
-			earning.tipMethods.includes("Gift Card") ? (
-				<>
-					<TextField isRequired className="focus">
-						<TextField.Input
-							className="h-16 rounded-3xl"
-							placeholder="Enter Gift Card Code"
-							keyboardType="numeric"
-							autoCapitalize="none"
-							autoFocus={true}
-							value={earning.giftCode?.toString()}
-							onChangeText={(value) =>
-								setEarning({ ...earning, giftCode: value })
-							}
-						>
-							<TextField.InputStartContent className="pointer-events-none pl-2">
-								<Ionicons name="code-outline" size={20} color={mutedColor} />
-							</TextField.InputStartContent>
-						</TextField.Input>
-					</TextField>
-					<TextField isRequired className="focus">
-						<TextField.Input
-							className="h-16 rounded-3xl"
-							placeholder="Enter amount from Gift Card"
-							keyboardType="numeric"
-							autoCapitalize="none"
-							autoFocus={true}
-							value={earning.gift?.toString()}
-							onChangeText={(value) => setEarning({ ...earning, gift: value })}
-						>
-							<TextField.InputStartContent className="pointer-events-none pl-2">
-								<Ionicons name="cash-outline" size={20} color={mutedColor} />
-							</TextField.InputStartContent>
-						</TextField.Input>
-					</TextField>
-				</>
-			) : null}
 			<Button
 				onPress={handleSubmit}
 				isDisabled={isLoading}
