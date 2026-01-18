@@ -15,6 +15,7 @@ import { TechnicianCard } from "@/components/technician-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { isToday } from "@/utils/index";
 import { getUsersFromTodayTransactions } from "@/utils/transaction-storage";
 import type { User } from "@/utils/types";
@@ -22,44 +23,33 @@ import type { User } from "@/utils/types";
 export default function HomeRoute() {
 	const { isLight } = useAppTheme();
 	const background = useThemeColor("background");
-
+	const isOffline = useNetworkStatus();
 	const { startOfDay, endOfDay, date } = useAppDate();
 	// Query Convex only when not showing today's data
 	const convexUsers = useQuery(api.users.usersByDateRange, {
 		startDate: startOfDay.getTime(),
 		endDate: endOfDay.getTime(),
 	});
-	const [users, setUsers] = useState<User[]>([]);
+
+	// const [users, setUsers] = useState<User[]>([]);
 	const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 	const [isSelecting, setIsSelecting] = useState(false);
 
 	// Check if the selected date is today
 	const isSelectedDateToday = isToday(date.getTime());
 
-	// Load users - prefer Convex data, fall back to local storage only when needed
+	// Load users - prefer Convex data, fall back to local storage only when offline
 	useFocusEffect(
 		useCallback(() => {
-			// Always prefer Convex data when available
-			if (convexUsers && convexUsers.length > 0) {
-				setUsers(convexUsers);
-				setSelectedUsers(convexUsers);
-				return;
-			}
-
-			// Only load from local storage if it's today and no Convex data available
-			if (isSelectedDateToday) {
+			// Only load from local storage if Convex data is unavailable (offline) and it's today
+			if (isSelectedDateToday && isOffline) {
 				const loadLocalUsers = async () => {
-					const localUsers = await getUsersFromTodayTransactions();
-					setUsers(localUsers as User[]);
-					setSelectedUsers(localUsers as User[]);
+					const storedUsers = await getUsersFromTodayTransactions();
+					setSelectedUsers(storedUsers as User[]);
 				};
 				loadLocalUsers();
-			} else {
-				// No Convex data and not today, set empty array
-				setUsers([]);
-				setSelectedUsers([]);
 			}
-		}, [isSelectedDateToday, convexUsers]),
+		}, [isSelectedDateToday, isOffline]),
 	);
 
 	const className = cn(
@@ -81,7 +71,7 @@ export default function HomeRoute() {
 				contentInsetAdjustmentBehavior="automatic"
 				contentContainerClassName="gap-4 pt-2 px-4 pb-24"
 				keyExtractor={(item) => item._id.toString()}
-				data={isSelecting ? users : selectedUsers}
+				data={isSelecting ? convexUsers : selectedUsers}
 				renderItem={({ item }: { item: User }) => {
 					const isSelected = selectedUsers.some((u) => u._id === item._id);
 					return (
