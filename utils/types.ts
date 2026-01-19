@@ -35,4 +35,8 @@ export type EarningFormState = {
 	clientId?: Id<"users">;
 };
 
-export type Gift = DataModel["giftCards"]["document"];
+export type Gift = ReplaceType<
+	DataModel["giftCards"]["document"],
+	"client",
+	string | undefined
+>;

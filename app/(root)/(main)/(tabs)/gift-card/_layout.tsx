@@ -5,6 +5,7 @@ import { useNavigationOptions } from "@/hooks/use-navigation-options";
 
 export default function GiftCardLayout() {
 	const { standard } = useNavigationOptions();
+
 	return (
 		<Stack>
 			<Stack.Screen

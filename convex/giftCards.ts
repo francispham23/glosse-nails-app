@@ -4,7 +4,17 @@ import { mutation, query } from "./_generated/server";
 export const list = query({
 	args: {},
 	handler: async (ctx) => {
-		return await ctx.db.query("giftCards").collect();
+		const giftCards = await ctx.db.query("giftCards").collect();
+
+		return Promise.all(
+			giftCards.map(async (giftCard) => {
+				const client = giftCard.client && (await ctx.db.get(giftCard.client));
+				return {
+					...giftCard,
+					client: client ? client.name : undefined,
+				};
+			}),
+		);
 	},
 });
 

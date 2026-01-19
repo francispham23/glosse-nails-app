@@ -64,9 +64,11 @@ export default function GiftCardRoute() {
 
 	return (
 		<Animated.View className="flex-1 p-2" entering={FadeIn} exiting={FadeOut}>
+			<View className="flex-row justify-between gap-2 px-5 pt-45" />
+
 			<Animated.FlatList
 				contentInsetAdjustmentBehavior="automatic"
-				contentContainerClassName="gap-4 pt-4 px-3 pb-24"
+				contentContainerClassName="gap-4 px-4 pb-24"
 				entering={FadeIn}
 				exiting={FadeOut}
 				data={giftCards}

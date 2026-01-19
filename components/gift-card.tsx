@@ -8,16 +8,11 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import type { Transaction } from "@/utils/types";
+import type { Gift, Transaction } from "@/utils/types";
 import { GiftCardTransaction } from "./gift-card-transaction";
 
 type Props = {
-	giftCard: {
-		_id: string;
-		_creationTime: number;
-		code: string;
-		balance: number;
-	};
+	giftCard: Gift;
 };
 
 export const GiftCard = ({ giftCard }: Props) => {
@@ -29,12 +24,8 @@ export const GiftCard = ({ giftCard }: Props) => {
 		modalVisible ? { giftCardId: giftCard._id as Id<"giftCards"> } : "skip",
 	);
 
-	const textClassName = cn(
-		"align-left text-lg text-muted",
-		!isLight && "-foreground",
-	);
 	const balanceClassName = cn(
-		"text-left font-semibold text-xl",
+		"text-right font-semibold text-lg",
 		giftCard.balance > 0 ? "text-success" : "text-muted-foreground",
 	);
 
@@ -57,20 +48,14 @@ export const GiftCard = ({ giftCard }: Props) => {
 					key={giftCard._id}
 					entering={FadeIn}
 					exiting={FadeOut}
-					className="flex-row gap-2 rounded-lg border-l-4 border-l-accent bg-background-secondary p-2"
+					className="flex-row items-center justify-between rounded-lg bg-background-secondary px-4 py-3"
 				>
-					<View className="w-50 flex-row items-center gap-2">
-						<Text className={textClassName}>Code:</Text>
-						<Text className="font-medium font-mono text-foreground text-lg">
-							{giftCard.code}
-						</Text>
-					</View>
-					<View className="flex-row items-center gap-2">
-						<Text className={textClassName}>Balance:</Text>
-						<Text className={balanceClassName}>
-							${giftCard.balance.toFixed(2)}
-						</Text>
-					</View>
+					<Text className="font-medium font-mono text-foreground text-lg">
+						{giftCard.code}
+					</Text>
+					<Text className={balanceClassName}>
+						${giftCard.balance.toFixed(2)}
+					</Text>
 				</Animated.View>
 			</Pressable>
 
@@ -108,6 +93,12 @@ export const GiftCard = ({ giftCard }: Props) => {
 						</View>
 
 						<View className="mb-4 gap-2 rounded-lg bg-background-secondary p-4">
+							<View className="flex-row justify-between">
+								<Text className="text-muted-foreground">Owner:</Text>
+								<Text className="font-semibold text-foreground">
+									{giftCard.client || "-"}
+								</Text>
+							</View>
 							<View className="flex-row justify-between">
 								<Text className="text-muted-foreground">Total Used:</Text>
 								<Text className="font-semibold text-foreground">
