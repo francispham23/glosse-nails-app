@@ -26,8 +26,9 @@ export const usersByDateRange = query({
 	args: {
 		startDate: v.number(),
 		endDate: v.number(),
+		report: v.optional(v.boolean()),
 	},
-	handler: async (ctx, { startDate, endDate }) => {
+	handler: async (ctx, { startDate, endDate, report }) => {
 		const technicians = await ctx.db.query("users").collect();
 
 		// Return all technicians with total tips and compensation
@@ -44,7 +45,12 @@ export const usersByDateRange = query({
 				).filter((t) => t.technician === tech._id);
 
 				const compensation = Number.parseFloat(
-					transactions.reduce((sum, t) => sum + t.compensation, 0).toFixed(2),
+					transactions
+						.reduce(
+							(sum, t) => sum + (report ? t.compensation / 2 : t.compensation),
+							0,
+						)
+						.toFixed(2),
 				);
 				const tip = Number.parseFloat(
 					transactions.reduce((sum, t) => sum + t.tip, 0).toFixed(2),

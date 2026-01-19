@@ -62,7 +62,11 @@ export const TechnicianCard = ({
 			exiting={FadeOut}
 			className={cn(
 				"flex-row justify-between rounded-lg border-r-accent bg-background-secondary p-2",
-				isSelecting && isSelected && "border border-primary",
+				isSelecting && isSelected && !isLight
+					? "border border-amber-50"
+					: isSelecting && isSelected && isLight
+						? "border border-primary"
+						: undefined,
 			)}
 		>
 			<GestureDetector key={item._id} gesture={createSpeakerTapGesture(item)}>
@@ -72,7 +76,19 @@ export const TechnicianCard = ({
 					</Text>
 					<View className="flex-row justify-between gap-6">
 						<Text className={className}>${item.compensation}</Text>
-						<Text className={className}>${item.tip}</Text>
+						<Text
+							className={cn(
+								"w-[70] text-right text-lg text-muted",
+								!isLight && "-foreground",
+							)}
+						>
+							${item.tip}
+						</Text>
+						{report ? (
+							<Text className={className}>
+								${Number.parseFloat((item.compensation + item.tip).toFixed(2))}
+							</Text>
+						) : null}
 					</View>
 				</View>
 			</GestureDetector>

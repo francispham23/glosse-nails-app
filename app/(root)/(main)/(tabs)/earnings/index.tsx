@@ -90,14 +90,7 @@ export default function HomeRoute() {
 				<Text className={className}>Technician</Text>
 				<View className="min-w-[50] flex-row justify-between gap-6">
 					<Text className={className}>Compensation</Text>
-					<Text
-						className={cn(
-							"w-[90] text-right font-bold text-lg",
-							!isLight && "text-white",
-						)}
-					>
-						Tip
-					</Text>
+					<Text className={cn("w-[70]", className)}>Tip</Text>
 				</View>
 			</View>
 			{/* Technician List */}

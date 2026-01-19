@@ -16,9 +16,6 @@ export default function GiftCardLayout() {
 					headerLargeTitle: true,
 					headerBackTitle: "Home",
 					...standard,
-					headerLeft: () => (
-						<HeaderButton iconName="calendar-outline" route="/pick-date" />
-					),
 					headerRight: () => (
 						<HeaderButton iconName="settings-outline" route="/settings" />
 					),

@@ -1,14 +1,17 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useQuery } from "convex/react";
+import { cn } from "heroui-native";
 import { useState } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { ListEmptyComponent } from "@/components/list-empty";
 import { TechnicianCard } from "@/components/technician-card";
+import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 
 export default function ReportRoute() {
+	const { isLight } = useAppTheme();
 	const today = new Date();
 	const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
@@ -21,6 +24,7 @@ export default function ReportRoute() {
 	const technicians = useQuery(api.users.usersByDateRange, {
 		startDate: startDate.getTime(),
 		endDate: endDate.getTime(),
+		report: true,
 	});
 
 	const formatDate = (date: Date) => {
@@ -36,14 +40,19 @@ export default function ReportRoute() {
 	const totalTip = technicians?.reduce((sum, tech) => sum + tech.tip, 0) ?? 0;
 	const grandTotal = totalCompensation + totalTip;
 
+	const textClassName = cn(
+		"text-base text-foreground",
+		!isLight && "-foreground",
+	);
+
 	return (
 		<Animated.View className="flex-1" entering={FadeIn} exiting={FadeOut}>
 			{/* Header with date range selection */}
 			<View className="gap-4 bg-background-secondary px-6 pt-40 pb-4">
 				{/* Date range selectors */}
-				<View className="gap-2 pt-5">
+				<View className="ml-45 gap-2 pt-5">
 					<View className="flex-row items-center gap-3">
-						<Text className="w-20 text-muted-foreground">Start:</Text>
+						<Text className={cn("w20", textClassName)}>Start Date:</Text>
 						<TouchableOpacity
 							onPress={() => setShowStartPicker(!showStartPicker)}
 							className="flex-1 rounded-lg border border-border bg-background px-4 py-3"
@@ -67,7 +76,7 @@ export default function ReportRoute() {
 					)}
 
 					<View className="flex-row items-center gap-3">
-						<Text className="w-20 text-muted-foreground">End:</Text>
+						<Text className={cn("w-20", textClassName)}>End Date:</Text>
 						<TouchableOpacity
 							onPress={() => setShowEndPicker(!showEndPicker)}
 							className="flex-1 rounded-lg border border-border bg-background px-4 py-3"
@@ -95,20 +104,20 @@ export default function ReportRoute() {
 				{/* Summary totals */}
 				<View className="rounded-lg bg-background p-4">
 					<View className="flex-row justify-between border-border border-b pb-2">
-						<Text className="text-muted-foreground">Total Compensation:</Text>
+						<Text className="text-foreground">Total Compensation:</Text>
 						<Text className="font-semibold text-foreground">
 							${totalCompensation.toFixed(2)}
 						</Text>
 					</View>
 					<View className="flex-row justify-between border-border border-b py-2">
-						<Text className="text-muted-foreground">Total Tips:</Text>
+						<Text className="text-foreground">Total Tips:</Text>
 						<Text className="font-semibold text-foreground">
 							${totalTip.toFixed(2)}
 						</Text>
 					</View>
 					<View className="flex-row justify-between pt-2">
 						<Text className="font-semibold text-foreground">Grand Total:</Text>
-						<Text className="font-bold text-lg text-primary">
+						<Text className="font-bold text-foreground text-lg">
 							${grandTotal.toFixed(2)}
 						</Text>
 					</View>
@@ -118,15 +127,16 @@ export default function ReportRoute() {
 			{/* Technicians list */}
 			<View className="flex-1 px-6 pt-4">
 				<View className="mb-2 flex-row justify-between px-2">
-					<Text className="font-semibold text-muted-foreground">
-						Technician
-					</Text>
+					<Text className="font-semibold text-foreground">Technician</Text>
 					<View className="flex-row gap-6">
-						<Text className="w-20 text-right font-semibold text-muted-foreground">
-							Compensation
+						<Text className="w-20 text-right font-semibold text-foreground">
+							Comp
 						</Text>
-						<Text className="w-20 text-right font-semibold text-muted-foreground">
+						<Text className="w-18 text-right font-semibold text-foreground">
 							Tips
+						</Text>
+						<Text className="w-25 text-right font-semibold text-foreground">
+							Total
 						</Text>
 					</View>
 				</View>

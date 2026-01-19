@@ -28,6 +28,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 		"text-right font-semibold text-lg",
 		giftCard.balance > 0 ? "text-success" : "text-muted-foreground",
 	);
+	const textClassName = cn("text-base text-muted", !isLight && "-foreground");
 
 	const formatCreationDate = (timestamp: number) => {
 		const date = new Date(timestamp);
@@ -76,7 +77,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 								<Text className="font-bold text-2xl text-foreground">
 									Gift Card: {giftCard.code}
 								</Text>
-								<Text className="text-muted-foreground">
+								<Text className={textClassName}>
 									Created on {formatCreationDate(giftCard._creationTime)}
 								</Text>
 							</View>
@@ -94,19 +95,19 @@ export const GiftCard = ({ giftCard }: Props) => {
 
 						<View className="mb-4 gap-2 rounded-lg bg-background-secondary p-4">
 							<View className="flex-row justify-between">
-								<Text className="text-muted-foreground">Owner:</Text>
+								<Text className={textClassName}>Owner:</Text>
 								<Text className="font-semibold text-foreground">
 									{giftCard.client || "-"}
 								</Text>
 							</View>
 							<View className="flex-row justify-between">
-								<Text className="text-muted-foreground">Total Used:</Text>
+								<Text className={textClassName}>Total Used:</Text>
 								<Text className="font-semibold text-foreground">
 									${totalUsed.toFixed(2)}
 								</Text>
 							</View>
 							<View className="flex-row justify-between">
-								<Text className="text-muted-foreground">Current Balance:</Text>
+								<Text className={textClassName}>Current Balance:</Text>
 								<Text className={balanceClassName}>
 									${giftCard.balance.toFixed(2)}
 								</Text>
@@ -126,7 +127,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 							keyExtractor={(item) => item._id.toString()}
 							ListEmptyComponent={
 								<View className="items-center justify-center py-8">
-									<Text className="text-muted-foreground">
+									<Text className={textClassName}>
 										No transactions found for this gift card
 									</Text>
 								</View>
