@@ -12,7 +12,7 @@ import Animated, {
 import { ListEmptyComponent } from "@/components/list-empty";
 import { TransactionCard } from "@/components/transaction-card";
 import { api } from "@/convex/_generated/api";
-import { useLoadTransactions } from "@/hooks/useLoadTransactions";
+import { useLoadTransactions } from "@/hooks/use-load-transactions";
 import type { Transaction, User } from "@/utils/types";
 
 export default function TechnicianId() {

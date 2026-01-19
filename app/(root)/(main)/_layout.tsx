@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { Platform, useColorScheme } from "react-native";
 
 import { ThemeToggleButton } from "@/components/Buttons/theme-toggle-button";
-import { useNavigationOptions } from "@/hooks/useNavigationOptions";
+import { useNavigationOptions } from "@/hooks/use-navigation-options";
 
 export default function MainLayout() {
 	const colorScheme = useColorScheme();

@@ -1,7 +1,6 @@
-import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { useQuery } from "convex/react";
 import { useFocusEffect } from "expo-router";
-import { Button, cn, useThemeColor } from "heroui-native";
+import { cn } from "heroui-native";
 import { useCallback, useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import Animated, {
@@ -9,20 +8,19 @@ import Animated, {
 	FadeOut,
 	LinearTransition,
 } from "react-native-reanimated";
-
+import { AddButton } from "@/components/Buttons/add-button";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { TechnicianCard } from "@/components/technician-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
-import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import { useNetworkStatus } from "@/hooks/use-network-status";
 import { isToday } from "@/utils/index";
 import { getUsersFromTodayTransactions } from "@/utils/transaction-storage";
 import type { User } from "@/utils/types";
 
 export default function HomeRoute() {
 	const { isLight } = useAppTheme();
-	const background = useThemeColor("background");
 	const isOffline = useNetworkStatus();
 	const { startOfDay, endOfDay, date } = useAppDate();
 	// Query Convex only when not showing today's data
@@ -107,16 +105,9 @@ export default function HomeRoute() {
 				itemLayoutAnimation={LinearTransition}
 				ListEmptyComponent={<ListEmptyComponent item="technician" />}
 			/>
-			<Button
-				onPress={() => setIsSelecting(!isSelecting)}
-				className="absolute bottom-30 self-center overflow-hidden rounded-full"
-			>
-				<Ionicons
-					name={isSelecting ? "checkmark-outline" : "add-outline"}
-					size={18}
-					color={background}
-				/>
-			</Button>
+			<View className="absolute bottom-30 self-center">
+				<AddButton isAdding={isSelecting} setIsAdding={setIsSelecting} />
+			</View>
 		</Animated.View>
 	);
 }

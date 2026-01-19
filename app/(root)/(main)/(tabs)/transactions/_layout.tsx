@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 
 import { HeaderButton } from "@/components/Buttons/header-button";
-import { useNavigationOptions } from "@/hooks/useNavigationOptions";
+import { useNavigationOptions } from "@/hooks/use-navigation-options";
 
 export default function Layout() {
 	const { standard } = useNavigationOptions();

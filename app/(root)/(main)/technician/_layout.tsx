@@ -2,7 +2,7 @@ import type { Route } from "expo-router";
 import { Stack, useLocalSearchParams } from "expo-router";
 
 import { HeaderButton } from "@/components/Buttons/header-button";
-import { useNavigationOptions } from "@/hooks/useNavigationOptions";
+import { useNavigationOptions } from "@/hooks/use-navigation-options";
 import type { User } from "@/utils/types";
 
 export default function TechnicianLayout() {

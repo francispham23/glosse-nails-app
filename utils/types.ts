@@ -34,3 +34,5 @@ export type EarningFormState = {
 	discount?: string;
 	clientId?: Id<"users">;
 };
+
+export type Gift = DataModel["giftCards"]["document"];

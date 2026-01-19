@@ -2,7 +2,7 @@ import { Link, Stack } from "expo-router";
 import { Pressable, Text } from "react-native";
 
 import { HeaderButton } from "@/components/Buttons/header-button";
-import { useNavigationOptions } from "@/hooks/useNavigationOptions";
+import { useNavigationOptions } from "@/hooks/use-navigation-options";
 
 export default function EmailLayout() {
 	const { modal } = useNavigationOptions();

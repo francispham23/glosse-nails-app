@@ -3,7 +3,7 @@ import Animated from "react-native-reanimated";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { TransactionCard } from "@/components/transaction-card";
 import { api } from "@/convex/_generated/api";
-import { useLoadTransactions } from "@/hooks/useLoadTransactions";
+import { useLoadTransactions } from "@/hooks/use-load-transactions";
 import type { Transaction } from "@/utils/types";
 
 export default function Transactions() {
