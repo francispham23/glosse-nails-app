@@ -20,7 +20,7 @@ import type {
 
 const paymentMethods = ["Card", "Cash", "Gift Card"] as PaymentMethod[];
 
-export default function FormRoute() {
+export default function CreateRoute() {
 	const background = useThemeColor("background");
 	const mutedColor = useThemeColor("muted");
 

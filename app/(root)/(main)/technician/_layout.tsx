@@ -20,7 +20,7 @@ export default function TechnicianLayout() {
 			}}
 		>
 			<Stack.Screen
-				name="[technicianId]/form"
+				name="[technicianId]/create"
 				options={{
 					headerLeft: () => <HeaderButton iconName="close" />,
 					headerRight: () => (

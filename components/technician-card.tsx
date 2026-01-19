@@ -48,7 +48,7 @@ export const TechnicianCard = ({
 				if (isSelecting && onToggleSelect) {
 					onToggleSelect(item);
 				} else {
-					router.navigate(`/technician/${item._id}/form`);
+					router.navigate(`/technician/${item._id}/create`);
 				}
 			});
 
