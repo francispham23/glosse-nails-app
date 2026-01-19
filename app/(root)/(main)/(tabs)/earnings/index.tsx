@@ -1,4 +1,4 @@
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useFocusEffect } from "expo-router";
 import { cn } from "heroui-native";
 import { useCallback, useEffect, useState } from "react";
@@ -23,11 +23,20 @@ export default function HomeRoute() {
 	const { isLight } = useAppTheme();
 	const isOffline = useNetworkStatus();
 	const { startOfDay, endOfDay, date } = useAppDate();
+
 	// Query Convex only when not showing today's data
 	const convexUsers = useQuery(api.users.usersByDateRange, {
 		startDate: startOfDay.getTime(),
 		endDate: endOfDay.getTime(),
 	});
+
+	// Query shift for the selected date
+	const onShiftTechs = useQuery(api.shifts.getShiftByDate, {
+		shiftDate: startOfDay.getTime(),
+	});
+
+	// Mutation to save shift
+	const saveShift = useMutation(api.shifts.saveShift);
 
 	const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 	const [isSelecting, setIsSelecting] = useState(false);
@@ -50,8 +59,15 @@ export default function HomeRoute() {
 	);
 
 	useEffect(() => {
-		// Update selected users when Convex data changes and not selecting
-		if (!isSelecting && convexUsers) {
+		// Filter convexUsers based on onShiftTechs
+		if (onShiftTechs && onShiftTechs.length > 0 && convexUsers) {
+			const shiftUserIds = new Set(onShiftTechs.map((user) => user._id));
+			const filteredUsers = convexUsers.filter((user) =>
+				shiftUserIds.has(user._id),
+			);
+			setSelectedUsers(filteredUsers);
+		} else if (!isSelecting && convexUsers) {
+			// Update selected users when Convex data changes and not selecting
 			setSelectedUsers((prev) =>
 				prev.map((u) => {
 					// Update selected users info with new Convex data
@@ -60,7 +76,7 @@ export default function HomeRoute() {
 				}),
 			);
 		}
-	}, [convexUsers, isSelecting]);
+	}, [convexUsers, isSelecting, onShiftTechs]);
 
 	const className = cn(
 		"min-w-[50] text-right font-bold text-lg",
@@ -106,7 +122,23 @@ export default function HomeRoute() {
 				ListEmptyComponent={<ListEmptyComponent item="technician" />}
 			/>
 			<View className="absolute bottom-30 self-center">
-				<AddButton isAdding={isSelecting} setIsAdding={setIsSelecting} />
+				<AddButton
+					isAdding={isSelecting}
+					setIsAdding={async (adding) => {
+						// When exiting selection mode, save the shift
+						if (isSelecting && !adding && selectedUsers.length > 0) {
+							try {
+								await saveShift({
+									technicians: selectedUsers.map((u) => u._id),
+									shiftDate: startOfDay.getTime(),
+								});
+							} catch (error) {
+								console.error("Failed to save shift:", error);
+							}
+						}
+						setIsSelecting(adding);
+					}}
+				/>
 			</View>
 		</Animated.View>
 	);

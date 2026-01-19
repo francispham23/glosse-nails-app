@@ -12,6 +12,7 @@ import type * as auth from "../auth.js";
 import type * as categories from "../categories.js";
 import type * as giftCards from "../giftCards.js";
 import type * as http from "../http.js";
+import type * as shifts from "../shifts.js";
 import type * as transactions from "../transactions.js";
 import type * as users from "../users.js";
 
@@ -26,6 +27,7 @@ declare const fullApi: ApiFromModules<{
   categories: typeof categories;
   giftCards: typeof giftCards;
   http: typeof http;
+  shifts: typeof shifts;
   transactions: typeof transactions;
   users: typeof users;
 }>;
