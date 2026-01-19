@@ -221,3 +221,70 @@ export const bulkInsertTransactions = mutation({
 		);
 	},
 });
+
+// Get a single transaction by ID
+export const getById = query({
+	args: {
+		id: v.id("transactions"),
+	},
+	handler: async (ctx, { id }) => {
+		const transaction = await ctx.db.get(id);
+		if (!transaction) {
+			return null;
+		}
+		return transaction;
+	},
+});
+
+// Update a transaction
+export const updateTransaction = mutation({
+	args: {
+		id: v.id("transactions"),
+		body: v.object({
+			compensation: v.string(),
+			compensationMethods: v.array(v.string()),
+			tip: v.string(),
+			tipMethods: v.array(v.string()),
+			discount: v.optional(v.string()),
+			gift: v.optional(v.string()),
+			giftCode: v.optional(v.string()),
+			technicianId: v.id("users"),
+			services: v.optional(v.array(v.id("categories"))),
+			clientId: v.optional(v.id("users")),
+			serviceDate: v.number(),
+		}),
+	},
+	handler: async (ctx, { id, body }) => {
+		const giftCode = body.giftCode;
+		let giftCardId: Id<"giftCards"> | undefined;
+		// If a gift code is provided, find giftCard id from giftCards table
+		if (giftCode) {
+			const giftCard = await ctx.db
+				.query("giftCards")
+				.filter((q) => q.eq(q.field("code"), giftCode))
+				.first();
+			if (giftCard) {
+				giftCardId = giftCard._id;
+			}
+		}
+
+		const preparedData = prepareTransactionData({
+			...body,
+			giftCode: giftCardId,
+		});
+
+		await ctx.db.patch(id, preparedData);
+
+		// Handle gift card balance adjustment if needed
+		if (giftCardId && body.gift) {
+			const giftCard = await ctx.db.get(giftCardId);
+			if (giftCard) {
+				const giftAmount = Number.parseFloat(body.gift);
+				const newBalance = Number.parseFloat(
+					(giftCard.balance - giftAmount).toFixed(2),
+				);
+				await ctx.db.patch(giftCardId, { balance: newBalance });
+			}
+		}
+	},
+});
