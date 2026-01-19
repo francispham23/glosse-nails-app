@@ -20,7 +20,8 @@ const schema = defineSchema({
 	})
 		.index("by_technician", ["technician"])
 		.index("by_service_date", ["serviceDate"])
-		.index("by_technician_and_date", ["technician", "serviceDate"]),
+		.index("by_technician_and_date", ["technician", "serviceDate"])
+		.index("by_gift_card", ["giftCode"]),
 
 	// Category table
 	categories: defineTable({

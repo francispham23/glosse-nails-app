@@ -236,6 +236,24 @@ export const getById = query({
 	},
 });
 
+// Get transactions by gift card ID
+export const listByGiftCard = query({
+	args: {
+		giftCardId: v.id("giftCards"),
+	},
+	handler: async (ctx, { giftCardId }) => {
+		const transactions = await ctx.db
+			.query("transactions")
+			.withIndex("by_gift_card", (q) => q.eq("giftCode", giftCardId))
+			.order("desc")
+			.collect();
+
+		return Promise.all(
+			transactions.map((transaction) => transformTransaction(ctx, transaction)),
+		);
+	},
+});
+
 // Update a transaction
 export const updateTransaction = mutation({
 	args: {
