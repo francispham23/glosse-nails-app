@@ -12,6 +12,7 @@ import type { User } from "@/utils/types";
 
 interface Props {
 	item: User;
+	report?: boolean;
 	isSelecting?: boolean;
 	isSelected?: boolean;
 	onToggleSelect?: (user: User) => void;
@@ -19,6 +20,7 @@ interface Props {
 
 export const TechnicianCard = ({
 	item,
+	report,
 	isSelecting = false,
 	isSelected = false,
 	onToggleSelect,
@@ -35,7 +37,7 @@ export const TechnicianCard = ({
 	);
 
 	const className = cn(
-		"min-w-[50] text-right text-lg text-muted",
+		"w-[100] text-right text-lg text-muted",
 		!isLight && "-foreground",
 	);
 
@@ -44,6 +46,7 @@ export const TechnicianCard = ({
 			.maxDistance(10)
 			.runOnJS(true)
 			.onEnd(() => {
+				if (report) return;
 				Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 				if (isSelecting && onToggleSelect) {
 					onToggleSelect(item);
