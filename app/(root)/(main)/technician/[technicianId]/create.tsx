@@ -57,7 +57,7 @@ export default function CreateRoute() {
 
 	/* ---------------------------------- state --------------------------------- */
 	const [open, setOpen] = useState(false);
-	const [isLoading] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 	const [giftError, setGiftError] = useState("");
 
 	/* ----------------------------- handle sign in ----------------------------- */
@@ -73,6 +73,7 @@ export default function CreateRoute() {
 		}
 
 		try {
+			setIsLoading(true);
 			// Store earning in Convex
 			await addTransaction({ body: earning });
 			// Store earning in AsyncStorage for later bulk insertion at checkout
@@ -84,6 +85,8 @@ export default function CreateRoute() {
 		} catch (error) {
 			console.error("Error storing earning:", error);
 			Alert.alert("Error", "Failed to save earning. Please try again.");
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -206,7 +209,7 @@ export default function CreateRoute() {
 							</TextField.InputStartContent>
 						</TextField.Input>
 					</TextField>
-					{earning.giftCode && !giftCard && (
+					{earning.giftCode && giftCard === null && (
 						<Text className="px-4 text-red-500 text-sm">
 							Gift card code not found
 						</Text>

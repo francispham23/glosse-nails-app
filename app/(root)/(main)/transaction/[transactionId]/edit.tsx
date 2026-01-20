@@ -237,7 +237,7 @@ export default function EditTransactionScreen() {
 							</TextField.InputStartContent>
 						</TextField.Input>
 					</TextField>
-					{earning.giftCode && !giftCard && (
+					{earning.giftCode && giftCard === null && (
 						<Text className="px-4 text-red-500 text-sm">
 							Gift card code not found
 						</Text>
