@@ -1,4 +1,5 @@
 import { Text, View } from "react-native";
+import type { Category, PaymentMethod } from "@/utils/types";
 
 /* ----------------------------- form container ----------------------------- */
 export function FormContainer({ children }: { children: React.ReactNode }) {
@@ -29,3 +30,18 @@ export default function FormHeader({
 		</View>
 	);
 }
+
+export const paymentMethods = ["Card", "Cash", "Gift Card"] as PaymentMethod[];
+
+export const initialEarningState = {
+	compensation: "",
+	compInCash: "",
+	compensationMethods: ["Card"] as PaymentMethod[],
+	tip: "",
+	tipInCash: "",
+	tipMethods: ["Card"] as PaymentMethod[],
+	discount: "",
+	gift: "",
+	giftCode: "",
+	services: [] as Category["_id"][],
+};

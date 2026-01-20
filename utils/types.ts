@@ -29,6 +29,8 @@ export type EarningFormState = {
 	technicianId: Id<"users">;
 	services: Id<"categories">[];
 	serviceDate: number;
+	compInCash?: string;
+	tipInCash?: string;
 	gift?: string;
 	giftCode?: string;
 	discount?: string;

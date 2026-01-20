@@ -5,7 +5,10 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Button, Chip, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useEffect, useState } from "react";
 import { Alert, Keyboard, Text, View } from "react-native";
-import FormHeader from "@/components/form";
+import FormHeader, {
+	initialEarningState,
+	paymentMethods,
+} from "@/components/form";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
@@ -16,8 +19,6 @@ import type {
 	PaymentMethod,
 	User,
 } from "@/utils/types";
-
-const paymentMethods = ["Card", "Cash", "Gift Card"] as PaymentMethod[];
 
 export default function EditTransactionScreen() {
 	const background = useThemeColor("background");
@@ -35,15 +36,8 @@ export default function EditTransactionScreen() {
 	const updateTransaction = useMutation(api.transactions.updateTransaction);
 
 	const [earning, setEarning] = useState<EarningFormState>({
-		compensation: "",
-		compensationMethods: ["Card"] as PaymentMethod[],
-		tip: "",
-		tipMethods: ["Card"] as PaymentMethod[],
-		discount: "",
-		gift: "",
-		giftCode: "",
+		...initialEarningState,
 		technicianId: "" as User["_id"],
-		services: [] as Category["_id"][],
 		clientId: "" as User["_id"],
 		serviceDate: Date.now(),
 	});
@@ -62,14 +56,16 @@ export default function EditTransactionScreen() {
 		if (transaction) {
 			setEarning({
 				compensation: transaction.compensation.toString(),
+				compInCash: transaction.compInCash?.toString() || "",
 				compensationMethods: transaction.compensationMethods as PaymentMethod[],
 				tip: transaction.tip.toString(),
+				tipInCash: transaction.tipInCash?.toString() || "",
 				tipMethods: transaction.tipMethods as PaymentMethod[],
 				discount: transaction.discount?.toString() || "",
 				gift: transaction.gift?.toString() || "",
 				giftCode: "", // We'll need to handle this differently since it's stored as ID
-				technicianId: transaction.technician,
 				services: transaction.services || [],
+				technicianId: transaction.technician,
 				clientId: transaction.client,
 				serviceDate: transaction.serviceDate || Date.now(),
 			});
@@ -136,6 +132,13 @@ export default function EditTransactionScreen() {
 				: { ...prev, tipMethods: methods };
 		});
 
+	const cash = earning.compensationMethods.includes("Cash");
+	const card = earning.compensationMethods.includes("Card");
+	const gift = earning.compensationMethods.includes("Gift Card");
+	const tipCash = earning.tipMethods.includes("Cash");
+	const tipCard = earning.tipMethods.includes("Card");
+	const tipGift = earning.tipMethods.includes("Gift Card");
+
 	if (!transaction) {
 		return (
 			<View className="flex-1 items-center justify-center">
@@ -159,7 +162,7 @@ export default function EditTransactionScreen() {
 			<TextField isRequired className="focus">
 				<TextField.Input
 					className="h-16 rounded-3xl"
-					placeholder="Enter Compensation"
+					placeholder="Enter Total Charge"
 					keyboardType="numeric"
 					autoCapitalize="none"
 					autoFocus={true}
@@ -173,6 +176,27 @@ export default function EditTransactionScreen() {
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
+			{/* compensation In Cash text-field */}
+			{cash && card && (
+				<TextField isRequired className="focus">
+					<TextField.Input
+						className="h-16 rounded-3xl"
+						placeholder="Enter Cash Amount"
+						keyboardType="numeric"
+						autoCapitalize="none"
+						autoFocus={true}
+						value={earning.compInCash?.toString()}
+						onChangeText={(value) =>
+							setEarning({ ...earning, compInCash: value })
+						}
+					>
+						<TextField.InputStartContent className="pointer-events-none pl-2">
+							<Ionicons name="cash-outline" size={20} color={mutedColor} />
+						</TextField.InputStartContent>
+					</TextField.Input>
+				</TextField>
+			)}
+			{/* Compensation Methods */}
 			<View className="flex-row flex-wrap gap-2">
 				{paymentMethods.map((method) => (
 					<Chip
@@ -188,7 +212,7 @@ export default function EditTransactionScreen() {
 					</Chip>
 				))}
 			</View>
-			{/* tip text-field*/}
+			{/* tip text-field */}
 			<TextField isRequired>
 				<TextField.Input
 					className="h-16 rounded-3xl"
@@ -203,6 +227,25 @@ export default function EditTransactionScreen() {
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
+			{/* tip In Cash text-field */}
+			{tipCash && tipCard && (
+				<TextField isRequired>
+					<TextField.Input
+						className="h-16 rounded-3xl"
+						placeholder="Enter Tip in Cash Amount"
+						keyboardType="numeric"
+						autoCapitalize="none"
+						value={earning.tipInCash?.toString()}
+						onChangeText={(value) =>
+							setEarning({ ...earning, tipInCash: value })
+						}
+					>
+						<TextField.InputStartContent className="pointer-events-none pl-2">
+							<Ionicons name="cash-outline" size={20} color={mutedColor} />
+						</TextField.InputStartContent>
+					</TextField.Input>
+				</TextField>
+			)}
 			<View className="flex-row flex-wrap gap-2">
 				{paymentMethods.map((method) => (
 					<Chip
@@ -217,8 +260,7 @@ export default function EditTransactionScreen() {
 				))}
 			</View>
 			{/* gift text-field*/}
-			{earning.compensationMethods.includes("Gift Card") ||
-			earning.tipMethods.includes("Gift Card") ? (
+			{gift || tipGift ? (
 				<>
 					<TextField isRequired>
 						<TextField.Input

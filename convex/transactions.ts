@@ -36,6 +36,8 @@ function prepareTransactionData(transaction: {
 	tipMethods: string[];
 	technicianId: Id<"users">;
 	serviceDate: number;
+	compInCash?: string;
+	tipInCash?: string;
 	clientId?: Id<"users">;
 	services?: Id<"categories">[];
 	discount?: string;
@@ -46,8 +48,14 @@ function prepareTransactionData(transaction: {
 		compensation: Number.parseFloat(
 			Number.parseFloat(transaction.compensation).toFixed(2),
 		),
+		compInCash: transaction.compInCash
+			? Number.parseFloat(Number.parseFloat(transaction.compInCash).toFixed(2))
+			: undefined,
 		compensationMethods: transaction.compensationMethods,
 		tip: Number.parseFloat(Number.parseFloat(transaction.tip).toFixed(2)),
+		tipInCash: transaction.tipInCash
+			? Number.parseFloat(Number.parseFloat(transaction.tipInCash).toFixed(2))
+			: undefined,
 		tipMethods: transaction.tipMethods,
 		technician: transaction.technicianId,
 		services: transaction.services,
@@ -71,6 +79,8 @@ async function insertTransaction(
 		tipMethods: string[];
 		technicianId: Id<"users">;
 		serviceDate: number;
+		compInCash?: string;
+		tipInCash?: string;
 		services?: Id<"categories">[];
 		clientId?: Id<"users">;
 		discount?: string;
@@ -130,8 +140,10 @@ export const addTransaction = mutation({
 	args: {
 		body: v.object({
 			compensation: v.string(),
+			compInCash: v.optional(v.string()),
 			compensationMethods: v.array(v.string()),
 			tip: v.string(),
+			tipInCash: v.optional(v.string()),
 			tipMethods: v.array(v.string()),
 			discount: v.optional(v.string()),
 			gift: v.optional(v.string()),
@@ -177,8 +189,10 @@ export const bulkInsertTransactions = mutation({
 		transactions: v.array(
 			v.object({
 				compensation: v.string(),
+				compInCash: v.optional(v.string()),
 				compensationMethods: v.array(v.string()),
 				tip: v.string(),
+				tipInCash: v.optional(v.string()),
 				tipMethods: v.array(v.string()),
 				discount: v.optional(v.string()),
 				gift: v.optional(v.string()),
@@ -260,8 +274,10 @@ export const updateTransaction = mutation({
 		id: v.id("transactions"),
 		body: v.object({
 			compensation: v.string(),
+			compInCash: v.optional(v.string()),
 			compensationMethods: v.array(v.string()),
 			tip: v.string(),
+			tipInCash: v.optional(v.string()),
 			tipMethods: v.array(v.string()),
 			discount: v.optional(v.string()),
 			gift: v.optional(v.string()),

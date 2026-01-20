@@ -7,8 +7,10 @@ const schema = defineSchema({
 	// Transactions table
 	transactions: defineTable({
 		compensation: v.float64(),
+		compInCash: v.optional(v.float64()),
 		compensationMethods: v.array(v.string()),
 		tip: v.float64(),
+		tipInCash: v.optional(v.float64()),
 		tipMethods: v.array(v.string()),
 		discount: v.optional(v.float64()),
 		gift: v.optional(v.float64()),

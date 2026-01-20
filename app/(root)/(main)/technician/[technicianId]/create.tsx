@@ -6,7 +6,10 @@ import { Button, Chip, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Alert, Keyboard, Text, View } from "react-native";
 
-import FormHeader from "@/components/form";
+import FormHeader, {
+	initialEarningState,
+	paymentMethods,
+} from "@/components/form";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
@@ -17,8 +20,6 @@ import type {
 	PaymentMethod,
 	User,
 } from "@/utils/types";
-
-const paymentMethods = ["Card", "Cash", "Gift Card"] as PaymentMethod[];
 
 export default function CreateRoute() {
 	const background = useThemeColor("background");
@@ -31,21 +32,11 @@ export default function CreateRoute() {
 		userId: technicianId,
 	});
 	const { date, endOfDay } = useAppDate();
-	const initialEarningState = {
-		compensation: "",
-		compensationMethods: ["Card"] as PaymentMethod[],
-		tip: "",
-		tipMethods: ["Card"] as PaymentMethod[],
-		discount: "",
-		gift: "",
-		giftCode: "",
-		technicianId,
-		services: [] as Category["_id"][],
-		// TODO: allow selecting client ID later
-		clientId: technicianId, // Default client ID
-	};
 	const [earning, setEarning] = useState<EarningFormState>({
 		...initialEarningState,
+		technicianId,
+		// TODO: allow selecting client ID later
+		clientId: technicianId, // Default client ID
 		serviceDate: date.getTime(),
 	});
 	const categories = useQuery(api.categories.getFormCategories);
@@ -79,7 +70,13 @@ export default function CreateRoute() {
 			// Store earning in AsyncStorage for later bulk insertion at checkout
 			await storeEarningForCheckout(earning);
 
-			setEarning({ ...initialEarningState, serviceDate: Date.now() });
+			setEarning({
+				...initialEarningState,
+				technicianId,
+				// TODO: allow selecting client ID later
+				clientId: technicianId, // Default client ID
+				serviceDate: Date.now(),
+			});
 			Alert.alert("Success", "Earning saved successfully");
 			router.push(`/technician/${technicianId}`);
 		} catch (error) {
@@ -116,6 +113,13 @@ export default function CreateRoute() {
 				: { ...prev, tipMethods: methods };
 		});
 
+	const cash = earning.compensationMethods.includes("Cash");
+	const card = earning.compensationMethods.includes("Card");
+	const gift = earning.compensationMethods.includes("Gift Card");
+	const tipCash = earning.tipMethods.includes("Cash");
+	const tipCard = earning.tipMethods.includes("Card");
+	const tipGift = earning.tipMethods.includes("Gift Card");
+
 	return (
 		<ScreenScrollView
 			contentContainerClassName="gap-4"
@@ -131,7 +135,7 @@ export default function CreateRoute() {
 			<TextField isRequired className="focus">
 				<TextField.Input
 					className="h-16 rounded-3xl"
-					placeholder="Enter Compensation"
+					placeholder="Enter Total Charge"
 					keyboardType="numeric"
 					autoCapitalize="none"
 					autoFocus={true}
@@ -145,6 +149,27 @@ export default function CreateRoute() {
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
+			{/* compensation In Cash text-field */}
+			{cash && card && (
+				<TextField isRequired className="focus">
+					<TextField.Input
+						className="h-16 rounded-3xl"
+						placeholder="Enter Cash Amount"
+						keyboardType="numeric"
+						autoCapitalize="none"
+						autoFocus={true}
+						value={earning.compInCash?.toString()}
+						onChangeText={(value) =>
+							setEarning({ ...earning, compInCash: value })
+						}
+					>
+						<TextField.InputStartContent className="pointer-events-none pl-2">
+							<Ionicons name="cash-outline" size={20} color={mutedColor} />
+						</TextField.InputStartContent>
+					</TextField.Input>
+				</TextField>
+			)}
+			{/* Compensation Methods */}
 			<View className="flex-row flex-wrap gap-2">
 				{paymentMethods.map((method) => (
 					<Chip
@@ -160,7 +185,7 @@ export default function CreateRoute() {
 					</Chip>
 				))}
 			</View>
-			{/* tip text-field*/}
+			{/* tip text-field */}
 			<TextField isRequired>
 				<TextField.Input
 					className="h-16 rounded-3xl"
@@ -175,6 +200,25 @@ export default function CreateRoute() {
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
+			{/* tip In Cash text-field */}
+			{tipCash && tipCard && (
+				<TextField isRequired>
+					<TextField.Input
+						className="h-16 rounded-3xl"
+						placeholder="Enter Tip in Cash Amount"
+						keyboardType="numeric"
+						autoCapitalize="none"
+						value={earning.tipInCash?.toString()}
+						onChangeText={(value) =>
+							setEarning({ ...earning, tipInCash: value })
+						}
+					>
+						<TextField.InputStartContent className="pointer-events-none pl-2">
+							<Ionicons name="cash-outline" size={20} color={mutedColor} />
+						</TextField.InputStartContent>
+					</TextField.Input>
+				</TextField>
+			)}
 			<View className="flex-row flex-wrap gap-2">
 				{paymentMethods.map((method) => (
 					<Chip
@@ -189,8 +233,7 @@ export default function CreateRoute() {
 				))}
 			</View>
 			{/* gift text-field*/}
-			{earning.compensationMethods.includes("Gift Card") ||
-			earning.tipMethods.includes("Gift Card") ? (
+			{gift || tipGift ? (
 				<>
 					<TextField isRequired>
 						<TextField.Input
