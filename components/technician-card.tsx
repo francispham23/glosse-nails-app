@@ -75,10 +75,12 @@ export const TechnicianCard = ({
 						{technician?.name?.split(" ")[0] ?? "Unknown"}
 					</Text>
 
-					<Text className={cn(className, report ? "text-sm" : "mr-[-100]")}>
+					<Text
+						className={cn(className, report ? "mr-[-15] text-sm" : "mr-[-80]")}
+					>
 						${item.compensation}
 					</Text>
-					<Text className={cn(className, report && "text-sm")}>
+					<Text className={cn(className, report && "mr-[-10] text-sm")}>
 						${item.tip}
 					</Text>
 					{report ? (

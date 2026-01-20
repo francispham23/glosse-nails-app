@@ -26,7 +26,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 
 	const balanceClassName = cn(
 		"text-right font-semibold text-md",
-		giftCard.balance > 0 ? "text-success" : "text-muted-foreground",
+		giftCard.balance > 0 ? "text-success" : "text-foreground",
 	);
 	const textClassName = cn("text-base text-muted", !isLight && "-foreground");
 

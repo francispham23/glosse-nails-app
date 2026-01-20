@@ -40,6 +40,7 @@ export default function ReportRoute() {
 	const totalTip = technicians?.reduce((sum, tech) => sum + tech.tip, 0) ?? 0;
 	const grandTotal = totalCompensation + totalTip;
 
+	const classname = cn("font-semibold text-foreground");
 	const textClassName = cn(
 		"w-20 text-base text-foreground",
 		!isLight && "-foreground",
@@ -105,18 +106,14 @@ export default function ReportRoute() {
 				<View className="rounded-lg bg-background p-4">
 					<View className="flex-row justify-between border-border border-b pb-2">
 						<Text className="text-foreground">Total Compensation:</Text>
-						<Text className="font-semibold text-foreground">
-							${totalCompensation.toFixed(2)}
-						</Text>
+						<Text className={classname}>${totalCompensation.toFixed(2)}</Text>
 					</View>
 					<View className="flex-row justify-between border-border border-b py-2">
 						<Text className="text-foreground">Total Tips:</Text>
-						<Text className="font-semibold text-foreground">
-							${totalTip.toFixed(2)}
-						</Text>
+						<Text className={classname}>${totalTip.toFixed(2)}</Text>
 					</View>
 					<View className="flex-row justify-between pt-2">
-						<Text className="font-semibold text-foreground">Grand Total:</Text>
+						<Text className={classname}>Grand Total:</Text>
 						<Text className="font-bold text-foreground text-lg">
 							${grandTotal.toFixed(2)}
 						</Text>
@@ -125,14 +122,12 @@ export default function ReportRoute() {
 			</View>
 
 			{/* Technicians list */}
-			<View className="flex-1 px-6 pt-4">
+			<View className="mb-25 flex-1 px-6 pt-4">
 				<View className="mb-2 flex-row justify-between px-2">
-					<Text className="font-semibold text-foreground">Technician</Text>
-					<Text className="text-right font-semibold text-foreground">Comp</Text>
-					<Text className="text-right font-semibold text-foreground">Tips</Text>
-					<Text className="text-right font-semibold text-foreground">
-						Total
-					</Text>
+					<Text className={classname}>Technician</Text>
+					<Text className={cn(classname, "text-right")}>Comp</Text>
+					<Text className={cn(classname, "text-right")}>Tips</Text>
+					<Text className={cn(classname, "text-right")}>Total</Text>
 				</View>
 
 				<FlatList

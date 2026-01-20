@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";
 import { Button, Chip, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useEffect, useState } from "react";
-import { Alert, Keyboard, View } from "react-native";
+import { Alert, Keyboard, Text, View } from "react-native";
 import FormHeader from "@/components/form";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
@@ -48,8 +48,14 @@ export default function EditTransactionScreen() {
 		serviceDate: Date.now(),
 	});
 
+	const giftCard = useQuery(
+		api.giftCards.getByCode,
+		earning.giftCode ? { code: earning.giftCode } : "skip",
+	);
+
 	const [open, setOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const [giftError, setGiftError] = useState("");
 
 	// Populate form when transaction loads
 	useEffect(() => {
@@ -73,6 +79,11 @@ export default function EditTransactionScreen() {
 	const handleSubmit = async () => {
 		if (!earning.compensation) {
 			Alert.alert("Error", "Please enter compensation");
+			return;
+		}
+
+		if (giftError) {
+			Alert.alert("Error", giftError);
 			return;
 		}
 
@@ -205,6 +216,66 @@ export default function EditTransactionScreen() {
 					</Chip>
 				))}
 			</View>
+			{/* gift text-field*/}
+			{earning.compensationMethods.includes("Gift Card") ||
+			earning.tipMethods.includes("Gift Card") ? (
+				<>
+					<TextField isRequired>
+						<TextField.Input
+							className="h-16 rounded-3xl"
+							placeholder="Enter Gift Card Code"
+							keyboardType="numeric"
+							autoCapitalize="none"
+							value={earning.giftCode?.toString()}
+							onChangeText={(value) => {
+								setEarning({ ...earning, giftCode: value });
+								setGiftError("");
+							}}
+						>
+							<TextField.InputStartContent className="pointer-events-none pl-2">
+								<Ionicons name="code-outline" size={20} color={mutedColor} />
+							</TextField.InputStartContent>
+						</TextField.Input>
+					</TextField>
+					{earning.giftCode && !giftCard && (
+						<Text className="px-4 text-red-500 text-sm">
+							Gift card code not found
+						</Text>
+					)}
+					{giftCard && (
+						<Text className="px-4 text-muted-foreground text-sm">
+							Available balance: ${giftCard.balance.toFixed(2)}
+						</Text>
+					)}
+					<TextField isRequired>
+						<TextField.Input
+							className="h-16 rounded-3xl"
+							placeholder="Enter amount from Gift Card"
+							keyboardType="numeric"
+							autoCapitalize="none"
+							value={earning.gift?.toString()}
+							onChangeText={(value) => {
+								setEarning({ ...earning, gift: value });
+								const giftAmount = Number.parseFloat(value || "0");
+								if (giftCard && giftAmount > giftCard.balance) {
+									setGiftError(
+										`Gift card balance insufficient. Available: $${giftCard.balance.toFixed(2)}`,
+									);
+								} else {
+									setGiftError("");
+								}
+							}}
+						>
+							<TextField.InputStartContent className="pointer-events-none pl-2">
+								<Ionicons name="cash-outline" size={20} color={mutedColor} />
+							</TextField.InputStartContent>
+						</TextField.Input>
+					</TextField>
+					{giftError && (
+						<Text className="px-4 text-red-500 text-sm">{giftError}</Text>
+					)}
+				</>
+			) : null}
 			{/* discount text-field*/}
 			<TextField isRequired>
 				<TextField.Input
@@ -236,43 +307,6 @@ export default function EditTransactionScreen() {
 					</Chip>
 				))}
 			</View>
-
-			{/* gift text-field*/}
-			{earning.compensationMethods.includes("Gift Card") ||
-			earning.tipMethods.includes("Gift Card") ? (
-				<>
-					<TextField isRequired>
-						<TextField.Input
-							className="h-16 rounded-3xl"
-							placeholder="Enter Gift Card Code"
-							keyboardType="numeric"
-							autoCapitalize="none"
-							value={earning.giftCode?.toString()}
-							onChangeText={(value) =>
-								setEarning({ ...earning, giftCode: value })
-							}
-						>
-							<TextField.InputStartContent className="pointer-events-none pl-2">
-								<Ionicons name="code-outline" size={20} color={mutedColor} />
-							</TextField.InputStartContent>
-						</TextField.Input>
-					</TextField>
-					<TextField isRequired>
-						<TextField.Input
-							className="h-16 rounded-3xl"
-							placeholder="Enter amount from Gift Card"
-							keyboardType="numeric"
-							autoCapitalize="none"
-							value={earning.gift?.toString()}
-							onChangeText={(value) => setEarning({ ...earning, gift: value })}
-						>
-							<TextField.InputStartContent className="pointer-events-none pl-2">
-								<Ionicons name="cash-outline" size={20} color={mutedColor} />
-							</TextField.InputStartContent>
-						</TextField.Input>
-					</TextField>
-				</>
-			) : null}
 			{/* service time field */}
 			<TextField>
 				<TextField.Input
@@ -308,7 +342,9 @@ export default function EditTransactionScreen() {
 			</TextField>
 			<Button
 				onPress={handleSubmit}
-				isDisabled={isLoading}
+				isDisabled={
+					isLoading || !!giftError || (!!earning.giftCode && !giftCard)
+				}
 				size="lg"
 				className="rounded-3xl"
 			>
