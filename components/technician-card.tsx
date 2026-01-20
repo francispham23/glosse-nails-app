@@ -37,7 +37,7 @@ export const TechnicianCard = ({
 	);
 
 	const className = cn(
-		"w-[100] text-right text-lg text-muted",
+		"text-right text-lg text-muted",
 		!isLight && "-foreground",
 	);
 
@@ -71,25 +71,21 @@ export const TechnicianCard = ({
 		>
 			<GestureDetector key={item._id} gesture={createSpeakerTapGesture(item)}>
 				<View className="w-full flex-row justify-between">
-					<Text className={technicianClassName}>
-						{technician?.name ?? "Unknown"}
+					<Text className={cn(technicianClassName, report && "text-sm")}>
+						{technician?.name?.split(" ")[0] ?? "Unknown"}
 					</Text>
-					<View className="flex-row justify-between gap-6">
-						<Text className={className}>${item.compensation}</Text>
-						<Text
-							className={cn(
-								"w-[70] text-right text-lg text-muted",
-								!isLight && "-foreground",
-							)}
-						>
-							${item.tip}
+
+					<Text className={cn(className, report ? "text-sm" : "mr-[-100]")}>
+						${item.compensation}
+					</Text>
+					<Text className={cn(className, report && "text-sm")}>
+						${item.tip}
+					</Text>
+					{report ? (
+						<Text className={cn(className, "text-sm")}>
+							${Number.parseFloat((item.compensation + item.tip).toFixed(2))}
 						</Text>
-						{report ? (
-							<Text className={className}>
-								${Number.parseFloat((item.compensation + item.tip).toFixed(2))}
-							</Text>
-						) : null}
-					</View>
+					) : null}
 				</View>
 			</GestureDetector>
 		</Animated.View>

@@ -41,7 +41,7 @@ export default function ReportRoute() {
 	const grandTotal = totalCompensation + totalTip;
 
 	const textClassName = cn(
-		"text-base text-foreground",
+		"w-20 text-base text-foreground",
 		!isLight && "-foreground",
 	);
 
@@ -50,9 +50,9 @@ export default function ReportRoute() {
 			{/* Header with date range selection */}
 			<View className="gap-4 bg-background-secondary px-6 pt-40 pb-4">
 				{/* Date range selectors */}
-				<View className="ml-45 gap-2 pt-5">
+				<View className="mr-30 gap-2 pt-5">
 					<View className="flex-row items-center gap-3">
-						<Text className={cn("w20", textClassName)}>Start Date:</Text>
+						<Text className={textClassName}>Start Date:</Text>
 						<TouchableOpacity
 							onPress={() => setShowStartPicker(!showStartPicker)}
 							className="flex-1 rounded-lg border border-border bg-background px-4 py-3"
@@ -76,7 +76,7 @@ export default function ReportRoute() {
 					)}
 
 					<View className="flex-row items-center gap-3">
-						<Text className={cn("w-20", textClassName)}>End Date:</Text>
+						<Text className={textClassName}>End Date:</Text>
 						<TouchableOpacity
 							onPress={() => setShowEndPicker(!showEndPicker)}
 							className="flex-1 rounded-lg border border-border bg-background px-4 py-3"
@@ -128,17 +128,11 @@ export default function ReportRoute() {
 			<View className="flex-1 px-6 pt-4">
 				<View className="mb-2 flex-row justify-between px-2">
 					<Text className="font-semibold text-foreground">Technician</Text>
-					<View className="flex-row gap-6">
-						<Text className="w-20 text-right font-semibold text-foreground">
-							Comp
-						</Text>
-						<Text className="w-18 text-right font-semibold text-foreground">
-							Tips
-						</Text>
-						<Text className="w-25 text-right font-semibold text-foreground">
-							Total
-						</Text>
-					</View>
+					<Text className="text-right font-semibold text-foreground">Comp</Text>
+					<Text className="text-right font-semibold text-foreground">Tips</Text>
+					<Text className="text-right font-semibold text-foreground">
+						Total
+					</Text>
 				</View>
 
 				<FlatList

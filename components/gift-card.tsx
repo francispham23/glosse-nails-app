@@ -25,7 +25,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 	);
 
 	const balanceClassName = cn(
-		"text-right font-semibold text-lg",
+		"text-right font-semibold text-md",
 		giftCard.balance > 0 ? "text-success" : "text-muted-foreground",
 	);
 	const textClassName = cn("text-base text-muted", !isLight && "-foreground");
@@ -51,7 +51,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 					exiting={FadeOut}
 					className="flex-row items-center justify-between rounded-lg bg-background-secondary px-4 py-3"
 				>
-					<Text className="font-medium font-mono text-foreground text-lg">
+					<Text className="font-medium font-mono text-foreground text-md">
 						{giftCard.code}
 					</Text>
 					<Text className={balanceClassName}>
