@@ -28,6 +28,7 @@ export default function TabLayout() {
 	const tintColor = useThemeColor("foreground");
 	const inactiveTintColor = useThemeColor("muted");
 	const bgColor = useThemeColor("background-secondary");
+
 	const insets = useSafeAreaInsets();
 	const bgHeight = BASE_BAR_HEIGHT + insets.bottom;
 

@@ -5,6 +5,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Button, Chip, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useEffect, useState } from "react";
 import { Alert, Keyboard, Text, View } from "react-native";
+
 import FormHeader, {
 	initialEarningState,
 	paymentMethods,

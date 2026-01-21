@@ -31,6 +31,7 @@ export const TechnicianCard = ({
 	const technician = useQuery(api.users.getUserById, {
 		userId: item._id,
 	});
+
 	const technicianClassName = cn(
 		"min-w-[50] text-left text-lg text-muted",
 		!isLight && "-foreground",

@@ -15,8 +15,8 @@ export default function CreateRoute() {
 	const background = useThemeColor("background");
 	const mutedColor = useThemeColor("muted");
 
-	const router = useRouter();
 	const { endOfDay } = useAppDate();
+	const router = useRouter();
 	const createGiftCard = useMutation(api.giftCards.create);
 
 	const [code, setCode] = useState("");

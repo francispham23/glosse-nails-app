@@ -32,15 +32,6 @@ export const GiftCard = ({ giftCard }: Props) => {
 	);
 	const textClassName = cn("text-base text-muted", !isLight && "-foreground");
 
-	const formatCreationDate = (timestamp: number) => {
-		const date = new Date(timestamp);
-		return date.toLocaleDateString("en-US", {
-			month: "long",
-			day: "numeric",
-			year: "numeric",
-		});
-	};
-
 	const totalUsed =
 		transactions?.reduce((sum, tx) => sum + (tx.gift || 0), 0) || 0;
 
@@ -145,4 +136,13 @@ export const GiftCard = ({ giftCard }: Props) => {
 			</Modal>
 		</>
 	);
+};
+
+const formatCreationDate = (timestamp: number) => {
+	const date = new Date(timestamp);
+	return date.toLocaleDateString("en-US", {
+		month: "long",
+		day: "numeric",
+		year: "numeric",
+	});
 };
