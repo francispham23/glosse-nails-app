@@ -1,8 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { cn } from "heroui-native";
-import { Text } from "react-native";
-import { Pressable } from "react-native-gesture-handler";
+import { Pressable, Text } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { useAppDate } from "@/contexts/app-date-context";

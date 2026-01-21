@@ -32,6 +32,7 @@ export default function GiftRoute() {
 					balance: tx.gift as number,
 					redeemedDate: tx.serviceDate as number,
 					client: tx.client as string | undefined,
+					technician: tx.technician as string | undefined,
 					_creationTime: tx.serviceDate as number,
 				};
 			}) || [];
@@ -52,7 +53,7 @@ export default function GiftRoute() {
 				<View className="mb-2 flex-row justify-between px-2">
 					<Text className={classname}>Sell Date</Text>
 					<Text className={classname}>Code</Text>
-					<Text className={cn(classname, "text-right")}>Amount Buy</Text>
+					<Text className={cn(classname, "text-right")}>Buy</Text>
 				</View>
 
 				<FlatList
@@ -68,8 +69,9 @@ export default function GiftRoute() {
 			<View className="flex-1 pt-6">
 				<View className="mb-2 flex-row justify-between px-2">
 					<Text className={classname}>Redeem Date</Text>
+					<Text className={classname}>Technician</Text>
 					<Text className={classname}>Code</Text>
-					<Text className={cn(classname, "text-right")}>Amount Spend</Text>
+					<Text className={cn(classname, "text-right")}>Spend</Text>
 				</View>
 
 				<FlatList
@@ -93,6 +95,7 @@ type Props = {
 		balance?: number;
 		sellDate?: number;
 		faceValue?: number;
+		technician?: string;
 		redeemedDate?: number;
 	};
 };
@@ -112,8 +115,23 @@ const GiftCard = ({ item }: Props) => {
 					},
 				)}
 			</Text>
-			<Text className={cn(classname, "flex-1 text-center")}>{item.code}</Text>
-			<Text className={cn(classname, "min-w-[100] text-right")}>
+			{item.redeemedDate ? (
+				<Text className={cn(classname, "flex-1")}>{item.technician}</Text>
+			) : null}
+			<Text
+				className={cn(
+					classname,
+					item.redeemedDate ? "text-center" : "flex-1 text-center",
+				)}
+			>
+				{item.code}
+			</Text>
+			<Text
+				className={cn(
+					classname,
+					item.redeemedDate ? "min-w-[70] text-right" : "min-w-[90] text-right",
+				)}
+			>
 				$
 				{item.redeemedDate
 					? item.balance?.toFixed(2)

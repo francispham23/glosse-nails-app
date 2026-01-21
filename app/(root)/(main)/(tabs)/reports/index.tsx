@@ -4,8 +4,7 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { cn } from "heroui-native";
 import { useState } from "react";
-import { Text, View } from "react-native";
-import { Pressable } from "react-native-gesture-handler";
+import { Pressable, Text, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { api } from "@/convex/_generated/api";
@@ -52,8 +51,8 @@ export default function ReportsRoute() {
 	const cashTransactions =
 		transactions?.filter(
 			(tx) =>
-				!tx.compensationMethods?.includes("card") &&
-				tx.compensationMethods?.includes("cash"),
+				!tx.compensationMethods?.includes("Card") &&
+				tx.compensationMethods?.includes("Cash"),
 		) || [];
 	const totalCashCharges = cashTransactions.reduce(
 		(sum, tx) => sum + (tx.compensation || 0),
@@ -68,7 +67,7 @@ export default function ReportsRoute() {
 	const tipCashTransactions =
 		transactions?.filter(
 			(tx) =>
-				!tx.tipMethods?.includes("card") && tx.tipMethods?.includes("cash"),
+				!tx.tipMethods?.includes("Card") && tx.tipMethods?.includes("Cash"),
 		) || [];
 	const totalTipCashOnly = tipCashTransactions.reduce(
 		(sum, tx) => sum + (tx.tip || 0),

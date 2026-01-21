@@ -2,8 +2,7 @@ import { useQuery } from "convex/react";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { cn } from "heroui-native";
-import { Text, View } from "react-native";
-import { Pressable } from "react-native-gesture-handler";
+import { Pressable, Text, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { useAppTheme } from "@/contexts/app-theme-context";

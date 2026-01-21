@@ -21,16 +21,26 @@ export default function DiscountRoute() {
 		transactions
 			?.filter(
 				(tx) =>
-					(!tx.compensationMethods?.includes("card") &&
-						(tx.compensationMethods?.includes("cash") ||
-							(tx.compInCash && tx.compInCash > 0))) ||
-					(!tx.tipMethods?.includes("card") &&
-						tx.tipMethods?.includes("cash")) ||
-					(tx.tipInCash && tx.tipInCash > 0),
+					(tx.compInCash && tx.compInCash > 0) ||
+					(tx.tipInCash && tx.tipInCash > 0) ||
+					(!tx.compensationMethods?.includes("Card") &&
+						tx.compensationMethods?.includes("Cash")) ||
+					(!tx.tipMethods?.includes("Card") && tx.tipMethods?.includes("Cash")),
 			)
 			.map((tx) => ({
 				...tx,
-				cash: (tx.compInCash || 0) + (tx.tipInCash || 0),
+				cash:
+					(tx.compInCash || 0) +
+					(tx.tipInCash || 0) +
+					(tx.compensationMethods?.includes("Cash") &&
+					!tx.compensationMethods?.includes("Card")
+						? tx.compensation ||
+							0 ||
+							(tx.tipMethods?.includes("Cash") &&
+							!tx.tipMethods?.includes("Card")
+								? tx.tip || 0
+								: 0)
+						: 0),
 			})) || [];
 
 	const classname = cn("font-semibold text-foreground");
@@ -42,13 +52,13 @@ export default function DiscountRoute() {
 			exiting={FadeOut}
 		>
 			<Text className="font-extrabold text-3xl text-foreground">
-				Discount Report
+				Cash Report
 			</Text>
 			<View className="flex-1 pt-6">
 				<View className="mb-2 flex-row justify-between px-2">
 					<Text className={classname}>Date</Text>
 					<Text className={classname}>Technician</Text>
-					<Text className={cn(classname, "text-right")}>Discount</Text>
+					<Text className={cn(classname, "text-right")}>Cash</Text>
 				</View>
 
 				<FlatList

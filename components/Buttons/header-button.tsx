@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Link, type Route, useRouter } from "expo-router";
 import { useThemeColor } from "heroui-native";
-import { Pressable } from "react-native-gesture-handler";
+import { Pressable } from "react-native";
 
 type HeaderButtonProps = {
 	iconName: React.ComponentProps<typeof Ionicons>["name"];
