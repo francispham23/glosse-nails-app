@@ -3,7 +3,7 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { cn } from "heroui-native";
 import { Text, View } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { Pressable } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { useAppTheme } from "@/contexts/app-theme-context";
@@ -41,11 +41,9 @@ export const TechnicianCard = ({
 		!isLight && "-foreground",
 	);
 
-	const createSpeakerTapGesture = (item: User) =>
-		Gesture.Tap()
-			.maxDistance(10)
-			.runOnJS(true)
-			.onEnd(() => {
+	return (
+		<Pressable
+			onPress={() => {
 				if (report) return;
 				Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 				if (isSelecting && onToggleSelect) {
@@ -53,23 +51,21 @@ export const TechnicianCard = ({
 				} else {
 					router.navigate(`/technician/${item._id}/create`);
 				}
-			});
-
-	return (
-		<Animated.View
-			key={item._id}
-			entering={FadeIn}
-			exiting={FadeOut}
-			className={cn(
-				"flex-row justify-between rounded-lg border-r-accent bg-background-secondary p-2",
-				isSelecting && isSelected && !isLight
-					? "border border-amber-50"
-					: isSelecting && isSelected && isLight
-						? "border border-primary"
-						: undefined,
-			)}
+			}}
 		>
-			<GestureDetector key={item._id} gesture={createSpeakerTapGesture(item)}>
+			<Animated.View
+				key={item._id}
+				entering={FadeIn}
+				exiting={FadeOut}
+				className={cn(
+					"flex-row justify-between rounded-lg border-r-accent bg-background-secondary p-2",
+					isSelecting && isSelected && !isLight
+						? "border border-amber-50"
+						: isSelecting && isSelected && isLight
+							? "border border-primary"
+							: undefined,
+				)}
+			>
 				<View className="w-full flex-row justify-between">
 					<Text className={cn(technicianClassName, report && "text-sm")}>
 						{technician?.name?.split(" ")[0] ?? "Unknown"}
@@ -89,7 +85,7 @@ export const TechnicianCard = ({
 						</Text>
 					) : null}
 				</View>
-			</GestureDetector>
-		</Animated.View>
+			</Animated.View>
+		</Pressable>
 	);
 };

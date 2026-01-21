@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { Platform, Pressable } from "react-native";
+import { Pressable } from "react-native-gesture-handler";
 import Animated, { FadeOut, ZoomIn } from "react-native-reanimated";
 import { withUniwind } from "uniwind";
 
@@ -14,10 +14,7 @@ export function ThemeToggleButton() {
 	return (
 		<Pressable
 			onPress={() => {
-				if (Platform.OS === "ios") {
-					Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-				}
-
+				Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 				toggleTheme();
 			}}
 			className="px-2.5"

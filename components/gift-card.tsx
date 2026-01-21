@@ -1,8 +1,10 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useQuery } from "convex/react";
+import * as Haptics from "expo-haptics";
 import { cn } from "heroui-native";
 import { useState } from "react";
-import { Modal, Pressable, Text, View } from "react-native";
+import { Modal, Text, View } from "react-native";
+import { Pressable } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { useAppTheme } from "@/contexts/app-theme-context";
@@ -44,7 +46,12 @@ export const GiftCard = ({ giftCard }: Props) => {
 
 	return (
 		<>
-			<Pressable onPress={() => setModalVisible(true)}>
+			<Pressable
+				onPress={() => {
+					Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+					setModalVisible(true);
+				}}
+			>
 				<Animated.View
 					key={giftCard._id}
 					entering={FadeIn}

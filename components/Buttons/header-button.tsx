@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { Link, type Route, useRouter } from "expo-router";
 import { useThemeColor } from "heroui-native";
-import { Pressable } from "react-native";
+import { Pressable } from "react-native-gesture-handler";
 
 type HeaderButtonProps = {
 	iconName: React.ComponentProps<typeof Ionicons>["name"];
@@ -16,7 +17,10 @@ export const HeaderButton = ({ iconName, route }: HeaderButtonProps) => {
 		return (
 			<Pressable
 				className="justify-center rounded-full px-2.5"
-				onPress={() => router.navigate(route)}
+				onPress={() => {
+					Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+					router.navigate(route);
+				}}
 			>
 				<Ionicons name={iconName} size={18} color={themeColorForeground} />
 			</Pressable>

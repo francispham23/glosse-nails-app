@@ -51,6 +51,14 @@ export default function MainLayout() {
 				}}
 			/>
 			<Stack.Screen
+				name="report"
+				options={{
+					headerShown: false,
+					presentation: "modal",
+					...root,
+				}}
+			/>
+			<Stack.Screen
 				name="pick-date"
 				options={{
 					headerShown: false,

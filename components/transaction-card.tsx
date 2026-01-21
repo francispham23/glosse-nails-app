@@ -1,6 +1,8 @@
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { cn } from "heroui-native";
-import { Pressable, Text } from "react-native";
+import { Text } from "react-native";
+import { Pressable } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
@@ -27,6 +29,7 @@ export const TransactionCard = ({ transaction, technicianId }: Props) => {
 	return (
 		<Pressable
 			onPress={() => {
+				Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 				// Don't allow editing local transactions that haven't been synced yet
 				if (!isLocalTransaction) {
 					router.navigate(`/transaction/${transaction._id}/edit`);

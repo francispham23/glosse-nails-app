@@ -1,5 +1,6 @@
 import { Link, Stack } from "expo-router";
-import { Pressable, Text } from "react-native";
+import { Text } from "react-native";
+import { Pressable } from "react-native-gesture-handler";
 
 import { HeaderButton } from "@/components/Buttons/header-button";
 import { useNavigationOptions } from "@/hooks/use-navigation-options";

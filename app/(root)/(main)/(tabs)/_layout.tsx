@@ -19,7 +19,7 @@ const TABS: TabConfig[] = [
 		icon: "swap-horizontal-outline",
 	},
 	{ name: "gift-card", title: "Gift Card", icon: "gift-outline" },
-	{ name: "report", title: "Report", icon: "stats-chart-outline" },
+	{ name: "reports", title: "Reports", icon: "stats-chart-outline" },
 ];
 
 const BASE_BAR_HEIGHT = 56;
