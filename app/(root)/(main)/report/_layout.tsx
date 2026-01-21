@@ -31,6 +31,15 @@ export default function ReportLayout() {
 					title: "",
 				}}
 			/>
+			<Stack.Screen
+				name="cash"
+				options={{
+					headerBackButtonDisplayMode: "generic",
+					headerLeft: () => <HeaderButton iconName="close" />,
+					headerShown: true,
+					title: "",
+				}}
+			/>
 		</Stack>
 	);
 }

@@ -17,20 +17,21 @@ export default function DiscountRoute() {
 		endDate,
 	});
 
-	const discount =
+	const cashTransactions =
 		transactions
 			?.filter(
 				(tx) =>
-					tx.discount && tx.discount > 0 && tx.serviceDate && tx.technician,
+					(!tx.compensationMethods?.includes("card") &&
+						(tx.compensationMethods?.includes("cash") ||
+							(tx.compInCash && tx.compInCash > 0))) ||
+					(!tx.tipMethods?.includes("card") &&
+						tx.tipMethods?.includes("cash")) ||
+					(tx.tipInCash && tx.tipInCash > 0),
 			)
-			.map((tx) => {
-				return {
-					_id: tx._id,
-					serviceDate: tx.serviceDate as number,
-					technician: tx.technician as string,
-					discount: tx.discount || 0,
-				};
-			}) || [];
+			.map((tx) => ({
+				...tx,
+				cash: (tx.compInCash || 0) + (tx.tipInCash || 0),
+			})) || [];
 
 	const classname = cn("font-semibold text-foreground");
 
@@ -51,11 +52,11 @@ export default function DiscountRoute() {
 				</View>
 
 				<FlatList
-					data={discount}
+					data={cashTransactions}
 					keyExtractor={(item) => item._id}
-					renderItem={({ item }) => <DiscountCard item={item} />}
+					renderItem={({ item }) => <CashCard item={item} />}
 					contentContainerClassName="gap-2"
-					ListEmptyComponent={<ListEmptyComponent item="discount" />}
+					ListEmptyComponent={<ListEmptyComponent item="cash" />}
 				/>
 			</View>
 		</Animated.View>
@@ -65,29 +66,31 @@ export default function DiscountRoute() {
 type Props = {
 	item: {
 		_id: string;
-		serviceDate: number;
-		technician: string;
-		discount: number;
+		serviceDate: number | undefined;
+		technician: string | undefined;
+		cash: number;
 	};
 };
 
-const DiscountCard = ({ item }: Props) => {
+const CashCard = ({ item }: Props) => {
 	const classname = cn("text-md text-muted", !true && "-foreground");
 
 	return (
 		<View className="flex-row items-center gap-4 rounded-lg border-r-accent bg-background-secondary p-2">
 			<Text className={cn(classname, "min-w-[105]")}>
-				{new Date(item.serviceDate).toLocaleDateString("en-US", {
-					month: "short",
-					day: "numeric",
-					year: "numeric",
-				})}
+				{item.serviceDate
+					? new Date(item.serviceDate).toLocaleDateString("en-US", {
+							month: "short",
+							day: "numeric",
+							year: "numeric",
+						})
+					: "N/A"}
 			</Text>
 			<Text className={cn(classname, "flex-1 text-left")}>
-				{item.technician}
+				{item.technician || "Unknown"}
 			</Text>
 			<Text className={cn(classname, "min-w-[40] text-right")}>
-				${item.discount.toFixed(2)}
+				${item.cash.toFixed(2)}
 			</Text>
 		</View>
 	);

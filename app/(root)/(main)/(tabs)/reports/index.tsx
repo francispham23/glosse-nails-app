@@ -41,9 +41,41 @@ export default function ReportsRoute() {
 	const totalDiscount =
 		transactions?.reduce((sum, tx) => sum + (tx.discount || 0), 0) ?? 0;
 
+	const cashTransactions =
+		transactions?.filter(
+			(tx) =>
+				!tx.compensationMethods?.includes("card") &&
+				tx.compensationMethods?.includes("cash"),
+		) || [];
+	const totalCashCharges = cashTransactions.reduce(
+		(sum, tx) => sum + (tx.compensation || 0),
+		0,
+	);
+	const totalPartialCashCharges = transactions?.reduce(
+		(sum, tx) => sum + (tx.compInCash || 0),
+		0,
+	);
+	const totalCompCash = totalCashCharges + (totalPartialCashCharges || 0);
+
+	const tipCashTransactions =
+		transactions?.filter(
+			(tx) =>
+				!tx.tipMethods?.includes("card") && tx.tipMethods?.includes("cash"),
+		) || [];
+	const totalTipCashOnly = tipCashTransactions.reduce(
+		(sum, tx) => sum + (tx.tip || 0),
+		0,
+	);
+	const totalPartialTipCash = transactions?.reduce(
+		(sum, tx) => sum + (tx.tipInCash || 0),
+		0,
+	);
+	const totalTipCash = totalTipCashOnly + (totalPartialTipCash || 0);
+	const totalCash = totalCompCash + totalTipCash;
+
 	const classname = cn("font-semibold text-foreground");
 
-	const onPress = (type: "payroll" | "discount") => {
+	const onPress = (type: "payroll" | "discount" | "cash") => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 		router.navigate({
 			pathname: `/report/${type}`,
@@ -144,6 +176,26 @@ export default function ReportsRoute() {
 						<Text className={classname}>Total Discount:</Text>
 						<Text className="font-bold text-foreground text-lg">
 							${totalDiscount.toFixed(2)}
+						</Text>
+					</View>
+				</View>
+			</Pressable>
+
+			{/* Cash totals */}
+			<Pressable onPress={() => onPress("cash")}>
+				<View className="rounded-lg bg-background p-4">
+					<View className="flex-row justify-between border-border border-b pb-2">
+						<Text className="text-foreground">Total Compensation Cash:</Text>
+						<Text className={classname}>${totalCompCash.toFixed(2)}</Text>
+					</View>
+					<View className="flex-row justify-between border-border border-b py-2">
+						<Text className="text-foreground">Total Tip Cash:</Text>
+						<Text className={classname}>${totalTipCash.toFixed(2)}</Text>
+					</View>
+					<View className="flex-row justify-between pt-2">
+						<Text className={classname}>Grand Total Cash:</Text>
+						<Text className="font-bold text-foreground text-lg">
+							${totalCash.toFixed(2)}
 						</Text>
 					</View>
 				</View>

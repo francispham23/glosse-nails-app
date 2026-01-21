@@ -10,7 +10,7 @@ export default function Landing() {
 		<Container className="mb-6 gap-8 p-6">
 			<View className="flex-1 justify-end">
 				<Text className="font-extrabold text-6xl text-foreground">
-					Glosse Nails
+					Glossé Nails
 				</Text>
 				<Text className="text-muted-foreground text-xl">The Beauty App</Text>
 			</View>
