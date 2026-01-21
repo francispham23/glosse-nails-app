@@ -22,6 +22,15 @@ export default function ReportLayout() {
 					title: "",
 				}}
 			/>
+			<Stack.Screen
+				name="discount"
+				options={{
+					headerBackButtonDisplayMode: "generic",
+					headerLeft: () => <HeaderButton iconName="close" />,
+					headerShown: true,
+					title: "",
+				}}
+			/>
 		</Stack>
 	);
 }

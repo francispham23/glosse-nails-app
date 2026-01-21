@@ -12,19 +12,6 @@ export const GiftCardTransaction = ({ transaction }: Props) => {
 	const { isLight } = useAppTheme();
 	const textClassName = cn("text-base text-muted", !isLight && "-foreground");
 
-	const formatDate = (timestamp: number | undefined) => {
-		if (!timestamp) return "Unknown";
-		const date = new Date(timestamp);
-		return date.toLocaleDateString("en-US", {
-			month: "short",
-			day: "numeric",
-			year: "numeric",
-			hour: "numeric",
-			minute: "2-digit",
-			hour12: true,
-		});
-	};
-
 	return (
 		<Animated.View
 			key={transaction._id}
@@ -48,4 +35,17 @@ export const GiftCardTransaction = ({ transaction }: Props) => {
 			) : null}
 		</Animated.View>
 	);
+};
+
+const formatDate = (timestamp: number | undefined) => {
+	if (!timestamp) return "Unknown";
+	const date = new Date(timestamp);
+	return date.toLocaleDateString("en-US", {
+		month: "short",
+		day: "numeric",
+		year: "numeric",
+		hour: "numeric",
+		minute: "2-digit",
+		hour12: true,
+	});
 };

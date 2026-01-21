@@ -28,20 +28,31 @@ export default function ReportsRoute() {
 		report: true,
 	});
 
-	const formatDate = (date: Date) => {
-		return date.toLocaleDateString("en-US", {
-			month: "short",
-			day: "numeric",
-			year: "numeric",
-		});
-	};
+	const transactions = useQuery(api.transactions.listByDateRange, {
+		startDate: startDate.getTime(),
+		endDate: endDate.getTime(),
+	});
 
 	const totalCompensation =
 		technicians?.reduce((sum, tech) => sum + tech.compensation, 0) ?? 0;
 	const totalTip = technicians?.reduce((sum, tech) => sum + tech.tip, 0) ?? 0;
 	const grandTotal = totalCompensation + totalTip;
 
+	const totalDiscount =
+		transactions?.reduce((sum, tx) => sum + (tx.discount || 0), 0) ?? 0;
+
 	const classname = cn("font-semibold text-foreground");
+
+	const onPress = (type: "payroll" | "discount") => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+		router.navigate({
+			pathname: `/report/${type}`,
+			params: {
+				startDate: startDate.getTime().toString(),
+				endDate: endDate.getTime().toString(),
+			},
+		});
+	};
 
 	return (
 		<Animated.View
@@ -106,18 +117,8 @@ export default function ReportsRoute() {
 				)}
 			</View>
 
-			{/* Summary totals */}
-			<Pressable
-				onPress={() => {
-					Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-					router.navigate({
-						pathname: "/report/payroll",
-						params: {
-							technicians: JSON.stringify(technicians),
-						},
-					});
-				}}
-			>
+			{/* Payroll totals */}
+			<Pressable onPress={() => onPress("payroll")}>
 				<View className="rounded-lg bg-background p-4">
 					<View className="flex-row justify-between border-border border-b pb-2">
 						<Text className="text-foreground">Total Compensation:</Text>
@@ -135,6 +136,26 @@ export default function ReportsRoute() {
 					</View>
 				</View>
 			</Pressable>
+
+			{/* Discount totals */}
+			<Pressable onPress={() => onPress("discount")}>
+				<View className="rounded-lg bg-background p-4">
+					<View className="flex-row justify-between border-border border-b pb-2">
+						<Text className={classname}>Total Discount:</Text>
+						<Text className="font-bold text-foreground text-lg">
+							${totalDiscount.toFixed(2)}
+						</Text>
+					</View>
+				</View>
+			</Pressable>
 		</Animated.View>
 	);
 }
+
+const formatDate = (date: Date) => {
+	return date.toLocaleDateString("en-US", {
+		month: "short",
+		day: "numeric",
+		year: "numeric",
+	});
+};

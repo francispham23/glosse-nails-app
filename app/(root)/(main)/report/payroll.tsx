@@ -1,3 +1,4 @@
+import { useQuery } from "convex/react";
 import { useLocalSearchParams } from "expo-router";
 import { cn } from "heroui-native";
 import { Text, View } from "react-native";
@@ -6,12 +7,18 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { ListEmptyComponent } from "@/components/list-empty";
 import { TechnicianCard } from "@/components/technician-card";
+import { api } from "@/convex/_generated/api";
 
 export default function ReportRoute() {
 	const params = useLocalSearchParams();
-	const technicians = params.technicians
-		? JSON.parse(params.technicians as string)
-		: [];
+	const startDate = params.startDate ? Number(params.startDate) : Date.now();
+	const endDate = params.endDate ? Number(params.endDate) : Date.now();
+
+	const technicians = useQuery(api.users.usersByDateRange, {
+		startDate,
+		endDate,
+		report: true,
+	});
 
 	const classname = cn("font-semibold text-foreground");
 
