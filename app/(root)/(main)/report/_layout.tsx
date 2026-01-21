@@ -40,6 +40,15 @@ export default function ReportLayout() {
 					title: "",
 				}}
 			/>
+			<Stack.Screen
+				name="gift"
+				options={{
+					headerBackButtonDisplayMode: "generic",
+					headerLeft: () => <HeaderButton iconName="close" />,
+					headerShown: true,
+					title: "",
+				}}
+			/>
 		</Stack>
 	);
 }

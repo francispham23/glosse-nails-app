@@ -33,6 +33,14 @@ export default function ReportsRoute() {
 		endDate: endDate.getTime(),
 	});
 
+	const giftCards = useQuery(api.giftCards.listByDateRange, {
+		startDate: startDate.getTime(),
+		endDate: endDate.getTime(),
+	});
+
+	const totalGiftCardBalance =
+		giftCards?.reduce((sum, gc) => sum + gc.balance, 0) ?? 0;
+
 	const totalCompensation =
 		technicians?.reduce((sum, tech) => sum + tech.compensation, 0) ?? 0;
 	const totalTip = technicians?.reduce((sum, tech) => sum + tech.tip, 0) ?? 0;
@@ -75,7 +83,7 @@ export default function ReportsRoute() {
 
 	const classname = cn("font-semibold text-foreground");
 
-	const onPress = (type: "payroll" | "discount" | "cash") => {
+	const onPress = (type: "payroll" | "discount" | "cash" | "gift") => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 		router.navigate({
 			pathname: `/report/${type}`,
@@ -196,6 +204,18 @@ export default function ReportsRoute() {
 						<Text className={classname}>Grand Total Cash:</Text>
 						<Text className="font-bold text-foreground text-lg">
 							${totalCash.toFixed(2)}
+						</Text>
+					</View>
+				</View>
+			</Pressable>
+
+			{/* Gift Card totals */}
+			<Pressable onPress={() => onPress("gift")}>
+				<View className="rounded-lg bg-background p-4">
+					<View className="flex-row justify-between pt-2">
+						<Text className={classname}>Total Balance Gift Card:</Text>
+						<Text className="font-bold text-foreground text-lg">
+							${totalGiftCardBalance.toFixed(2)}
 						</Text>
 					</View>
 				</View>

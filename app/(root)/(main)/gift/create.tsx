@@ -1,4 +1,5 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation } from "convex/react";
 import { useRouter } from "expo-router";
 import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
@@ -7,7 +8,7 @@ import { Alert, Keyboard } from "react-native";
 
 import FormHeader from "@/components/form";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
-
+import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 
 export default function CreateRoute() {
@@ -15,12 +16,14 @@ export default function CreateRoute() {
 	const mutedColor = useThemeColor("muted");
 
 	const router = useRouter();
+	const { endOfDay } = useAppDate();
+	const createGiftCard = useMutation(api.giftCards.create);
 
 	const [code, setCode] = useState("");
 	const [balance, setBalance] = useState("");
+	const [date, setDate] = useState(new Date());
+	const [open, setOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
-
-	const createGiftCard = useMutation(api.giftCards.create);
 
 	/* ----------------------------- handle sign in ----------------------------- */
 	const handleSubmit = async () => {
@@ -39,11 +42,13 @@ export default function CreateRoute() {
 			await createGiftCard({
 				code: code.trim(),
 				balance: Number.parseFloat(balance),
+				sellDate: date.getTime(),
 			});
 
 			Alert.alert("Success", "Gift card created successfully");
 			setCode("");
 			setBalance("");
+			setDate(new Date());
 			router.back();
 		} catch (error) {
 			Alert.alert(
@@ -84,7 +89,7 @@ export default function CreateRoute() {
 			<TextField isRequired>
 				<TextField.Input
 					className="h-16 rounded-3xl"
-					placeholder="Enter Initial Balance"
+					placeholder="Enter Gift Card Value"
 					keyboardType="numeric"
 					value={balance}
 					onChangeText={setBalance}
@@ -93,6 +98,36 @@ export default function CreateRoute() {
 						<Ionicons name="cash-outline" size={20} color={mutedColor} />
 					</TextField.InputStartContent>
 				</TextField.Input>
+			</TextField>
+
+			{/* sell time field */}
+			<TextField>
+				<TextField.Input
+					className="h-16 rounded-3xl"
+					placeholder="Select service time"
+					value={date.toLocaleTimeString([], {
+						hour: "2-digit",
+						minute: "2-digit",
+					})}
+					editable={false}
+					onPressIn={() => setOpen(!open)}
+				>
+					<TextField.InputStartContent className="pointer-events-none pl-2">
+						<Ionicons name="time-outline" size={20} color={mutedColor} />
+					</TextField.InputStartContent>
+				</TextField.Input>
+				{open && (
+					<DateTimePicker
+						mode="time"
+						value={date}
+						maximumDate={endOfDay}
+						display="spinner"
+						onChange={(_, selectedDate) => {
+							setDate(selectedDate || date);
+							setOpen(false);
+						}}
+					/>
+				)}
 			</TextField>
 
 			<Button

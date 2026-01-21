@@ -32,6 +32,7 @@ export const create = mutation({
 	args: {
 		code: v.string(),
 		balance: v.float64(),
+		sellDate: v.number(),
 	},
 	handler: async (ctx, args) => {
 		// Check if code already exists
@@ -47,6 +48,35 @@ export const create = mutation({
 		return await ctx.db.insert("giftCards", {
 			code: args.code,
 			balance: args.balance,
+			faceValue: args.balance,
+			sellDate: args.sellDate,
 		});
+	},
+});
+
+export const listByDateRange = query({
+	args: {
+		startDate: v.number(),
+		endDate: v.number(),
+	},
+	handler: async (ctx, args) => {
+		const giftCards = await ctx.db
+			.query("giftCards")
+			.filter(
+				(q) =>
+					q.gte(q.field("sellDate"), args.startDate) &&
+					q.lte(q.field("sellDate"), args.endDate),
+			)
+			.collect();
+
+		return Promise.all(
+			giftCards.map(async (giftCard) => {
+				const client = giftCard.client && (await ctx.db.get(giftCard.client));
+				return {
+					...giftCard,
+					client: client ? client.name : undefined,
+				};
+			}),
+		);
 	},
 });

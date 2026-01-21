@@ -44,6 +44,8 @@ const schema = defineSchema({
 		client: v.optional(v.id("users")),
 		code: v.string(),
 		balance: v.float64(),
+		faceValue: v.float64(),
+		sellDate: v.number(),
 	}).index("by_code", ["code"]),
 
 	// Daily Technician Shift Table
