@@ -24,10 +24,10 @@ export default function ReportRoute() {
 			<Text className="font-extrabold text-3xl text-foreground">
 				PayRoll Report
 			</Text>
-			<View className="mb-25 flex-1 p-4">
+			<View className="flex-1 pt-6">
 				<View className="mb-2 flex-row justify-between px-2">
 					<Text className={classname}>Technician</Text>
-					<Text className={cn(classname, "text-right")}>Comp</Text>
+					<Text className={cn(classname, "text-right")}>Commission</Text>
 					<Text className={cn(classname, "text-right")}>Tips</Text>
 					<Text className={cn(classname, "text-right")}>Total</Text>
 				</View>

@@ -66,21 +66,21 @@ export const TechnicianCard = ({
 							: undefined,
 				)}
 			>
-				<View className="w-full flex-row justify-between">
-					<Text className={cn(technicianClassName, report && "text-sm")}>
+				<View className="w-full flex-row items-center gap-4">
+					<Text
+						className={cn(technicianClassName, report && "text-sm", "flex-1")}
+					>
 						{technician?.name?.split(" ")[0] ?? "Unknown"}
 					</Text>
 
-					<Text
-						className={cn(className, report ? "mr-[-15] text-sm" : "mr-[-80]")}
-					>
+					<Text className={cn(className, report && "text-sm", "min-w-[60]")}>
 						${item.compensation}
 					</Text>
-					<Text className={cn(className, report && "mr-[-10] text-sm")}>
+					<Text className={cn(className, report && "text-sm", "min-w-[60]")}>
 						${item.tip}
 					</Text>
 					{report ? (
-						<Text className={cn(className, "text-sm")}>
+						<Text className={cn(className, "min-w-[70] text-sm")}>
 							${Number.parseFloat((item.compensation + item.tip).toFixed(2))}
 						</Text>
 					) : null}
