@@ -1,3 +1,4 @@
+import { useAuthActions } from "@convex-dev/auth/react";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { Link } from "expo-router";
 import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
@@ -6,8 +7,8 @@ import { Alert, Text } from "react-native";
 
 import FormHeader, { FormContainer } from "@/components/form";
 
-// TODO: Implement sign-up logic with Convex Auth
 export default function SignUpRoute() {
+	const { signIn } = useAuthActions();
 	const mutedColor = useThemeColor("muted");
 	const themeColorBackground = useThemeColor("background");
 
@@ -16,16 +17,10 @@ export default function SignUpRoute() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
-	const [isLoading] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
 	/* ------------------------------ handle signup ----------------------------- */
 	const handleSignUp = async () => {
-		/**
-		 * FEAT: Add your own form validation validation here
-		 * i've been using tanstack form for react native with zod
-		 *
-		 * but this is just a base for you to get started
-		 */
 		if (!name.trim()) {
 			Alert.alert("Error", "Please enter your name");
 			return;
@@ -44,6 +39,27 @@ export default function SignUpRoute() {
 		if (password.length < 6) {
 			Alert.alert("Error", "Password must be at least 6 characters");
 			return;
+		}
+
+		setIsLoading(true);
+		try {
+			await signIn("password", {
+				email: email.trim().toLowerCase(),
+				password,
+				name: name.trim(),
+				flow: "signUp",
+			});
+			// Navigation handled automatically by auth state change
+		} catch (error) {
+			console.error("Sign up error:", error);
+			Alert.alert(
+				"Sign Up Failed",
+				error instanceof Error
+					? error.message
+					: "Unable to create account. Please try again.",
+			);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -65,11 +81,7 @@ export default function SignUpRoute() {
 					onChangeText={setName}
 				>
 					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons
-							name="person-outline"
-							size={20}
-							color={mutedColor}
-						/>
+						<Ionicons name="person-outline" size={20} color={mutedColor} />
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
@@ -84,11 +96,7 @@ export default function SignUpRoute() {
 					onChangeText={setEmail}
 				>
 					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons
-							name="mail-outline"
-							size={20}
-							color={mutedColor}
-						/>
+						<Ionicons name="mail-outline" size={20} color={mutedColor} />
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
@@ -102,18 +110,10 @@ export default function SignUpRoute() {
 					onChangeText={setPassword}
 				>
 					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons
-							name="lock-closed-outline"
-							size={20}
-							color={mutedColor}
-						/>
+						<Ionicons name="lock-closed-outline" size={20} color={mutedColor} />
 					</TextField.InputStartContent>
 					<TextField.InputEndContent className="pointer-events-none pr-2">
-						<Ionicons
-							name="eye-outline"
-							size={20}
-							color={mutedColor}
-						/>
+						<Ionicons name="eye-outline" size={20} color={mutedColor} />
 					</TextField.InputEndContent>
 				</TextField.Input>
 			</TextField>
@@ -127,18 +127,10 @@ export default function SignUpRoute() {
 					onChangeText={setConfirmPassword}
 				>
 					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons
-							name="lock-closed-outline"
-							size={20}
-							color={mutedColor}
-						/>
+						<Ionicons name="lock-closed-outline" size={20} color={mutedColor} />
 					</TextField.InputStartContent>
 					<TextField.InputEndContent className="pointer-events-none pr-2">
-						<Ionicons
-							name="checkmark-outline"
-							size={20}
-							color={mutedColor}
-						/>
+						<Ionicons name="checkmark-outline" size={20} color={mutedColor} />
 					</TextField.InputEndContent>
 				</TextField.Input>
 			</TextField>
@@ -152,7 +144,7 @@ export default function SignUpRoute() {
 				<Button.Label>
 					{isLoading ? "Creating Account..." : "Sign Up"}
 				</Button.Label>
-					{isLoading ? <Spinner color={themeColorBackground} /> : null}
+				{isLoading ? <Spinner color={themeColorBackground} /> : null}
 			</Button>
 			<Text className="px-14 text-center text-muted-foreground text-sm">
 				by continuing you agree to our{" "}

@@ -1,3 +1,4 @@
+import { useAuthActions } from "@convex-dev/auth/react";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { Link } from "expo-router";
 import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
@@ -6,8 +7,8 @@ import { Alert } from "react-native";
 
 import FormHeader, { FormContainer } from "@/components/form";
 
-// TODO: Implement sign-in logic with Convex Auth
 export default function SignInRoute() {
+	const { signIn } = useAuthActions();
 	const mutedColor = useThemeColor("muted");
 	const themeColorBackground = useThemeColor("background");
 	const accentForegroundColor = useThemeColor("accent-foreground");
@@ -15,16 +16,10 @@ export default function SignInRoute() {
 	/* ---------------------------------- state --------------------------------- */
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [isLoading] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
 	/* ----------------------------- handle sign in ----------------------------- */
 	const handleSignIn = async () => {
-		/**
-		 * FEAT: Add your own form validation validation here
-		 * i've been using tanstack form for react native with zod
-		 *
-		 * but this is just a base for you to get started
-		 */
 		if (!email.trim()) {
 			Alert.alert("Error", "Please enter your email");
 			return;
@@ -32,6 +27,26 @@ export default function SignInRoute() {
 		if (!password) {
 			Alert.alert("Error", "Please enter your password");
 			return;
+		}
+
+		setIsLoading(true);
+		try {
+			await signIn("password", {
+				email: email.trim().toLowerCase(),
+				password,
+				flow: "signIn",
+			});
+			// Navigation handled automatically by auth state change
+		} catch (error) {
+			console.error("Sign in error:", error);
+			Alert.alert(
+				"Sign In Failed",
+				error instanceof Error
+					? error.message
+					: "Invalid email or password. Please try again.",
+			);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
