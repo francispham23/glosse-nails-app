@@ -1,6 +1,5 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import Ionicons from "@expo/vector-icons/build/Ionicons";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { Button, cn, Spinner, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Alert, ScrollView, Text, View } from "react-native";
@@ -37,6 +36,35 @@ export default function SettingsRoute() {
 					<Text className={className}>
 						created {new Date(user._creationTime).toDateString()}
 					</Text>
+				</View>
+				<View className="mt-4 flex-row justify-end">
+					<Button
+						variant="tertiary"
+						size="sm"
+						className="self-start rounded-full"
+						isDisabled={isSigningOut}
+						onPress={async () => {
+							setIsSigningOut(true);
+							Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+								{
+									text: "Cancel",
+									style: "cancel",
+								},
+								{
+									text: "Sign Out",
+									onPress: () => {
+										void signOut();
+									},
+								},
+							]);
+							setIsSigningOut(false);
+						}}
+					>
+						<Button.Label>
+							{isSigningOut ? "Signing Out..." : "Sign Out"}
+						</Button.Label>
+						{isSigningOut ? <Spinner color={themeColorForeground} /> : null}
+					</Button>
 				</View>
 			</ScrollView>
 		</Animated.View>
