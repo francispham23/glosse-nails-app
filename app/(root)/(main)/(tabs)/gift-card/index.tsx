@@ -41,7 +41,7 @@ export default function GiftCardRoute() {
 				ListEmptyComponent={<ListEmptyComponent item="gift card" />}
 			/>
 			<GestureDetector gesture={createSpeakerTapGesture()}>
-				<View className="absolute bottom-30 self-center">
+				<View className="absolute bottom-25 self-center">
 					<AddButton />
 				</View>
 			</GestureDetector>

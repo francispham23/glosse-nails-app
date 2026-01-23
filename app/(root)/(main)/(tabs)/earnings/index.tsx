@@ -100,7 +100,7 @@ export default function HomeRoute() {
 				itemLayoutAnimation={LinearTransition}
 				ListEmptyComponent={<ListEmptyComponent item="technician" />}
 			/>
-			<View className="absolute bottom-30 self-center">
+			<View className="absolute bottom-25 self-center">
 				<AddButton
 					isAdding={isSelecting}
 					setIsAdding={async (adding) => {
