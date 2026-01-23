@@ -13,7 +13,6 @@ import FormHeader, {
 import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
-import { storeEarningForCheckout } from "@/utils/transaction-storage";
 import type {
 	Category,
 	EarningFormState,
@@ -68,7 +67,6 @@ export default function CreateRoute() {
 			// Store earning in Convex
 			await addTransaction({ body: earning });
 			// Store earning in AsyncStorage for later bulk insertion at checkout
-			await storeEarningForCheckout(earning);
 
 			setEarning({
 				...initialEarningState,

@@ -35,6 +35,7 @@ export default function EditTransactionScreen() {
 
 	const categories = useQuery(api.categories.getFormCategories);
 	const updateTransaction = useMutation(api.transactions.updateTransaction);
+	const deleteTransaction = useMutation(api.transactions.deleteTransaction);
 
 	const [earning, setEarning] = useState<EarningFormState>({
 		...initialEarningState,
@@ -49,7 +50,8 @@ export default function EditTransactionScreen() {
 	);
 
 	const [open, setOpen] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
+	const [isUpdating, setIsUpdating] = useState(false);
+	const [isDeleting, setIsDeleting] = useState(false);
 	const [giftError, setGiftError] = useState("");
 
 	// Populate form when transaction loads
@@ -87,7 +89,7 @@ export default function EditTransactionScreen() {
 		if (!transaction || !transactionId) return;
 
 		try {
-			setIsLoading(true);
+			setIsUpdating(true);
 			await updateTransaction({
 				id: transactionId as Id<"transactions">,
 				body: earning,
@@ -103,7 +105,7 @@ export default function EditTransactionScreen() {
 			Alert.alert("Error", "Failed to update transaction");
 			console.error("Failed to update transaction:", error);
 		} finally {
-			setIsLoading(false);
+			setIsUpdating(false);
 		}
 	};
 
@@ -132,6 +134,47 @@ export default function EditTransactionScreen() {
 				? { ...prev, compensationMethods: methods }
 				: { ...prev, tipMethods: methods };
 		});
+
+	const handleDelete = async () => {
+		if (!transactionId) return;
+
+		Alert.alert(
+			"Delete Transaction",
+			"Are you sure you want to delete this transaction? This action cannot be undone.",
+			[
+				{
+					text: "Cancel",
+					style: "cancel",
+				},
+				{
+					text: "Delete",
+					style: "destructive",
+					onPress: async () => {
+						try {
+							setIsDeleting(true);
+
+							// Delete from Convex database
+							await deleteTransaction({
+								id: transactionId as Id<"transactions">,
+							});
+
+							Alert.alert("Success", "Transaction deleted successfully", [
+								{
+									text: "OK",
+									onPress: () => router.back(),
+								},
+							]);
+						} catch (error) {
+							Alert.alert("Error", "Failed to delete transaction");
+							console.error("Failed to delete transaction:", error);
+						} finally {
+							setIsDeleting(false);
+						}
+					},
+				},
+			],
+		);
+	};
 
 	const cash = earning.compensationMethods.includes("Cash");
 	const card = earning.compensationMethods.includes("Card");
@@ -386,15 +429,33 @@ export default function EditTransactionScreen() {
 			<Button
 				onPress={handleSubmit}
 				isDisabled={
-					isLoading || !!giftError || (!!earning.giftCode && !giftCard)
+					isUpdating ||
+					isDeleting ||
+					!!giftError ||
+					(!!earning.giftCode && !giftCard)
 				}
 				size="lg"
 				className="rounded-3xl"
 			>
+				<Button.Label>{isUpdating ? "Updating..." : "Update"}</Button.Label>
+				{isUpdating ? <Spinner color={background} /> : null}
+			</Button>
+			<Button
+				onPress={handleDelete}
+				isDisabled={
+					isUpdating ||
+					isDeleting ||
+					!!giftError ||
+					(!!earning.giftCode && !giftCard)
+				}
+				size="lg"
+				className="rounded-3xl"
+				variant="destructive"
+			>
 				<Button.Label>
-					{isLoading ? "Updating Transaction..." : "Update"}
+					{isDeleting ? "Deleting..." : "Delete Transaction"}
 				</Button.Label>
-				{isLoading ? <Spinner color={background} /> : null}
+				{isDeleting ? <Spinner color={background} /> : null}
 			</Button>
 		</ScreenScrollView>
 	);

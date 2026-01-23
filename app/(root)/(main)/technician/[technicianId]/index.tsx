@@ -11,19 +11,21 @@ import Animated, {
 
 import { ListEmptyComponent } from "@/components/list-empty";
 import { TransactionCard } from "@/components/transaction-card";
+import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
-import { useLoadTransactions } from "@/hooks/use-load-transactions";
 import type { Transaction, User } from "@/utils/types";
 
 export default function TechnicianId() {
+	const { startOfDay, endOfDay } = useAppDate();
 	const background = useThemeColor("background");
 	const params = useLocalSearchParams();
 	const technicianId = params.technicianId as User["_id"];
 	const technician = useQuery(api.users.getUserById, { userId: technicianId });
-	const { transactions } = useLoadTransactions(
-		api.transactions.listByTechnicianAndDateRange,
+	const transactions = useQuery(api.transactions.listByTechnicianAndDateRange, {
 		technicianId,
-	);
+		startDate: startOfDay.getTime(),
+		endDate: endOfDay.getTime(),
+	});
 
 	return (
 		<Animated.View

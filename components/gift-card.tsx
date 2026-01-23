@@ -1,9 +1,9 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import * as Haptics from "expo-haptics";
-import { cn } from "heroui-native";
+import { Button, cn, Spinner, useThemeColor } from "heroui-native";
 import { useState } from "react";
-import { Modal, Pressable, Text, View } from "react-native";
+import { Alert, Modal, Pressable, Text, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { useAppTheme } from "@/contexts/app-theme-context";
@@ -18,7 +18,12 @@ type Props = {
 
 export const GiftCard = ({ giftCard }: Props) => {
 	const { isLight } = useAppTheme();
+	const background = useThemeColor("background");
+
 	const [modalVisible, setModalVisible] = useState(false);
+	const [isDeleting, setIsDeleting] = useState(false);
+
+	const deleteGiftCard = useMutation(api.giftCards.deleteGiftCard);
 
 	const transactions = useQuery(
 		api.transactions.listByGiftCard,
@@ -33,6 +38,53 @@ export const GiftCard = ({ giftCard }: Props) => {
 
 	const totalUsed =
 		transactions?.reduce((sum, tx) => sum + (tx.gift || 0), 0) || 0;
+
+	const isUnused = giftCard.balance === giftCard.faceValue && totalUsed === 0;
+
+	const handleDelete = async () => {
+		if (!isUnused) {
+			Alert.alert(
+				"Cannot Delete",
+				"Only unused gift cards can be deleted. This gift card has been used.",
+			);
+			return;
+		}
+
+		Alert.alert(
+			"Delete Gift Card",
+			`Are you sure you want to delete gift card ${giftCard.code}? This action cannot be undone.`,
+			[
+				{
+					text: "Cancel",
+					style: "cancel",
+				},
+				{
+					text: "Delete",
+					style: "destructive",
+					onPress: async () => {
+						try {
+							setIsDeleting(true);
+							await deleteGiftCard({
+								id: giftCard._id as Id<"giftCards">,
+							});
+							setModalVisible(false);
+							Alert.alert("Success", "Gift card deleted successfully");
+						} catch (error) {
+							Alert.alert(
+								"Error",
+								error instanceof Error
+									? error.message
+									: "Failed to delete gift card",
+							);
+							console.error("Failed to delete gift card:", error);
+						} finally {
+							setIsDeleting(false);
+						}
+					},
+				},
+			],
+		);
+	};
 
 	return (
 		<>
@@ -89,7 +141,6 @@ export const GiftCard = ({ giftCard }: Props) => {
 								/>
 							</Pressable>
 						</View>
-
 						<View className="mb-4 gap-2 rounded-lg bg-background-secondary p-4">
 							<View className="flex-row justify-between">
 								<Text className={textClassName}>Owner:</Text>
@@ -110,7 +161,6 @@ export const GiftCard = ({ giftCard }: Props) => {
 								</Text>
 							</View>
 						</View>
-
 						<Text className="mb-2 font-semibold text-foreground">
 							Transaction History
 						</Text>
@@ -130,6 +180,22 @@ export const GiftCard = ({ giftCard }: Props) => {
 								</View>
 							}
 						/>
+						{isUnused && (
+							<View className="mt-4">
+								<Button
+									onPress={handleDelete}
+									isDisabled={isDeleting}
+									size="lg"
+									className="rounded-3xl"
+									variant="destructive"
+								>
+									<Button.Label>
+										{isDeleting ? "Deleting..." : "Delete Gift Card"}
+									</Button.Label>
+									{isDeleting ? <Spinner color={background} /> : null}
+								</Button>
+							</View>
+						)}
 					</View>
 				</View>
 			</Modal>

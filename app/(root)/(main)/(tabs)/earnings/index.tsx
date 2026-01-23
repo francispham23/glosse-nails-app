@@ -1,7 +1,6 @@
 import { useMutation, useQuery } from "convex/react";
-import { useFocusEffect } from "expo-router";
 import { cn } from "heroui-native";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import Animated, {
 	FadeIn,
@@ -15,15 +14,11 @@ import { TechnicianCard } from "@/components/technician-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
-import { useNetworkStatus } from "@/hooks/use-network-status";
-import { isToday } from "@/utils/index";
-import { getUsersFromTodayTransactions } from "@/utils/transaction-storage";
 import type { User } from "@/utils/types";
 
 export default function HomeRoute() {
 	const { isLight } = useAppTheme();
-	const isOffline = useNetworkStatus();
-	const { startOfDay, endOfDay, date } = useAppDate();
+	const { startOfDay, endOfDay } = useAppDate();
 
 	// Query Convex only when not showing today's data
 	const convexUsers = useQuery(api.users.usersByDateRange, {
@@ -41,23 +36,6 @@ export default function HomeRoute() {
 
 	const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 	const [isSelecting, setIsSelecting] = useState(false);
-
-	// Check if the selected date is today
-	const isSelectedDateToday = isToday(date.getTime());
-
-	// Load users - prefer Convex data, fall back to local storage only when offline
-	useFocusEffect(
-		useCallback(() => {
-			// Only load from local storage if Convex data is unavailable (offline) and it's today
-			if (isSelectedDateToday && isOffline) {
-				const loadLocalUsers = async () => {
-					const storedUsers = await getUsersFromTodayTransactions();
-					setSelectedUsers(storedUsers as User[]);
-				};
-				loadLocalUsers();
-			}
-		}, [isSelectedDateToday, isOffline]),
-	);
 
 	useEffect(() => {
 		// Filter convexUsers based on onShiftTechs

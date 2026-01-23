@@ -80,3 +80,36 @@ export const listByDateRange = query({
 		);
 	},
 });
+
+export const deleteGiftCard = mutation({
+	args: {
+		id: v.id("giftCards"),
+	},
+	handler: async (ctx, args) => {
+		const giftCard = await ctx.db.get(args.id);
+		if (!giftCard) {
+			throw new Error("Gift card not found");
+		}
+
+		// Check if gift card has been used (balance is less than face value)
+		if (giftCard.balance < giftCard.faceValue) {
+			throw new Error(
+				"Cannot delete a gift card that has been used. Only unused gift cards can be deleted.",
+			);
+		}
+
+		// Check if there are any transactions associated with this gift card
+		const transactions = await ctx.db
+			.query("transactions")
+			.withIndex("by_gift_card", (q) => q.eq("giftCode", args.id))
+			.first();
+
+		if (transactions) {
+			throw new Error(
+				"Cannot delete a gift card with transaction history. Only unused gift cards can be deleted.",
+			);
+		}
+
+		await ctx.db.delete(args.id);
+	},
+});

@@ -322,3 +322,29 @@ export const updateTransaction = mutation({
 		}
 	},
 });
+
+// Delete a transaction
+export const deleteTransaction = mutation({
+	args: {
+		id: v.id("transactions"),
+	},
+	handler: async (ctx, { id }) => {
+		const transaction = await ctx.db.get(id);
+		if (!transaction) {
+			throw new Error("Transaction not found");
+		}
+
+		// If transaction used a gift card, restore the balance
+		if (transaction.giftCode && transaction.gift) {
+			const giftCard = await ctx.db.get(transaction.giftCode);
+			if (giftCard) {
+				const newBalance = Number.parseFloat(
+					(giftCard.balance + transaction.gift).toFixed(2),
+				);
+				await ctx.db.patch(transaction.giftCode, { balance: newBalance });
+			}
+		}
+
+		await ctx.db.delete(id);
+	},
+});
