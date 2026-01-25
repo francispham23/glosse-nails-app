@@ -19,7 +19,7 @@ export type Technician = DataModel["users"]["document"];
 
 export type Category = DataModel["categories"]["document"];
 
-export type PaymentMethod = "Cash" | "Card" | "Gift Card";
+export type PaymentMethod = "Cash" | "Card" | "Gift Card" | "Discount";
 
 export type EarningFormState = {
 	compensation: string;

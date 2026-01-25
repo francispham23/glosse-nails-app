@@ -31,6 +31,11 @@ export default function CreateRoute() {
 		userId: technicianId,
 	});
 	const { date, endOfDay } = useAppDate();
+
+	/* ---------------------------------- state --------------------------------- */
+	const [open, setOpen] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
+	const [giftError, setGiftError] = useState("");
 	const [earning, setEarning] = useState<EarningFormState>({
 		...initialEarningState,
 		technicianId,
@@ -38,23 +43,15 @@ export default function CreateRoute() {
 		clientId: technicianId, // Default client ID
 		serviceDate: date.getTime(),
 	});
+
 	const categories = useQuery(api.categories.getFormCategories);
 	const addTransaction = useMutation(api.transactions.addTransaction);
 	const giftCard = useQuery(
 		api.giftCards.getByCode,
 		earning.giftCode ? { code: earning.giftCode } : "skip",
 	);
-	console.log(
-		"🚀🚀🚀earning:   ",
-		typeof earning === "object" ? JSON.stringify(earning, null, 2) : earning,
-	);
 
-	/* ---------------------------------- state --------------------------------- */
-	const [open, setOpen] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
-	const [giftError, setGiftError] = useState("");
-
-	/* ----------------------------- handle sign in ----------------------------- */
+	/* ----------------------------- handle create transaction ----------------------------- */
 	const handleSubmit = async () => {
 		if (!earning.compensation) {
 			Alert.alert("Error", "Please enter your earning");
@@ -90,6 +87,7 @@ export default function CreateRoute() {
 		}
 	};
 
+	/* ------------------- handle select services ------------------- */
 	const handleSelectServices = (categoryId: Category["_id"]) =>
 		setEarning((prev) => {
 			const services = prev.services.includes(categoryId)
@@ -98,6 +96,7 @@ export default function CreateRoute() {
 			return { ...prev, services };
 		});
 
+	/* ------------------- handle select methods ------------------- */
 	const handleSelectMethods = (
 		method: PaymentMethod,
 		type: "compensation" | "tip",
@@ -119,6 +118,7 @@ export default function CreateRoute() {
 	const cash = earning.compensationMethods.includes("Cash");
 	const card = earning.compensationMethods.includes("Card");
 	const gift = earning.compensationMethods.includes("Gift Card");
+	const discount = earning.compensationMethods.includes("Discount");
 	const tipCash = earning.tipMethods.includes("Cash");
 	const tipCard = earning.tipMethods.includes("Card");
 	const tipGift = earning.tipMethods.includes("Gift Card");
@@ -152,8 +152,23 @@ export default function CreateRoute() {
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
-			{/* compensation In Cash text-field */}
-			{cash && card && (
+			{/* Compensation Methods */}
+			<View className="flex-row flex-wrap gap-2">
+				{paymentMethods.map((method) => (
+					<Chip
+						key={method}
+						variant={
+							earning.compensationMethods.includes(method)
+								? "primary"
+								: "secondary"
+						}
+						onPress={() => handleSelectMethods(method, "compensation")}
+					>
+						<Chip.Label>{method}</Chip.Label>
+					</Chip>
+				))}
+			</View>
+			{cash && card ? (
 				<TextField isRequired className="focus">
 					<TextField.Input
 						className="h-16 rounded-3xl"
@@ -171,28 +186,31 @@ export default function CreateRoute() {
 						</TextField.InputStartContent>
 					</TextField.Input>
 				</TextField>
-			)}
-			{/* Compensation Methods */}
-			<View className="flex-row flex-wrap gap-2">
-				{paymentMethods.map((method) => (
-					<Chip
-						key={method}
-						variant={
-							earning.compensationMethods.includes(method)
-								? "primary"
-								: "secondary"
+			) : null}
+			{/* discount text-field */}
+			{discount ? (
+				<TextField isRequired>
+					<TextField.Input
+						className="h-16 rounded-3xl"
+						placeholder="Enter discount"
+						keyboardType="numeric"
+						autoCapitalize="none"
+						value={earning.discount?.toString()}
+						onChangeText={(value) =>
+							setEarning({ ...earning, discount: value })
 						}
-						onPress={() => handleSelectMethods(method, "compensation")}
 					>
-						<Chip.Label>{method}</Chip.Label>
-					</Chip>
-				))}
-			</View>
+						<TextField.InputStartContent className="pointer-events-none pl-2">
+							<Ionicons name="cash-outline" size={20} color={mutedColor} />
+						</TextField.InputStartContent>
+					</TextField.Input>
+				</TextField>
+			) : null}
 			{/* tip text-field */}
 			<TextField isRequired>
 				<TextField.Input
 					className="h-16 rounded-3xl"
-					placeholder="Enter Tip"
+					placeholder="Enter Total Tip"
 					keyboardType="numeric"
 					autoCapitalize="none"
 					value={earning.tip.toString()}
@@ -203,6 +221,22 @@ export default function CreateRoute() {
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
+			{/* Tip Methods */}
+			<View className="flex-row flex-wrap gap-2">
+				{paymentMethods
+					.filter((method) => method !== "Discount")
+					.map((method) => (
+						<Chip
+							key={method}
+							variant={
+								earning.tipMethods.includes(method) ? "primary" : "secondary"
+							}
+							onPress={() => handleSelectMethods(method, "tip")}
+						>
+							<Chip.Label>{method}</Chip.Label>
+						</Chip>
+					))}
+			</View>
 			{/* tip In Cash text-field */}
 			{tipCash && tipCard && (
 				<TextField isRequired>
@@ -222,19 +256,6 @@ export default function CreateRoute() {
 					</TextField.Input>
 				</TextField>
 			)}
-			<View className="flex-row flex-wrap gap-2">
-				{paymentMethods.map((method) => (
-					<Chip
-						key={method}
-						variant={
-							earning.tipMethods.includes(method) ? "primary" : "secondary"
-						}
-						onPress={() => handleSelectMethods(method, "tip")}
-					>
-						<Chip.Label>{method}</Chip.Label>
-					</Chip>
-				))}
-			</View>
 			{/* gift text-field*/}
 			{gift || tipGift ? (
 				<>
@@ -294,21 +315,6 @@ export default function CreateRoute() {
 					)}
 				</>
 			) : null}
-			{/* discount text-field*/}
-			<TextField isRequired>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Enter discount"
-					keyboardType="numeric"
-					autoCapitalize="none"
-					value={earning.discount?.toString()}
-					onChangeText={(value) => setEarning({ ...earning, discount: value })}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="cash-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-				</TextField.Input>
-			</TextField>
 			{/* service categories */}
 			<View className="mt-4 mb-4 flex-row flex-wrap gap-2">
 				{categories?.map((category) => (
@@ -319,13 +325,10 @@ export default function CreateRoute() {
 						}
 						onPress={() => handleSelectServices(category._id)}
 					>
-						<Chip.Label>
-							{category.name.split(" ")[0].split("ing")[0]}
-						</Chip.Label>
+						<Chip.Label>{category.name}</Chip.Label>
 					</Chip>
 				))}
 			</View>
-
 			{/* service time field */}
 			<TextField>
 				<TextField.Input

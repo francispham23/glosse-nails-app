@@ -31,7 +31,12 @@ export default function FormHeader({
 	);
 }
 
-export const paymentMethods = ["Card", "Cash", "Gift Card"] as PaymentMethod[];
+export const paymentMethods = [
+	"Card",
+	"Cash",
+	"Gift Card",
+	"Discount",
+] as PaymentMethod[];
 
 export const initialEarningState = {
 	compensation: "",
