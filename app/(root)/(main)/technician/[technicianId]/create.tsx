@@ -44,6 +44,10 @@ export default function CreateRoute() {
 		api.giftCards.getByCode,
 		earning.giftCode ? { code: earning.giftCode } : "skip",
 	);
+	console.log(
+		"🚀🚀🚀earning:   ",
+		typeof earning === "object" ? JSON.stringify(earning, null, 2) : earning,
+	);
 
 	/* ---------------------------------- state --------------------------------- */
 	const [open, setOpen] = useState(false);
@@ -65,7 +69,8 @@ export default function CreateRoute() {
 		try {
 			setIsLoading(true);
 			// Store earning in Convex
-			await addTransaction({ body: earning });
+			const tip = earning.tip.length > 0 ? earning.tip : "0";
+			await addTransaction({ body: { ...earning, tip } });
 			// Store earning in AsyncStorage for later bulk insertion at checkout
 
 			setEarning({

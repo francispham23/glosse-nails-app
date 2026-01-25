@@ -90,9 +90,10 @@ export default function EditTransactionScreen() {
 
 		try {
 			setIsUpdating(true);
+			const tip = earning.tip.length > 0 ? earning.tip : "0";
 			await updateTransaction({
 				id: transactionId as Id<"transactions">,
-				body: earning,
+				body: { ...earning, tip },
 			});
 
 			Alert.alert("Success", "Transaction updated successfully", [
