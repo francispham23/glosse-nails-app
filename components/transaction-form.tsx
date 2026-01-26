@@ -6,7 +6,11 @@ import { Button, Chip, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Alert, Keyboard, Text, View } from "react-native";
 
-import FormHeader, { paymentMethods } from "@/components/form";
+import FormHeader, {
+	GiftCardInputs,
+	otherInputs,
+	paymentMethods,
+} from "@/components/form";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
@@ -25,7 +29,7 @@ interface TransactionFormProps {
 	open: boolean;
 	setOpen: (open: boolean) => void;
 	giftError: string;
-	setGiftError: (error: string) => void;
+	setGiftError: React.Dispatch<React.SetStateAction<string>>;
 	transactionId?: Id<"transactions">;
 }
 
@@ -57,6 +61,7 @@ export function TransactionForm({
 
 	/* ---------------------------------- state --------------------------------- */
 	const [isDeleting, setIsDeleting] = useState(false);
+	const [selectedInputs, setSelectedInputs] = useState<string[]>(["Tip"]);
 
 	/* ------------------- handle select services ------------------- */
 	const handleSelectServices = (categoryId: Category["_id"]) =>
@@ -128,16 +133,35 @@ export function TransactionForm({
 		);
 	};
 
+	/* ------------------- transaction types ------------------- */
 	const cash = earning.compensationMethods.includes("Cash");
 	const card = earning.compensationMethods.includes("Card");
 	const gift = earning.compensationMethods.includes("Gift Card");
-	const discount = earning.compensationMethods.includes("Discount");
 	const tipCash = earning.tipMethods.includes("Cash");
 	const tipCard = earning.tipMethods.includes("Card");
 	const tipGift = earning.tipMethods.includes("Gift Card");
 
+	/* ------------------- other input types ------------------- */
+	const tip = selectedInputs.includes("Tip");
+	const supply = selectedInputs.includes("Supply");
+	const discount = selectedInputs.includes("Discount");
+
+	const compensationTypes =
+		card && cash
+			? "Card and Cash"
+			: card && !cash
+				? "Card"
+				: cash && !card && "Cash";
+	const placeholder = compensationTypes
+		? `Enter Total ${compensationTypes} Charge`
+		: "";
+
 	const isDisabled =
-		isLoading || !!giftError || (!!earning.giftCode && !giftCard) || isDeleting;
+		isLoading ||
+		!!giftError ||
+		(!!earning.giftCode && !giftCard) ||
+		isDeleting ||
+		!compensationTypes;
 
 	return (
 		<ScreenScrollView
@@ -147,27 +171,8 @@ export function TransactionForm({
 		>
 			<FormHeader title={title} description={description} />
 
-			{/* compensation text-field*/}
-			<TextField isRequired className="focus">
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Enter Total Charge"
-					keyboardType="numeric"
-					autoCapitalize="none"
-					autoFocus={true}
-					value={earning.compensation.toString()}
-					onChangeText={(value) =>
-						setEarning({ ...earning, compensation: value })
-					}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="cash-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-				</TextField.Input>
-			</TextField>
-
 			{/* Compensation Methods */}
-			<View className="flex-row flex-wrap gap-2">
+			<View className="flex-row flex-wrap gap-2 pt-4">
 				{paymentMethods.map((method) => (
 					<Chip
 						key={method}
@@ -182,6 +187,30 @@ export function TransactionForm({
 					</Chip>
 				))}
 			</View>
+
+			{/* compensation text-field*/}
+			<TextField isRequired className="focus">
+				<TextField.Input
+					className="h-16 rounded-3xl"
+					placeholder={placeholder}
+					keyboardType="numeric"
+					autoCapitalize="none"
+					autoFocus={true}
+					value={earning.compensation.toString()}
+					onChangeText={(value) =>
+						setEarning({ ...earning, compensation: value })
+					}
+				>
+					<TextField.InputStartContent className="pointer-events-none pl-2">
+						<Ionicons name="cash-outline" size={20} color={mutedColor} />
+					</TextField.InputStartContent>
+				</TextField.Input>
+			</TextField>
+			{!compensationTypes && (
+				<Text className="px-4 text-red-500 text-sm">
+					Please select at least one compensation method
+				</Text>
+			)}
 
 			{/* compensation In Cash text-field */}
 			{cash && card ? (
@@ -201,6 +230,90 @@ export function TransactionForm({
 						</TextField.InputStartContent>
 					</TextField.Input>
 				</TextField>
+			) : null}
+
+			{/* gift text-field*/}
+			{gift ? (
+				<GiftCardInputs
+					earning={earning}
+					setEarning={setEarning}
+					giftCard={giftCard}
+					giftError={giftError}
+					setGiftError={setGiftError}
+				/>
+			) : null}
+
+			{/* Other Inputs */}
+			<View className="flex-row flex-wrap gap-2">
+				{otherInputs.map((input) => (
+					<Chip
+						key={input}
+						variant={selectedInputs.includes(input) ? "primary" : "secondary"}
+						onPress={() =>
+							setSelectedInputs((prev) => {
+								if (prev.includes(input)) {
+									return prev.filter((i) => i !== input);
+								}
+								return [...prev, input];
+							})
+						}
+					>
+						<Chip.Label>{input}</Chip.Label>
+					</Chip>
+				))}
+			</View>
+
+			{tip ? (
+				<View className="flex gap-2 pl-2">
+					{/* Tip Methods */}
+					<View className="flex-row flex-wrap justify-end gap-2">
+						{paymentMethods.map((method) => (
+							<Chip
+								key={method}
+								variant={
+									earning.tipMethods.includes(method) ? "primary" : "secondary"
+								}
+								onPress={() => handleSelectMethods(method, "tip")}
+							>
+								<Chip.Label>{method}</Chip.Label>
+							</Chip>
+						))}
+					</View>
+					{/* tip text-field */}
+					<TextField isRequired>
+						<TextField.Input
+							className="h-16 rounded-3xl"
+							placeholder="Enter Total Tip"
+							keyboardType="numeric"
+							autoCapitalize="none"
+							value={earning.tip.toString()}
+							onChangeText={(value) => setEarning({ ...earning, tip: value })}
+						>
+							<TextField.InputStartContent className="pointer-events-none pl-2">
+								<Ionicons name="cash-outline" size={20} color={mutedColor} />
+							</TextField.InputStartContent>
+						</TextField.Input>
+					</TextField>
+					{/* tip In Cash text-field */}
+					{tipCash && tipCard && (
+						<TextField isRequired>
+							<TextField.Input
+								className="h-16 rounded-3xl"
+								placeholder="Enter Tip in Cash Amount"
+								keyboardType="numeric"
+								autoCapitalize="none"
+								value={earning.tipInCash?.toString()}
+								onChangeText={(value) =>
+									setEarning({ ...earning, tipInCash: value })
+								}
+							>
+								<TextField.InputStartContent className="pointer-events-none pl-2">
+									<Ionicons name="cash-outline" size={20} color={mutedColor} />
+								</TextField.InputStartContent>
+							</TextField.Input>
+						</TextField>
+					)}
+				</View>
 			) : null}
 
 			{/* discount text-field */}
@@ -223,117 +336,32 @@ export function TransactionForm({
 				</TextField>
 			) : null}
 
-			{/* tip text-field */}
-			<TextField isRequired>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Enter Total Tip"
-					keyboardType="numeric"
-					autoCapitalize="none"
-					value={earning.tip.toString()}
-					onChangeText={(value) => setEarning({ ...earning, tip: value })}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="cash-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-				</TextField.Input>
-			</TextField>
-
-			{/* Tip Methods */}
-			<View className="flex-row flex-wrap gap-2">
-				{paymentMethods
-					.filter((method) => method !== "Discount")
-					.map((method) => (
-						<Chip
-							key={method}
-							variant={
-								earning.tipMethods.includes(method) ? "primary" : "secondary"
-							}
-							onPress={() => handleSelectMethods(method, "tip")}
-						>
-							<Chip.Label>{method}</Chip.Label>
-						</Chip>
-					))}
-			</View>
-
-			{/* tip In Cash text-field */}
-			{tipCash && tipCard && (
+			{supply ? (
 				<TextField isRequired>
 					<TextField.Input
 						className="h-16 rounded-3xl"
-						placeholder="Enter Tip in Cash Amount"
+						placeholder="Enter supply cost"
 						keyboardType="numeric"
 						autoCapitalize="none"
-						value={earning.tipInCash?.toString()}
-						onChangeText={(value) =>
-							setEarning({ ...earning, tipInCash: value })
-						}
+						value={earning.supply?.toString()}
+						onChangeText={(value) => setEarning({ ...earning, supply: value })}
 					>
 						<TextField.InputStartContent className="pointer-events-none pl-2">
 							<Ionicons name="cash-outline" size={20} color={mutedColor} />
 						</TextField.InputStartContent>
 					</TextField.Input>
 				</TextField>
-			)}
+			) : null}
 
-			{/* gift text-field*/}
-			{gift || tipGift ? (
-				<>
-					<TextField isRequired>
-						<TextField.Input
-							className="h-16 rounded-3xl"
-							placeholder="Enter Gift Card Code"
-							keyboardType="numeric"
-							autoCapitalize="none"
-							value={earning.giftCode?.toString()}
-							onChangeText={(value) => {
-								setEarning({ ...earning, giftCode: value });
-								setGiftError("");
-							}}
-						>
-							<TextField.InputStartContent className="pointer-events-none pl-2">
-								<Ionicons name="code-outline" size={20} color={mutedColor} />
-							</TextField.InputStartContent>
-						</TextField.Input>
-					</TextField>
-					{earning.giftCode && giftCard === null && (
-						<Text className="px-4 text-red-500 text-sm">
-							Gift card code not found
-						</Text>
-					)}
-					{giftCard && (
-						<Text className="px-4 text-foreground text-sm">
-							Available balance: ${giftCard.balance.toFixed(2)}
-						</Text>
-					)}
-					<TextField isRequired>
-						<TextField.Input
-							className="h-16 rounded-3xl"
-							placeholder="Enter amount from Gift Card"
-							keyboardType="numeric"
-							autoCapitalize="none"
-							value={earning.gift?.toString()}
-							onChangeText={(value) => {
-								setEarning({ ...earning, gift: value });
-								const giftAmount = Number.parseFloat(value || "0");
-								if (giftCard && giftAmount > giftCard.balance) {
-									setGiftError(
-										`Gift card balance insufficient. Available: $${giftCard.balance.toFixed(2)}`,
-									);
-								} else {
-									setGiftError("");
-								}
-							}}
-						>
-							<TextField.InputStartContent className="pointer-events-none pl-2">
-								<Ionicons name="cash-outline" size={20} color={mutedColor} />
-							</TextField.InputStartContent>
-						</TextField.Input>
-					</TextField>
-					{giftError && (
-						<Text className="px-4 text-red-500 text-sm">{giftError}</Text>
-					)}
-				</>
+			{/* tip gift text-field*/}
+			{tipGift ? (
+				<GiftCardInputs
+					earning={earning}
+					setEarning={setEarning}
+					giftCard={giftCard}
+					giftError={giftError}
+					setGiftError={setGiftError}
+				/>
 			) : null}
 
 			{/* service categories */}

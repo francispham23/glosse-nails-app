@@ -41,6 +41,7 @@ function prepareTransactionData(transaction: {
 	clientId?: Id<"users">;
 	services?: Id<"categories">[];
 	discount?: string;
+	supply?: string;
 	gift?: string;
 	giftCode?: Id<"giftCards">;
 }) {
@@ -64,6 +65,9 @@ function prepareTransactionData(transaction: {
 		discount: transaction.discount
 			? Number.parseFloat(transaction.discount)
 			: undefined,
+		supply: transaction.supply
+			? Number.parseFloat(transaction.supply)
+			: undefined,
 		gift: transaction.gift ? Number.parseFloat(transaction.gift) : undefined,
 		giftCode: transaction.giftCode,
 	};
@@ -84,6 +88,7 @@ async function insertTransaction(
 		services?: Id<"categories">[];
 		clientId?: Id<"users">;
 		discount?: string;
+		supply?: string;
 		gift?: string;
 		giftCode?: Id<"giftCards">;
 	},
@@ -146,6 +151,7 @@ export const addTransaction = mutation({
 			tipInCash: v.optional(v.string()),
 			tipMethods: v.array(v.string()),
 			discount: v.optional(v.string()),
+			supply: v.optional(v.string()),
 			gift: v.optional(v.string()),
 			giftCode: v.optional(v.string()),
 			technicianId: v.id("users"),
@@ -195,6 +201,7 @@ export const bulkInsertTransactions = mutation({
 				tipInCash: v.optional(v.string()),
 				tipMethods: v.array(v.string()),
 				discount: v.optional(v.string()),
+				supply: v.optional(v.string()),
 				gift: v.optional(v.string()),
 				giftCode: v.optional(v.string()),
 				technicianId: v.id("users"),
@@ -280,6 +287,7 @@ export const updateTransaction = mutation({
 			tipInCash: v.optional(v.string()),
 			tipMethods: v.array(v.string()),
 			discount: v.optional(v.string()),
+			supply: v.optional(v.string()),
 			gift: v.optional(v.string()),
 			giftCode: v.optional(v.string()),
 			technicianId: v.id("users"),

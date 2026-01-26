@@ -41,6 +41,7 @@ export default function EditTransactionScreen() {
 				tipInCash: transaction.tipInCash?.toString() || "",
 				tipMethods: transaction.tipMethods as PaymentMethod[],
 				discount: transaction.discount?.toString() || "",
+				supply: transaction.supply?.toString() || "",
 				gift: transaction.gift?.toString() || "",
 				giftCode: "", // We'll need to handle this differently since it's stored as ID
 				services: transaction.services || [],

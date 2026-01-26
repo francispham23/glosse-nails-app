@@ -48,6 +48,9 @@ export default function ReportsRoute() {
 	const totalDiscount =
 		transactions?.reduce((sum, tx) => sum + (tx.discount || 0), 0) ?? 0;
 
+	const totalSupply =
+		transactions?.reduce((sum, tx) => sum + (tx.supply || 0), 0) ?? 0;
+
 	const cashTransactions =
 		transactions?.filter(
 			(tx) =>
@@ -82,7 +85,9 @@ export default function ReportsRoute() {
 
 	const classname = cn("font-semibold text-foreground");
 
-	const onPress = (type: "payroll" | "discount" | "cash" | "gift") => {
+	const onPress = (
+		type: "payroll" | "discount" | "cash" | "gift" | "supply",
+	) => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 		router.navigate({
 			pathname: `/report/${type}`,
@@ -176,18 +181,6 @@ export default function ReportsRoute() {
 				</View>
 			</Pressable>
 
-			{/* Discount totals */}
-			<Pressable onPress={() => onPress("discount")}>
-				<View className="rounded-lg bg-background p-4">
-					<View className="flex-row justify-between border-border border-b pb-2">
-						<Text className={classname}>Total Discount:</Text>
-						<Text className="font-bold text-foreground text-lg">
-							${totalDiscount.toFixed(2)}
-						</Text>
-					</View>
-				</View>
-			</Pressable>
-
 			{/* Cash totals */}
 			<Pressable onPress={() => onPress("cash")}>
 				<View className="rounded-lg bg-background p-4">
@@ -215,6 +208,30 @@ export default function ReportsRoute() {
 						<Text className={classname}>Total Balance Gift Card:</Text>
 						<Text className="font-bold text-foreground text-lg">
 							${totalGiftCardBalance.toFixed(2)}
+						</Text>
+					</View>
+				</View>
+			</Pressable>
+
+			{/* Discount totals */}
+			<Pressable onPress={() => onPress("discount")}>
+				<View className="rounded-lg bg-background p-4">
+					<View className="flex-row justify-between border-border border-b pb-2">
+						<Text className={classname}>Total Discount:</Text>
+						<Text className="font-bold text-foreground text-lg">
+							${totalDiscount.toFixed(2)}
+						</Text>
+					</View>
+				</View>
+			</Pressable>
+
+			{/* Supply totals */}
+			<Pressable onPress={() => onPress("supply")}>
+				<View className="rounded-lg bg-background p-4">
+					<View className="flex-row justify-between border-border border-b pb-2">
+						<Text className={classname}>Total Supply:</Text>
+						<Text className="font-bold text-foreground text-lg">
+							${totalSupply.toFixed(2)}
 						</Text>
 					</View>
 				</View>

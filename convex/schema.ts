@@ -13,6 +13,7 @@ const schema = defineSchema({
 		tipInCash: v.optional(v.float64()),
 		tipMethods: v.array(v.string()),
 		discount: v.optional(v.float64()),
+		supply: v.optional(v.float64()),
 		gift: v.optional(v.float64()),
 		giftCode: v.optional(v.id("giftCards")),
 		client: v.optional(v.id("users")),

@@ -19,7 +19,7 @@ export type Technician = DataModel["users"]["document"];
 
 export type Category = DataModel["categories"]["document"];
 
-export type PaymentMethod = "Cash" | "Card" | "Gift Card" | "Discount";
+export type PaymentMethod = "Cash" | "Card" | "Gift Card";
 
 export type EarningFormState = {
 	compensation: string;
@@ -34,6 +34,7 @@ export type EarningFormState = {
 	gift?: string;
 	giftCode?: string;
 	discount?: string;
+	supply?: string;
 	clientId?: Id<"users">;
 };
 

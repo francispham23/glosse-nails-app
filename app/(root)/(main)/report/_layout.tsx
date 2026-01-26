@@ -22,15 +22,7 @@ export default function ReportLayout() {
 					title: "",
 				}}
 			/>
-			<Stack.Screen
-				name="discount"
-				options={{
-					headerBackButtonDisplayMode: "generic",
-					headerLeft: () => <HeaderButton iconName="close" />,
-					headerShown: true,
-					title: "",
-				}}
-			/>
+
 			<Stack.Screen
 				name="cash"
 				options={{
@@ -42,6 +34,24 @@ export default function ReportLayout() {
 			/>
 			<Stack.Screen
 				name="gift"
+				options={{
+					headerBackButtonDisplayMode: "generic",
+					headerLeft: () => <HeaderButton iconName="close" />,
+					headerShown: true,
+					title: "",
+				}}
+			/>
+			<Stack.Screen
+				name="discount"
+				options={{
+					headerBackButtonDisplayMode: "generic",
+					headerLeft: () => <HeaderButton iconName="close" />,
+					headerShown: true,
+					title: "",
+				}}
+			/>
+			<Stack.Screen
+				name="supply"
 				options={{
 					headerBackButtonDisplayMode: "generic",
 					headerLeft: () => <HeaderButton iconName="close" />,
