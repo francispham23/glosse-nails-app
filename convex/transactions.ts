@@ -176,7 +176,7 @@ export const addTransaction = mutation({
 
 		await insertTransaction(ctx, { ...body, giftCode: giftCardId });
 
-		// Reduce gift card balance if a gift card was used
+		// Reduce gift card balance if a gift card was used and add transaction ID to gift card
 		if (giftCardId && body.gift) {
 			const giftCard = await ctx.db.get(giftCardId);
 			if (giftCard) {
@@ -185,6 +185,16 @@ export const addTransaction = mutation({
 					(giftCard.balance - giftAmount).toFixed(2),
 				);
 				await ctx.db.patch(giftCardId, { balance: newBalance });
+				// Add transaction ID to gift card's transactionIds array
+				const transactions = giftCard.transactionIds || [];
+				const lastTransaction = await ctx.db
+					.query("transactions")
+					.order("desc")
+					.first();
+				if (lastTransaction) {
+					transactions.push(lastTransaction._id);
+					await ctx.db.patch(giftCardId, { transactionIds: transactions });
+				}
 			}
 		}
 	},
@@ -317,7 +327,7 @@ export const updateTransaction = mutation({
 
 		await ctx.db.patch(id, preparedData);
 
-		// Handle gift card balance adjustment if needed
+		// Handle gift card balance adjustment if needed and update transactionIds array
 		if (giftCardId && body.gift) {
 			const giftCard = await ctx.db.get(giftCardId);
 			if (giftCard) {
@@ -326,6 +336,12 @@ export const updateTransaction = mutation({
 					(giftCard.balance - giftAmount).toFixed(2),
 				);
 				await ctx.db.patch(giftCardId, { balance: newBalance });
+				// Add transaction ID to gift card's transactionIds array if not already present
+				const transactions = giftCard.transactionIds || [];
+				if (!transactions.includes(id)) {
+					transactions.push(id);
+					await ctx.db.patch(giftCardId, { transactionIds: transactions });
+				}
 			}
 		}
 	},

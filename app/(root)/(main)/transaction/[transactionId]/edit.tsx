@@ -18,6 +18,10 @@ export default function EditTransactionScreen() {
 		transactionId ? { id: transactionId as Id<"transactions"> } : "skip",
 	);
 	const updateTransaction = useMutation(api.transactions.updateTransaction);
+	const giftCards = useQuery(api.giftCards.list);
+	const giftCode = transaction?.giftCode
+		? giftCards?.find((gc) => gc._id === transaction.giftCode)?.code || ""
+		: "";
 
 	/* ---------------------------------- state --------------------------------- */
 	const [open, setOpen] = useState(false);
@@ -43,14 +47,14 @@ export default function EditTransactionScreen() {
 				discount: transaction.discount?.toString() || "",
 				supply: transaction.supply?.toString() || "",
 				gift: transaction.gift?.toString() || "",
-				giftCode: "", // We'll need to handle this differently since it's stored as ID
+				giftCode: giftCode,
 				services: transaction.services || [],
 				technicianId: transaction.technician,
 				clientId: transaction.client,
 				serviceDate: transaction.serviceDate || Date.now(),
 			});
 		}
-	}, [transaction]);
+	}, [transaction, giftCode]);
 
 	/* ----------------------------- handle edit transaction ----------------------------- */
 	const handleSubmit = async () => {

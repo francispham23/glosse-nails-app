@@ -50,6 +50,7 @@ export const create = mutation({
 			balance: args.balance,
 			faceValue: args.balance,
 			sellDate: args.sellDate,
+			transactionIds: [],
 		});
 	},
 });
