@@ -83,6 +83,16 @@ export default function ReportsRoute() {
 	const totalTipCash = totalTipCashOnly + (totalPartialTipCash || 0);
 	const totalCash = totalCompCash + totalTipCash;
 
+	const totalSupplyCash = transactions?.reduce((sum, tx) => {
+		// Only include supply paid in cash
+		const isCashSupply =
+			tx.compensationMethods?.includes("Cash") &&
+			!tx.compensationMethods?.includes("Card");
+		return sum + (isCashSupply ? tx.supply || 0 : 0);
+	}, 0);
+
+	const totalRealCash = ((totalCompCash || 0) + (totalSupplyCash || 0)) * 1.05;
+
 	const classname = cn("font-semibold text-foreground");
 
 	const onPress = (
@@ -198,14 +208,20 @@ export default function ReportsRoute() {
 							${totalCash.toFixed(2)}
 						</Text>
 					</View>
+					<View className="flex-row justify-between pt-2">
+						<Text className={classname}>Grand Total Real Cash:</Text>
+						<Text className="font-bold text-foreground text-lg">
+							${totalRealCash.toFixed(2)}
+						</Text>
+					</View>
 				</View>
 			</Pressable>
 
 			{/* Gift Card totals */}
 			<Pressable onPress={() => onPress("gift")}>
 				<View className="rounded-lg bg-background p-4">
-					<View className="flex-row justify-between pt-2">
-						<Text className={classname}>Total Balance Gift Card:</Text>
+					<View className="flex-row justify-between border-border border-b">
+						<Text className={classname}>Total Balance Gift Cards:</Text>
 						<Text className="font-bold text-foreground text-lg">
 							${totalGiftCardBalance.toFixed(2)}
 						</Text>
@@ -216,7 +232,7 @@ export default function ReportsRoute() {
 			{/* Discount totals */}
 			<Pressable onPress={() => onPress("discount")}>
 				<View className="rounded-lg bg-background p-4">
-					<View className="flex-row justify-between border-border border-b pb-2">
+					<View className="flex-row justify-between border-border border-b">
 						<Text className={classname}>Total Discount:</Text>
 						<Text className="font-bold text-foreground text-lg">
 							${totalDiscount.toFixed(2)}
@@ -228,7 +244,7 @@ export default function ReportsRoute() {
 			{/* Supply totals */}
 			<Pressable onPress={() => onPress("supply")}>
 				<View className="rounded-lg bg-background p-4">
-					<View className="flex-row justify-between border-border border-b pb-2">
+					<View className="flex-row justify-between border-border border-b">
 						<Text className={classname}>Total Supply:</Text>
 						<Text className="font-bold text-foreground text-lg">
 							${totalSupply.toFixed(2)}

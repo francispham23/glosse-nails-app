@@ -31,7 +31,8 @@ export type EarningFormState = {
 	serviceDate: number;
 	compInCash?: string;
 	tipInCash?: string;
-	gift?: string;
+	compInGift?: string;
+	tipInGift?: string;
 	giftCode?: string;
 	discount?: string;
 	supply?: string;

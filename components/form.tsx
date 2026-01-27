@@ -45,13 +45,14 @@ export const paymentMethods = ["Card", "Cash", "Gift Card"] as PaymentMethod[];
 export const initialEarningState = {
 	compensation: "",
 	compInCash: "",
+	compInGift: "",
 	compensationMethods: ["Card"] as PaymentMethod[],
 	tip: "",
 	tipInCash: "",
+	tipInGift: "",
 	tipMethods: ["Card"] as PaymentMethod[],
 	discount: "",
 	supply: "",
-	gift: "",
 	giftCode: "",
 	services: [] as Category["_id"][],
 };
@@ -63,6 +64,7 @@ type GiftCardInputsType = {
 	giftError: string;
 	setGiftError: React.Dispatch<React.SetStateAction<string>>;
 	giftCard?: Gift | null;
+	type?: "tipInGift" | "compInGift";
 };
 
 // TODO: Separate compensation and tip gift card inputs?
@@ -72,8 +74,11 @@ export const GiftCardInputs = ({
 	giftCard,
 	giftError,
 	setGiftError,
+	type,
 }: GiftCardInputsType) => {
 	const mutedColor = useThemeColor("muted");
+
+	if (!type) return null;
 
 	return (
 		<>
@@ -110,9 +115,9 @@ export const GiftCardInputs = ({
 					placeholder="Enter amount from Gift Card"
 					keyboardType="numeric"
 					autoCapitalize="none"
-					value={earning.gift?.toString()}
+					value={earning[type as keyof EarningFormState]?.toString()}
 					onChangeText={(value) => {
-						setEarning({ ...earning, gift: value });
+						setEarning({ ...earning, [type]: value });
 						const giftAmount = Number.parseFloat(value || "0");
 						if (giftCard && giftAmount > (giftCard.balance ?? 0)) {
 							setGiftError(

@@ -233,15 +233,14 @@ export function TransactionForm({
 			) : null}
 
 			{/* gift text-field*/}
-			{gift ? (
-				<GiftCardInputs
-					earning={earning}
-					setEarning={setEarning}
-					giftCard={giftCard}
-					giftError={giftError}
-					setGiftError={setGiftError}
-				/>
-			) : null}
+			<GiftCardInputs
+				earning={earning}
+				setEarning={setEarning}
+				giftCard={giftCard}
+				giftError={giftError}
+				setGiftError={setGiftError}
+				type={gift === true ? "compInGift" : undefined}
+			/>
 
 			{/* Other Inputs */}
 			<View className="flex-row flex-wrap gap-2">
@@ -264,7 +263,7 @@ export function TransactionForm({
 			</View>
 
 			{tip ? (
-				<View className="flex gap-2 pl-2">
+				<View className="flex gap-2">
 					{/* Tip Methods */}
 					<View className="flex-row flex-wrap justify-end gap-2">
 						{paymentMethods.map((method) => (
@@ -280,7 +279,7 @@ export function TransactionForm({
 						))}
 					</View>
 					{/* tip text-field */}
-					<TextField isRequired>
+					<TextField isRequired className="focus">
 						<TextField.Input
 							className="h-16 rounded-3xl"
 							placeholder="Enter Total Tip"
@@ -296,7 +295,7 @@ export function TransactionForm({
 					</TextField>
 					{/* tip In Cash text-field */}
 					{tipCash && tipCard && (
-						<TextField isRequired>
+						<TextField isRequired className="focus">
 							<TextField.Input
 								className="h-16 rounded-3xl"
 								placeholder="Enter Tip in Cash Amount"
@@ -318,7 +317,7 @@ export function TransactionForm({
 
 			{/* discount text-field */}
 			{discount ? (
-				<TextField isRequired>
+				<TextField isRequired className="focus">
 					<TextField.Input
 						className="h-16 rounded-3xl"
 						placeholder="Enter discount"
@@ -337,7 +336,7 @@ export function TransactionForm({
 			) : null}
 
 			{supply ? (
-				<TextField isRequired>
+				<TextField isRequired className="focus">
 					<TextField.Input
 						className="h-16 rounded-3xl"
 						placeholder="Enter supply cost"
@@ -354,15 +353,14 @@ export function TransactionForm({
 			) : null}
 
 			{/* tip gift text-field*/}
-			{tipGift ? (
-				<GiftCardInputs
-					earning={earning}
-					setEarning={setEarning}
-					giftCard={giftCard}
-					giftError={giftError}
-					setGiftError={setGiftError}
-				/>
-			) : null}
+			<GiftCardInputs
+				earning={earning}
+				setEarning={setEarning}
+				giftCard={giftCard}
+				giftError={giftError}
+				setGiftError={setGiftError}
+				type={tipGift === true ? "tipInGift" : undefined}
+			/>
 
 			{/* service categories */}
 			<View className="mt-4 mb-4 flex-row flex-wrap gap-2">

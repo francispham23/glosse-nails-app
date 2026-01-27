@@ -22,7 +22,11 @@ export const GiftCardTransaction = ({ transaction }: Props) => {
 		>
 			<View className="flex-row items-center justify-between">
 				<Text className="font-semibold text-foreground text-lg">
-					${transaction.gift?.toFixed(2) || "0.00"} Used
+					$
+					{(
+						(transaction.compInGift || 0) + (transaction.tipInGift || 0)
+					).toFixed(2) || "0.00"}{" "}
+					Used
 				</Text>
 				<Text className={cn(textClassName, "text-xs")}>
 					{formatDate(transaction.serviceDate)}

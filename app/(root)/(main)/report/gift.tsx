@@ -24,12 +24,16 @@ export default function GiftRoute() {
 
 	const redeemedGifts =
 		transactions
-			?.filter((tx) => tx.compensationMethods?.includes("Gift Card"))
+			?.filter(
+				(tx) =>
+					tx.compensationMethods?.includes("Gift Card") ||
+					tx.tipMethods?.includes("Gift Card"),
+			)
 			.map((tx) => {
 				return {
 					_id: tx._id,
 					code: gifts?.find((gift) => gift._id === tx.giftCode)?.code as string,
-					balance: tx.gift as number,
+					balance: (tx.compInGift || 0) + (tx.tipInGift || 0),
 					redeemedDate: tx.serviceDate as number,
 					client: tx.client as string | undefined,
 					technician: tx.technician as string | undefined,
@@ -132,10 +136,7 @@ const GiftCard = ({ item }: Props) => {
 					item.redeemedDate ? "min-w-[70] text-right" : "min-w-[90] text-right",
 				)}
 			>
-				$
-				{item.redeemedDate
-					? item.balance?.toFixed(2)
-					: item.value?.toFixed(2)}
+				${item.redeemedDate ? item.balance?.toFixed(2) : item.value?.toFixed(2)}
 			</Text>
 		</View>
 	);

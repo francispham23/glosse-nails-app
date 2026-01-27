@@ -37,7 +37,10 @@ export const GiftCard = ({ giftCard }: Props) => {
 	const textClassName = cn("text-base text-muted", !isLight && "-foreground");
 
 	const totalUsed =
-		transactions?.reduce((sum, tx) => sum + (tx.gift || 0), 0) || 0;
+		transactions?.reduce(
+			(sum, tx) => sum + (tx.compInGift || 0) + (tx.tipInGift || 0),
+			0,
+		) || 0;
 
 	const isUnused = giftCard.transactionIds.length === 0;
 

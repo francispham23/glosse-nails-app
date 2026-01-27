@@ -41,6 +41,13 @@ export default function DiscountRoute() {
 								? tx.tip || 0
 								: 0)
 						: 0),
+				realCash:
+					(tx.compInCash || 0) +
+					(tx.compensationMethods?.includes("Cash") &&
+					!tx.compensationMethods?.includes("Card")
+						? (tx.compensation || 0) + (tx.supply || 0)
+						: 0) *
+						1.05,
 			})) || [];
 
 	const classname = cn("font-semibold text-foreground");
@@ -56,9 +63,10 @@ export default function DiscountRoute() {
 			</Text>
 			<View className="flex-1 pt-6">
 				<View className="mb-2 flex-row justify-between px-2">
-					<Text className={classname}>Date</Text>
-					<Text className={classname}>Technician</Text>
+					<Text className={cn(classname, "min-w-[60]")}>Date</Text>
+					<Text className={cn(classname, "text-right")}>Technician</Text>
 					<Text className={cn(classname, "text-right")}>Cash</Text>
+					<Text className={cn(classname, "text-right")}>Real Cash</Text>
 				</View>
 
 				<FlatList
@@ -79,6 +87,7 @@ type Props = {
 		serviceDate: number | undefined;
 		technician: string | undefined;
 		cash: number;
+		realCash: number;
 	};
 };
 
@@ -92,15 +101,17 @@ const CashCard = ({ item }: Props) => {
 					? new Date(item.serviceDate).toLocaleDateString("en-US", {
 							month: "short",
 							day: "numeric",
-							year: "numeric",
 						})
 					: "N/A"}
 			</Text>
-			<Text className={cn(classname, "flex-1 text-left")}>
+			<Text className={cn(classname, "min-w-[55] flex-1 text-left")}>
 				{item.technician || "Unknown"}
 			</Text>
-			<Text className={cn(classname, "min-w-[40] text-right")}>
+			<Text className={cn(classname, "min-w-[55] text-right")}>
 				${item.cash.toFixed(2)}
+			</Text>
+			<Text className={cn(classname, "min-w-[75] text-right")}>
+				${item.realCash.toFixed(2)}
 			</Text>
 		</View>
 	);

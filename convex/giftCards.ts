@@ -15,7 +15,7 @@ export const list = query({
 					.withIndex("by_gift_card", (q) => q.eq("giftCode", giftCard._id))
 					.collect();
 				const totalRedeemed = transactions.reduce((sum, tx) => {
-					return sum + (tx.gift || 0);
+					return sum + (tx.compInGift || 0) + (tx.tipInGift || 0);
 				}, 0);
 				const balance = Number.parseFloat(
 					(giftCard.value - totalRedeemed).toFixed(2),
@@ -46,7 +46,7 @@ export const getByCode = query({
 			.collect();
 
 		const totalRedeemed = transactions.reduce((sum, tx) => {
-			return sum + (tx.gift || 0);
+			return sum + (tx.compInGift || 0) + (tx.tipInGift || 0);
 		}, 0);
 
 		const balance = giftCard
@@ -111,7 +111,7 @@ export const listByDateRange = query({
 					.withIndex("by_gift_card", (q) => q.eq("giftCode", giftCard._id))
 					.collect();
 				const totalRedeemed = transactions.reduce((sum, tx) => {
-					return sum + (tx.gift || 0);
+					return sum + (tx.compInGift || 0) + (tx.tipInGift || 0);
 				}, 0);
 				const balance = Number.parseFloat(
 					(giftCard.value - totalRedeemed).toFixed(2),

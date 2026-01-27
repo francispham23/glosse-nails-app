@@ -38,11 +38,12 @@ function prepareTransactionData(transaction: {
 	serviceDate: number;
 	compInCash?: string;
 	tipInCash?: string;
+	compInGift?: string;
+	tipInGift?: string;
 	clientId?: Id<"users">;
 	services?: Id<"categories">[];
 	discount?: string;
 	supply?: string;
-	gift?: string;
 	giftCode?: Id<"giftCards">;
 }) {
 	return {
@@ -52,10 +53,16 @@ function prepareTransactionData(transaction: {
 		compInCash: transaction.compInCash
 			? Number.parseFloat(Number.parseFloat(transaction.compInCash).toFixed(2))
 			: undefined,
+		compInGift: transaction.compInGift
+			? Number.parseFloat(Number.parseFloat(transaction.compInGift).toFixed(2))
+			: undefined,
 		compensationMethods: transaction.compensationMethods,
 		tip: Number.parseFloat(Number.parseFloat(transaction.tip).toFixed(2)),
 		tipInCash: transaction.tipInCash
 			? Number.parseFloat(Number.parseFloat(transaction.tipInCash).toFixed(2))
+			: undefined,
+		tipInGift: transaction.tipInGift
+			? Number.parseFloat(Number.parseFloat(transaction.tipInGift).toFixed(2))
 			: undefined,
 		tipMethods: transaction.tipMethods,
 		technician: transaction.technicianId,
@@ -68,7 +75,6 @@ function prepareTransactionData(transaction: {
 		supply: transaction.supply
 			? Number.parseFloat(transaction.supply)
 			: undefined,
-		gift: transaction.gift ? Number.parseFloat(transaction.gift) : undefined,
 		giftCode: transaction.giftCode,
 	};
 }
@@ -85,11 +91,12 @@ async function insertTransaction(
 		serviceDate: number;
 		compInCash?: string;
 		tipInCash?: string;
+		compInGift?: string;
+		tipInGift?: string;
 		services?: Id<"categories">[];
 		clientId?: Id<"users">;
 		discount?: string;
 		supply?: string;
-		gift?: string;
 		giftCode?: Id<"giftCards">;
 	},
 ) {
@@ -146,13 +153,14 @@ export const addTransaction = mutation({
 		body: v.object({
 			compensation: v.string(),
 			compInCash: v.optional(v.string()),
+			compInGift: v.optional(v.string()),
 			compensationMethods: v.array(v.string()),
 			tip: v.string(),
 			tipInCash: v.optional(v.string()),
+			tipInGift: v.optional(v.string()),
 			tipMethods: v.array(v.string()),
 			discount: v.optional(v.string()),
 			supply: v.optional(v.string()),
-			gift: v.optional(v.string()),
 			giftCode: v.optional(v.string()),
 			technicianId: v.id("users"),
 			services: v.optional(v.array(v.id("categories"))),
@@ -177,7 +185,7 @@ export const addTransaction = mutation({
 		await insertTransaction(ctx, { ...body, giftCode: giftCardId });
 
 		// Add transaction ID to gift card's transactionIds array
-		if (giftCardId && body.gift) {
+		if (giftCardId && (body.tipInGift || body.compInGift)) {
 			const giftCard = await ctx.db.get(giftCardId);
 			if (giftCard) {
 				const transactions = giftCard.transactionIds || [];
@@ -202,13 +210,14 @@ export const bulkInsertTransactions = mutation({
 			v.object({
 				compensation: v.string(),
 				compInCash: v.optional(v.string()),
+				compInGift: v.optional(v.string()),
 				compensationMethods: v.array(v.string()),
 				tip: v.string(),
 				tipInCash: v.optional(v.string()),
+				tipInGift: v.optional(v.string()),
 				tipMethods: v.array(v.string()),
 				discount: v.optional(v.string()),
 				supply: v.optional(v.string()),
-				gift: v.optional(v.string()),
 				giftCode: v.optional(v.string()),
 				technicianId: v.id("users"),
 				services: v.optional(v.array(v.id("categories"))),
@@ -234,7 +243,7 @@ export const bulkInsertTransactions = mutation({
 				await insertTransaction(ctx, { ...transaction, giftCode: giftCardId });
 
 				// Add transaction ID to gift card's transactionIds array
-				if (giftCardId && transaction.gift) {
+				if (giftCardId && (transaction.tipInGift || transaction.compInGift)) {
 					const giftCard = await ctx.db.get(giftCardId);
 					if (giftCard) {
 						const transactions = giftCard.transactionIds || [];
@@ -294,13 +303,14 @@ export const updateTransaction = mutation({
 		body: v.object({
 			compensation: v.string(),
 			compInCash: v.optional(v.string()),
+			compInGift: v.optional(v.string()),
 			compensationMethods: v.array(v.string()),
 			tip: v.string(),
 			tipInCash: v.optional(v.string()),
+			tipInGift: v.optional(v.string()),
 			tipMethods: v.array(v.string()),
 			discount: v.optional(v.string()),
 			supply: v.optional(v.string()),
-			gift: v.optional(v.string()),
 			giftCode: v.optional(v.string()),
 			technicianId: v.id("users"),
 			services: v.optional(v.array(v.id("categories"))),
