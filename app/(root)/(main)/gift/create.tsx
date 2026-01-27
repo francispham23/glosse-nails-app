@@ -20,7 +20,7 @@ export default function CreateRoute() {
 	const createGiftCard = useMutation(api.giftCards.create);
 
 	const [code, setCode] = useState("");
-	const [balance, setBalance] = useState("");
+	const [value, setValue] = useState("");
 	const [date, setDate] = useState(new Date());
 	const [open, setOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
@@ -32,8 +32,8 @@ export default function CreateRoute() {
 			return;
 		}
 
-		if (!balance || Number.parseFloat(balance) <= 0) {
-			Alert.alert("Error", "Please enter a valid balance");
+		if (!value || Number.parseFloat(value) <= 0) {
+			Alert.alert("Error", "Please enter a valid value");
 			return;
 		}
 
@@ -41,13 +41,13 @@ export default function CreateRoute() {
 			setIsLoading(true);
 			await createGiftCard({
 				code: code.trim(),
-				balance: Number.parseFloat(balance),
+				value: Number.parseFloat(value),
 				sellDate: date.getTime(),
 			});
 
 			Alert.alert("Success", "Gift card created successfully");
 			setCode("");
-			setBalance("");
+			setValue("");
 			setDate(new Date());
 			router.back();
 		} catch (error) {
@@ -91,8 +91,8 @@ export default function CreateRoute() {
 					className="h-16 rounded-3xl"
 					placeholder="Enter Gift Card Value"
 					keyboardType="numeric"
-					value={balance}
-					onChangeText={setBalance}
+					value={value}
+					onChangeText={setValue}
 				>
 					<TextField.InputStartContent className="pointer-events-none pl-2">
 						<Ionicons name="cash-outline" size={20} color={mutedColor} />

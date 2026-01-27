@@ -42,4 +42,6 @@ export type Gift = ReplaceType<
 	DataModel["giftCards"]["document"],
 	"client",
 	string | undefined
->;
+> & {
+	balance?: number;
+};

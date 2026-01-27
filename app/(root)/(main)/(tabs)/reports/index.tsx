@@ -38,7 +38,7 @@ export default function ReportsRoute() {
 	});
 
 	const totalGiftCardBalance =
-		giftCards?.reduce((sum, gc) => sum + gc.balance, 0) ?? 0;
+		giftCards?.reduce((sum, giftCard) => sum + giftCard.balance, 0) || 0;
 
 	const totalCompensation =
 		technicians?.reduce((sum, tech) => sum + tech.compensation, 0) ?? 0;

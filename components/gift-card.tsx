@@ -32,14 +32,14 @@ export const GiftCard = ({ giftCard }: Props) => {
 
 	const balanceClassName = cn(
 		"text-right font-semibold text-md",
-		giftCard.balance > 0 ? "text-success" : "text-foreground",
+		(giftCard.balance ?? 0) > 0 ? "text-success" : "text-foreground",
 	);
 	const textClassName = cn("text-base text-muted", !isLight && "-foreground");
 
 	const totalUsed =
 		transactions?.reduce((sum, tx) => sum + (tx.gift || 0), 0) || 0;
 
-	const isUnused = giftCard.balance === giftCard.faceValue && totalUsed === 0;
+	const isUnused = giftCard.transactionIds.length === 0;
 
 	const handleDelete = async () => {
 		if (!isUnused) {
@@ -104,7 +104,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 						{giftCard.code}
 					</Text>
 					<Text className={balanceClassName}>
-						${giftCard.balance.toFixed(2)}
+						${giftCard.balance?.toFixed(2)}
 					</Text>
 				</Animated.View>
 			</Pressable>
@@ -157,7 +157,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 							<View className="flex-row justify-between">
 								<Text className={textClassName}>Current Balance:</Text>
 								<Text className={balanceClassName}>
-									${giftCard.balance.toFixed(2)}
+									${giftCard.balance?.toFixed(2)}
 								</Text>
 							</View>
 						</View>

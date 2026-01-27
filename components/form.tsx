@@ -101,7 +101,7 @@ export const GiftCardInputs = ({
 			)}
 			{giftCard && (
 				<Text className="px-4 text-foreground text-sm">
-					Available balance: ${giftCard.balance.toFixed(2)}
+					Available balance: ${giftCard.balance?.toFixed(2) ?? "0.00"}
 				</Text>
 			)}
 			<TextField isRequired>
@@ -114,9 +114,9 @@ export const GiftCardInputs = ({
 					onChangeText={(value) => {
 						setEarning({ ...earning, gift: value });
 						const giftAmount = Number.parseFloat(value || "0");
-						if (giftCard && giftAmount > giftCard.balance) {
+						if (giftCard && giftAmount > (giftCard.balance ?? 0)) {
 							setGiftError(
-								`Gift card balance insufficient. Available: $${giftCard.balance.toFixed(2)}`,
+								`Gift card balance insufficient. Available: $${giftCard.balance?.toFixed(2)}`,
 							);
 						} else {
 							setGiftError("");

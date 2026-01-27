@@ -94,7 +94,7 @@ type Props = {
 		client?: string;
 		balance?: number;
 		sellDate?: number;
-		faceValue?: number;
+		value?: number;
 		technician?: string;
 		redeemedDate?: number;
 	};
@@ -135,7 +135,7 @@ const GiftCard = ({ item }: Props) => {
 				$
 				{item.redeemedDate
 					? item.balance?.toFixed(2)
-					: item.faceValue?.toFixed(2)}
+					: item.value?.toFixed(2)}
 			</Text>
 		</View>
 	);

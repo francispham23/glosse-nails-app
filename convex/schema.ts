@@ -44,8 +44,7 @@ const schema = defineSchema({
 	giftCards: defineTable({
 		client: v.optional(v.id("users")),
 		code: v.string(),
-		balance: v.float64(),
-		faceValue: v.float64(),
+		value: v.float64(),
 		sellDate: v.number(),
 		transactionIds: v.array(v.id("transactions")),
 	}).index("by_code", ["code"]),
