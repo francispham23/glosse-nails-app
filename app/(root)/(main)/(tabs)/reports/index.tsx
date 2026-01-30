@@ -4,7 +4,7 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { cn } from "heroui-native";
 import { useState } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { api } from "@/convex/_generated/api";
@@ -294,15 +294,12 @@ export default function ReportsRoute() {
 			</View>
 
 			{/* Report cards list */}
-			<FlatList
+			<Animated.FlatList
+				contentInsetAdjustmentBehavior="automatic"
+				contentContainerClassName="gap-2 pt-2 px-4 pb-24"
 				data={reportCards}
 				renderItem={renderReportCard}
 				keyExtractor={(item) => item.id}
-				contentContainerStyle={{
-					gap: 16,
-					paddingHorizontal: 24,
-					paddingBottom: 16,
-				}}
 				scrollEnabled={true}
 			/>
 		</Animated.View>

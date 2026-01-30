@@ -74,7 +74,7 @@ export default function HomeRoute() {
 			{/* Technician List */}
 			<Animated.FlatList
 				contentInsetAdjustmentBehavior="automatic"
-				contentContainerClassName="gap-4 pt-2 px-4 pb-24"
+				contentContainerClassName="gap-4 p-2 pb-24"
 				keyExtractor={(item) => item._id.toString()}
 				data={isSelecting ? convexUsers : selectedUsers}
 				renderItem={({ item }: { item: User }) => {
