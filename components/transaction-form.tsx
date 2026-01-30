@@ -3,7 +3,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery } from "convex/react";
 import { router } from "expo-router";
 import { Button, Chip, Spinner, TextField, useThemeColor } from "heroui-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Keyboard, Text, View } from "react-native";
 
 import FormHeader, {
@@ -15,7 +15,9 @@ import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { useFormValidation } from "@/hooks/use-form-validation";
 import type { Category, EarningFormState, PaymentMethod } from "@/utils/types";
+import { EarningFormSchema } from "@/utils/validation";
 
 interface TransactionFormProps {
 	type: "create" | "edit";
@@ -62,6 +64,15 @@ export function TransactionForm({
 	/* ---------------------------------- state --------------------------------- */
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [selectedInputs, setSelectedInputs] = useState<string[]>(["Tip"]);
+	const { errors, validate, getFieldError } =
+		useFormValidation(EarningFormSchema);
+
+	/* ------------------- clear validation errors when gift error changes ------------------- */
+	useEffect(() => {
+		if (giftError) {
+			//TODO: Gift validation is handled separately
+		}
+	}, [giftError]);
 
 	/* ------------------- handle select services ------------------- */
 	const handleSelectServices = (categoryId: Category["_id"]) =>
@@ -133,6 +144,13 @@ export function TransactionForm({
 		);
 	};
 
+	/* ------------------- handle validate and submit ------------------- */
+	const handleValidateAndSubmit = () => {
+		if (validate(earning)) {
+			onSubmit();
+		}
+	};
+
 	/* ------------------- transaction types ------------------- */
 	const cash = earning.compensationMethods.includes("Cash");
 	const card = earning.compensationMethods.includes("Card");
@@ -158,6 +176,7 @@ export function TransactionForm({
 
 	const isDisabled =
 		isLoading ||
+		Object.keys(errors).length > 0 ||
 		!!giftError ||
 		(!!earning.giftCode && !giftCard) ||
 		isDeleting ||
@@ -206,6 +225,11 @@ export function TransactionForm({
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
+			{getFieldError("compensation") && (
+				<Text className="px-4 text-red-500 text-sm">
+					{getFieldError("compensation")}
+				</Text>
+			)}
 			{!compensationTypes && (
 				<Text className="px-4 text-red-500 text-sm">
 					Please select at least one compensation method
@@ -231,6 +255,11 @@ export function TransactionForm({
 					</TextField.Input>
 				</TextField>
 			) : null}
+			{getFieldError("compInCash") && (
+				<Text className="px-4 text-red-500 text-sm">
+					{getFieldError("compInCash")}
+				</Text>
+			)}
 
 			{/* gift text-field*/}
 			<GiftCardInputs
@@ -241,6 +270,11 @@ export function TransactionForm({
 				setGiftError={setGiftError}
 				type={gift === true ? "compInGift" : undefined}
 			/>
+			{getFieldError("compInGift") && (
+				<Text className="px-4 text-red-500 text-sm">
+					{getFieldError("compInGift")}
+				</Text>
+			)}
 
 			{/* Other Inputs */}
 			<View className="flex-row flex-wrap gap-2">
@@ -285,7 +319,7 @@ export function TransactionForm({
 							placeholder="Enter Total Tip"
 							keyboardType="numeric"
 							autoCapitalize="none"
-							value={earning.tip.toString()}
+							value={earning.tip === "0" ? "" : earning.tip.toString()}
 							onChangeText={(value) => setEarning({ ...earning, tip: value })}
 						>
 							<TextField.InputStartContent className="pointer-events-none pl-2">
@@ -293,6 +327,11 @@ export function TransactionForm({
 							</TextField.InputStartContent>
 						</TextField.Input>
 					</TextField>
+					{getFieldError("tip") && (
+						<Text className="px-4 text-red-500 text-sm">
+							{getFieldError("tip")}
+						</Text>
+					)}
 					{/* tip In Cash text-field */}
 					{tipCash && tipCard && (
 						<TextField isRequired className="focus">
@@ -311,6 +350,11 @@ export function TransactionForm({
 								</TextField.InputStartContent>
 							</TextField.Input>
 						</TextField>
+					)}
+					{getFieldError("tipInCash") && (
+						<Text className="px-4 text-red-500 text-sm">
+							{getFieldError("tipInCash")}
+						</Text>
 					)}
 				</View>
 			) : null}
@@ -334,6 +378,11 @@ export function TransactionForm({
 					</TextField.Input>
 				</TextField>
 			) : null}
+			{getFieldError("discount") && (
+				<Text className="px-4 text-red-500 text-sm">
+					{getFieldError("discount")}
+				</Text>
+			)}
 
 			{supply ? (
 				<TextField isRequired className="focus">
@@ -351,6 +400,11 @@ export function TransactionForm({
 					</TextField.Input>
 				</TextField>
 			) : null}
+			{getFieldError("supply") && (
+				<Text className="px-4 text-red-500 text-sm">
+					{getFieldError("supply")}
+				</Text>
+			)}
 
 			{/* tip gift text-field*/}
 			<GiftCardInputs
@@ -361,6 +415,11 @@ export function TransactionForm({
 				setGiftError={setGiftError}
 				type={tipGift === true ? "tipInGift" : undefined}
 			/>
+			{getFieldError("tipInGift") && (
+				<Text className="px-4 text-red-500 text-sm">
+					{getFieldError("tipInGift")}
+				</Text>
+			)}
 
 			{/* service categories */}
 			<View className="mt-4 mb-4 flex-row flex-wrap gap-2">
@@ -412,7 +471,7 @@ export function TransactionForm({
 			</TextField>
 
 			<Button
-				onPress={onSubmit}
+				onPress={handleValidateAndSubmit}
 				isDisabled={isDisabled}
 				size="lg"
 				className="rounded-3xl"

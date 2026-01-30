@@ -47,7 +47,7 @@ export const initialEarningState = {
 	compInCash: "",
 	compInGift: "",
 	compensationMethods: ["Card"] as PaymentMethod[],
-	tip: "",
+	tip: "0",
 	tipInCash: "",
 	tipInGift: "",
 	tipMethods: ["Card"] as PaymentMethod[],
@@ -67,7 +67,6 @@ type GiftCardInputsType = {
 	type?: "tipInGift" | "compInGift";
 };
 
-// TODO: Separate compensation and tip gift card inputs?
 export const GiftCardInputs = ({
 	earning,
 	setEarning,

@@ -1,11 +1,11 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
-import { Button, TextField, Spinner, useThemeColor } from "heroui-native";
+import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import FormHeader, { FormContainer } from "@/components/form";
 
 // TODO: Implement password reset request logic here
 export default function RequestPasswordResetRoute() {
-  const mutedColor = useThemeColor("muted");
+	const mutedColor = useThemeColor("muted");
 	const themeColorBackground = useThemeColor("background");
 	// const router = useRouter();
 
@@ -71,26 +71,22 @@ export default function RequestPasswordResetRoute() {
 					onChangeText={setEmail}
 				>
 					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons
-							name="mail-outline"
-							size={20}
-							color={mutedColor}
-						/>
+						<Ionicons name="mail-outline" size={20} color={mutedColor} />
 					</TextField.InputStartContent>
 				</TextField.Input>
 			</TextField>
 			{/* submit button */}
 			<Button
-        // onPress={handleRequestReset}
-        isDisabled={isLoading}
-        className="rounded-3xl"
-        size="lg"
-      >
-        <Button.Label>
-          {isLoading ? "Sending..." : "Send Reset Link"}
-        </Button.Label>
-          {isLoading ? <Spinner color={themeColorBackground} /> : null}
-      </Button>
+				// onPress={handleRequestReset}
+				isDisabled={isLoading}
+				className="rounded-3xl"
+				size="lg"
+			>
+				<Button.Label>
+					{isLoading ? "Sending..." : "Send Reset Link"}
+				</Button.Label>
+				{isLoading ? <Spinner color={themeColorBackground} /> : null}
+			</Button>
 		</FormContainer>
 	);
 }

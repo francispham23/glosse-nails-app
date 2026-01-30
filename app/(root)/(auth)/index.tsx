@@ -17,7 +17,6 @@ export default function Landing() {
 			<View className="w-full flex-row pb-2">
 				<SignInButton />
 			</View>
-			{/* TODO: Auth with Email */}
 			<Link href="/(root)/(auth)/email/signin" asChild>
 				<Button className="w-full rounded-full" size="lg">
 					<Button.Label>Email</Button.Label>

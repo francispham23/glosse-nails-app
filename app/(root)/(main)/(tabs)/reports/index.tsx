@@ -4,10 +4,23 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { cn } from "heroui-native";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { api } from "@/convex/_generated/api";
+
+type ReportCardType = "payroll" | "discount" | "cash" | "gift" | "supply";
+
+interface ReportCard {
+	id: ReportCardType;
+	title: string;
+	rows: Array<{
+		label: string;
+		value: string;
+		isBold?: boolean;
+		isLarge?: boolean;
+	}>;
+}
 
 export default function ReportsRoute() {
 	const router = useRouter();
@@ -17,8 +30,7 @@ export default function ReportsRoute() {
 
 	const [startDate, setStartDate] = useState<Date>(firstDayOfMonth);
 	const [endDate, setEndDate] = useState<Date>(today);
-	const [showStartPicker, setShowStartPicker] = useState(false);
-	const [showEndPicker, setShowEndPicker] = useState(false);
+	const [openPicker, setOpenPicker] = useState<"start" | "end" | null>(null);
 
 	// Query technicians with totals for the selected date range
 	const technicians = useQuery(api.users.usersByDateRange, {
@@ -95,9 +107,87 @@ export default function ReportsRoute() {
 
 	const classname = cn("font-semibold text-foreground");
 
-	const onPress = (
-		type: "payroll" | "discount" | "cash" | "gift" | "supply",
-	) => {
+	// Build report cards data
+	const reportCards: ReportCard[] = [
+		{
+			id: "payroll",
+			title: "Payroll",
+			rows: [
+				{
+					label: "Total Compensation:",
+					value: `$${totalCompensation.toFixed(2)}`,
+				},
+				{ label: "Total Tips:", value: `$${totalTip.toFixed(2)}` },
+				{
+					label: "Grand Total:",
+					value: `$${grandTotal.toFixed(2)}`,
+					isBold: true,
+					isLarge: true,
+				},
+			],
+		},
+		{
+			id: "cash",
+			title: "Cash",
+			rows: [
+				{
+					label: "Total Compensation Cash:",
+					value: `$${totalCompCash.toFixed(2)}`,
+				},
+				{ label: "Total Tip Cash:", value: `$${totalTipCash.toFixed(2)}` },
+				{
+					label: "Grand Total Cash:",
+					value: `$${totalCash.toFixed(2)}`,
+					isBold: true,
+					isLarge: true,
+				},
+				{
+					label: "Grand Total Real Cash:",
+					value: `$${totalRealCash.toFixed(2)}`,
+					isBold: true,
+					isLarge: true,
+				},
+			],
+		},
+		{
+			id: "gift",
+			title: "Gift Cards",
+			rows: [
+				{
+					label: "Total Balance Gift Cards:",
+					value: `$${totalGiftCardBalance.toFixed(2)}`,
+					isBold: true,
+					isLarge: true,
+				},
+			],
+		},
+		{
+			id: "discount",
+			title: "Discounts",
+			rows: [
+				{
+					label: "Total Discount:",
+					value: `$${totalDiscount.toFixed(2)}`,
+					isBold: true,
+					isLarge: true,
+				},
+			],
+		},
+		{
+			id: "supply",
+			title: "Supply",
+			rows: [
+				{
+					label: "Total Supply:",
+					value: `$${totalSupply.toFixed(2)}`,
+					isBold: true,
+					isLarge: true,
+				},
+			],
+		},
+	];
+
+	const onPress = (type: ReportCardType) => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 		router.navigate({
 			pathname: `/report/${type}`,
@@ -108,18 +198,49 @@ export default function ReportsRoute() {
 		});
 	};
 
+	const renderReportCard = ({ item }: { item: ReportCard }) => (
+		<Pressable onPress={() => onPress(item.id)}>
+			<View className="rounded-lg bg-background p-4">
+				{item.rows.map((row, index) => (
+					<View
+						key={row.label}
+						className={cn(
+							"flex-row justify-between",
+							index < item.rows.length - 1
+								? "border-border border-b pb-2"
+								: "pt-2",
+							index > 0 && index < item.rows.length - 1 && "py-2",
+						)}
+					>
+						<Text className="text-foreground">{row.label}</Text>
+						<Text
+							className={cn(
+								row.isBold && "font-bold",
+								row.isLarge && "text-lg",
+								!row.isBold && classname,
+							)}
+						>
+							{row.value}
+						</Text>
+					</View>
+				))}
+			</View>
+		</Pressable>
+	);
+
 	return (
 		<Animated.View
-			className="flex-1 gap-4 bg-background-secondary px-6 pt-40 pb-4"
+			className="flex-1 bg-background-secondary pt-4"
 			entering={FadeIn}
 			exiting={FadeOut}
 		>
 			{/* Date range selectors */}
-			<View className="flex-row gap-2 pt-5">
+			<View className="flex-row gap-2 px-6 pt-40 pb-4">
 				<Pressable
+					className={openPicker === "start" ? "opacity-70" : ""}
 					onPress={() => {
 						Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-						setShowStartPicker(!showStartPicker);
+						setOpenPicker(openPicker === "start" ? null : "start");
 					}}
 				>
 					<View className="rounded-lg bg-background px-4 py-2">
@@ -128,9 +249,10 @@ export default function ReportsRoute() {
 				</Pressable>
 
 				<Pressable
+					className={openPicker === "end" ? "opacity-70" : ""}
 					onPress={() => {
 						Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-						setShowEndPicker(!showEndPicker);
+						setOpenPicker(openPicker === "end" ? null : "end");
 					}}
 				>
 					<View className="rounded-lg bg-background px-4 py-2">
@@ -138,23 +260,23 @@ export default function ReportsRoute() {
 					</View>
 				</Pressable>
 			</View>
-			{/* Date pickers */}
-			<View>
-				{showStartPicker && (
+			<View className={openPicker ? "h-56" : ""}>
+				{/* Date pickers */}
+				{openPicker === "start" && (
 					<DateTimePicker
 						value={startDate}
 						mode="date"
 						display="spinner"
 						maximumDate={endDate}
 						onChange={(_, selectedDate) => {
-							setShowStartPicker(false);
+							setOpenPicker(null);
 							if (selectedDate) {
 								setStartDate(selectedDate);
 							}
 						}}
 					/>
 				)}
-				{showEndPicker && (
+				{openPicker === "end" && (
 					<DateTimePicker
 						value={endDate}
 						mode="date"
@@ -162,7 +284,7 @@ export default function ReportsRoute() {
 						minimumDate={startDate}
 						maximumDate={new Date()}
 						onChange={(_, selectedDate) => {
-							setShowEndPicker(false);
+							setOpenPicker(null);
 							if (selectedDate) {
 								setEndDate(selectedDate);
 							}
@@ -171,87 +293,18 @@ export default function ReportsRoute() {
 				)}
 			</View>
 
-			{/* Payroll totals */}
-			<Pressable onPress={() => onPress("payroll")}>
-				<View className="rounded-lg bg-background p-4">
-					<View className="flex-row justify-between border-border border-b pb-2">
-						<Text className="text-foreground">Total Compensation:</Text>
-						<Text className={classname}>${totalCompensation.toFixed(2)}</Text>
-					</View>
-					<View className="flex-row justify-between border-border border-b py-2">
-						<Text className="text-foreground">Total Tips:</Text>
-						<Text className={classname}>${totalTip.toFixed(2)}</Text>
-					</View>
-					<View className="flex-row justify-between pt-2">
-						<Text className={classname}>Grand Total:</Text>
-						<Text className="font-bold text-foreground text-lg">
-							${grandTotal.toFixed(2)}
-						</Text>
-					</View>
-				</View>
-			</Pressable>
-
-			{/* Cash totals */}
-			<Pressable onPress={() => onPress("cash")}>
-				<View className="rounded-lg bg-background p-4">
-					<View className="flex-row justify-between border-border border-b pb-2">
-						<Text className="text-foreground">Total Compensation Cash:</Text>
-						<Text className={classname}>${totalCompCash.toFixed(2)}</Text>
-					</View>
-					<View className="flex-row justify-between border-border border-b py-2">
-						<Text className="text-foreground">Total Tip Cash:</Text>
-						<Text className={classname}>${totalTipCash.toFixed(2)}</Text>
-					</View>
-					<View className="flex-row justify-between pt-2">
-						<Text className={classname}>Grand Total Cash:</Text>
-						<Text className="font-bold text-foreground text-lg">
-							${totalCash.toFixed(2)}
-						</Text>
-					</View>
-					<View className="flex-row justify-between pt-2">
-						<Text className={classname}>Grand Total Real Cash:</Text>
-						<Text className="font-bold text-foreground text-lg">
-							${totalRealCash.toFixed(2)}
-						</Text>
-					</View>
-				</View>
-			</Pressable>
-
-			{/* Gift Card totals */}
-			<Pressable onPress={() => onPress("gift")}>
-				<View className="rounded-lg bg-background p-4">
-					<View className="flex-row justify-between border-border border-b">
-						<Text className={classname}>Total Balance Gift Cards:</Text>
-						<Text className="font-bold text-foreground text-lg">
-							${totalGiftCardBalance.toFixed(2)}
-						</Text>
-					</View>
-				</View>
-			</Pressable>
-
-			{/* Discount totals */}
-			<Pressable onPress={() => onPress("discount")}>
-				<View className="rounded-lg bg-background p-4">
-					<View className="flex-row justify-between border-border border-b">
-						<Text className={classname}>Total Discount:</Text>
-						<Text className="font-bold text-foreground text-lg">
-							${totalDiscount.toFixed(2)}
-						</Text>
-					</View>
-				</View>
-			</Pressable>
-
-			{/* Supply totals */}
-			<Pressable onPress={() => onPress("supply")}>
-				<View className="rounded-lg bg-background p-4">
-					<View className="flex-row justify-between border-border border-b">
-						<Text className={classname}>Total Supply:</Text>
-						<Text className="font-bold text-foreground text-lg">
-							${totalSupply.toFixed(2)}
-						</Text>
-					</View>
-				</View>
-			</Pressable>
+			{/* Report cards list */}
+			<FlatList
+				data={reportCards}
+				renderItem={renderReportCard}
+				keyExtractor={(item) => item.id}
+				contentContainerStyle={{
+					gap: 16,
+					paddingHorizontal: 24,
+					paddingBottom: 16,
+				}}
+				scrollEnabled={true}
+			/>
 		</Animated.View>
 	);
 }
