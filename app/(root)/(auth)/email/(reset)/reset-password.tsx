@@ -1,14 +1,14 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { Link, useLocalSearchParams } from "expo-router";
-import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Text, View } from "react-native";
+import { Button, TextInput } from "react-native-paper";
+
 import FormHeader, { FormContainer } from "@/components/form";
+import { useThemeColor } from "@/utils";
 
 // TODO: Implement password reset logic here
 export default function ResetPasswordRoute() {
-	const mutedColor = useThemeColor("muted");
-	const themeColorBackground = useThemeColor("background");
 	const accentForegroundColor = useThemeColor("accent-foreground");
 	// const router = useRouter();
 
@@ -88,13 +88,13 @@ export default function ResetPasswordRoute() {
 						</Text>
 					</View>
 					<Link href="/(root)/(auth)/email/signin" asChild>
-						<Button className="rounded-3xl">
+						<Button mode="contained" className="rounded-3xl">
 							<Ionicons
 								name="arrow-back-outline"
 								size={16}
 								color={accentForegroundColor}
 							/>
-							<Button.Label>Back to Sign In</Button.Label>
+							{"  "}Back to Sign In
 						</Button>
 					</Link>
 				</View>
@@ -111,50 +111,36 @@ export default function ResetPasswordRoute() {
 				description="Enter your new password to complete the reset"
 			/>
 			{/* new password */}
-			<TextField isRequired>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Enter your new password"
-					secureTextEntry
-					value={password}
-					onChangeText={setPassword}
-				>
-					<TextField.InputStartContent className="pointer-events-none">
-						<Ionicons name="lock-closed-outline" size={16} color={mutedColor} />
-					</TextField.InputStartContent>
-					<TextField.InputEndContent className="pointer-events-none">
-						<Ionicons name="eye-outline" size={16} color={mutedColor} />
-					</TextField.InputEndContent>
-				</TextField.Input>
-			</TextField>
+			<TextInput
+				mode="outlined"
+				placeholder="Enter your new password"
+				secureTextEntry
+				value={password}
+				onChangeText={setPassword}
+				left={<TextInput.Icon icon="lock-closed-outline" />}
+				right={<TextInput.Icon icon="eye-outline" />}
+				className="h-16 rounded-3xl"
+			/>
 			{/* confirm password */}
-			<TextField isRequired>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Confirm your new password"
-					secureTextEntry
-					value={confirmPassword}
-					onChangeText={setConfirmPassword}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="lock-closed-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-					<TextField.InputEndContent className="pointer-events-none pr-2">
-						<Ionicons name="checkmark-outline" size={20} color={mutedColor} />
-					</TextField.InputEndContent>
-				</TextField.Input>
-			</TextField>
+			<TextInput
+				mode="outlined"
+				placeholder="Confirm your new password"
+				secureTextEntry
+				value={confirmPassword}
+				onChangeText={setConfirmPassword}
+				left={<TextInput.Icon icon="lock-closed-outline" />}
+				right={<TextInput.Icon icon="checkmark-outline" />}
+				className="h-16 rounded-3xl"
+			/>
 			{/* submit button */}
 			<Button
 				// onPress={handleResetPassword}
-				isDisabled={isLoading}
+				disabled={isLoading}
+				mode="contained"
+				loading={isLoading}
 				className="rounded-3xl"
-				size="lg"
 			>
-				<Button.Label>
-					{isLoading ? "Resetting..." : "Reset Password"}
-				</Button.Label>
-				{isLoading ? <Spinner color={themeColorBackground} /> : null}
+				{isLoading ? "Resetting..." : "Reset Password"}
 			</Button>
 		</FormContainer>
 	);

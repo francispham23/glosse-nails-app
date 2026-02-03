@@ -1,14 +1,15 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useMutation, useQuery } from "convex/react";
 import * as Haptics from "expo-haptics";
-import { Button, cn, Spinner, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Alert, Modal, Pressable, Text, View } from "react-native";
+import { Button } from "react-native-paper";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { cn } from "@/utils";
 import type { Gift, Transaction } from "@/utils/types";
 import { GiftCardTransaction } from "./gift-card-transaction";
 
@@ -18,7 +19,6 @@ type Props = {
 
 export const GiftCard = ({ giftCard }: Props) => {
 	const { isLight } = useAppTheme();
-	const background = useThemeColor("background");
 
 	const [modalVisible, setModalVisible] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
@@ -101,7 +101,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 					key={giftCard._id}
 					entering={FadeIn}
 					exiting={FadeOut}
-					className="flex-row items-center justify-between rounded-lg bg-background-secondary px-4 py-3"
+					className="flex-row items-center justify-between rounded-lg bg-gray-300 p-4 shadow-md dark:bg-gray-700"
 				>
 					<Text className="font-medium font-mono text-foreground text-md">
 						{giftCard.code}
@@ -114,11 +114,11 @@ export const GiftCard = ({ giftCard }: Props) => {
 
 			<Modal
 				animationType="slide"
-				transparent={true}
+				// transparent={true}
 				visible={modalVisible}
 				onRequestClose={() => setModalVisible(false)}
 			>
-				<View className="flex-1 justify-end">
+				<View className="max-h-max flex-1 justify-end">
 					<Pressable
 						className="flex-1"
 						onPress={() => setModalVisible(false)}
@@ -144,7 +144,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 								/>
 							</Pressable>
 						</View>
-						<View className="mb-4 gap-2 rounded-lg bg-background-secondary p-4">
+						<View className="mb-4 gap-2 rounded-lg bg-gray-300 p-4 shadow-md dark:bg-gray-700">
 							<View className="flex-row justify-between">
 								<Text className={textClassName}>Owner:</Text>
 								<Text className="font-semibold text-foreground">
@@ -187,15 +187,13 @@ export const GiftCard = ({ giftCard }: Props) => {
 							<View className="mt-4">
 								<Button
 									onPress={handleDelete}
-									isDisabled={isDeleting}
-									size="lg"
+									disabled={isDeleting}
+									mode="contained"
 									className="rounded-3xl"
-									variant="destructive"
+									buttonColor="#ef4444"
+									loading={isDeleting}
 								>
-									<Button.Label>
-										{isDeleting ? "Deleting..." : "Delete Gift Card"}
-									</Button.Label>
-									{isDeleting ? <Spinner color={background} /> : null}
+									{isDeleting ? "Deleting..." : "Delete Gift Card"}
 								</Button>
 							</View>
 						)}

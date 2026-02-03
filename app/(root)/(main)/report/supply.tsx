@@ -1,12 +1,12 @@
 import { useQuery } from "convex/react";
 import { useLocalSearchParams } from "expo-router";
-import { cn } from "heroui-native";
 import { Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { ListEmptyComponent } from "@/components/list-empty";
 import { api } from "@/convex/_generated/api";
+import { cn } from "@/utils";
 
 export default function SupplyRoute() {
 	const params = useLocalSearchParams();
@@ -40,13 +40,13 @@ export default function SupplyRoute() {
 			exiting={FadeOut}
 		>
 			<Text className="font-extrabold text-3xl text-foreground">
-				Discount Report
+				Supply Report
 			</Text>
 			<View className="flex-1 pt-6">
 				<View className="mb-2 flex-row justify-between px-2">
 					<Text className={classname}>Date</Text>
 					<Text className={classname}>Technician</Text>
-					<Text className={cn(classname, "text-right")}>Discount</Text>
+					<Text className={cn(classname, "text-right")}>Supply</Text>
 				</View>
 
 				<FlatList
@@ -74,7 +74,7 @@ const SupplyCard = ({ item }: Props) => {
 	const classname = cn("text-md text-muted", !true && "-foreground");
 
 	return (
-		<View className="flex-row items-center gap-4 rounded-lg border-r-accent bg-background-secondary p-2">
+		<View className="flex-row items-center gap-4 rounded-lg border-r-accent bg-gray-300 p-2 shadow-md dark:bg-gray-700">
 			<Text className={cn(classname, "min-w-[105]")}>
 				{new Date(item.serviceDate).toLocaleDateString("en-US", {
 					month: "short",

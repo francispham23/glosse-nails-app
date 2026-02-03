@@ -2,13 +2,13 @@ import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
 import { Slot } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { HeroUINativeProvider } from "heroui-native";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AppDateProvider } from "@/contexts/app-date-context";
-import { AppThemeProvider } from "@/contexts/app-theme-context";
+import { AppThemeProvider, useAppTheme } from "@/contexts/app-theme-context";
 import "../global.css";
 
 const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
@@ -27,10 +27,12 @@ const secureStorage = {
 
 /* ------------------------------ themed route ------------------------------ */
 function ThemedLayout() {
+	const { paperTheme } = useAppTheme();
+
 	return (
-		<HeroUINativeProvider>
+		<PaperProvider theme={paperTheme}>
 			<Slot />
-		</HeroUINativeProvider>
+		</PaperProvider>
 	);
 }
 

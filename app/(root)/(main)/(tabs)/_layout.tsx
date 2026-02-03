@@ -1,9 +1,10 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs } from "expo-router";
-import { useThemeColor } from "heroui-native";
 import type { ComponentProps } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { useThemeColor } from "@/utils";
 
 type TabConfig = {
 	name: string;

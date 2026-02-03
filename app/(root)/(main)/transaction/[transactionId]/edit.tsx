@@ -1,8 +1,8 @@
 import { useMutation, useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";
-import { Spinner } from "heroui-native";
 import { useEffect, useState } from "react";
 import { Alert, View } from "react-native";
+import { ActivityIndicator } from "react-native-paper";
 
 import { initialEarningState } from "@/components/form";
 import { TransactionForm } from "@/components/transaction-form";
@@ -96,7 +96,7 @@ export default function EditTransactionScreen() {
 	if (!transaction) {
 		return (
 			<View className="flex-1 items-center justify-center">
-				<Spinner size="lg" />
+				<ActivityIndicator size="large" />
 			</View>
 		);
 	}

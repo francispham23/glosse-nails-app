@@ -1,16 +1,13 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { Link } from "expo-router";
-import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Alert, Text } from "react-native";
+import { Button, TextInput } from "react-native-paper";
 
 import FormHeader, { FormContainer } from "@/components/form";
 
 export default function SignUpRoute() {
 	const { signIn } = useAuthActions();
-	const mutedColor = useThemeColor("muted");
-	const themeColorBackground = useThemeColor("background");
 
 	/* ---------------------------------- state --------------------------------- */
 	const [name, setName] = useState("");
@@ -72,79 +69,57 @@ export default function SignUpRoute() {
 				description="Create your account to get started"
 			/>
 			{/* name */}
-			<TextField isRequired>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Enter your full name"
-					autoCapitalize="words"
-					value={name}
-					onChangeText={setName}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="person-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-				</TextField.Input>
-			</TextField>
+			<TextInput
+				mode="outlined"
+				placeholder="Enter your full name"
+				autoCapitalize="words"
+				value={name}
+				onChangeText={setName}
+				left={<TextInput.Icon icon="account-outline" />}
+				className="h-16 rounded-3xl"
+			/>
 			{/* email */}
-			<TextField isRequired>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Enter your email"
-					keyboardType="email-address"
-					autoCapitalize="none"
-					value={email}
-					onChangeText={setEmail}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="mail-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-				</TextField.Input>
-			</TextField>
+			<TextInput
+				mode="outlined"
+				placeholder="Enter your email"
+				keyboardType="email-address"
+				autoCapitalize="none"
+				value={email}
+				onChangeText={setEmail}
+				left={<TextInput.Icon icon="email-outline" />}
+				className="h-16 rounded-3xl"
+			/>
 			{/* password */}
-			<TextField isRequired>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Enter your password"
-					secureTextEntry
-					value={password}
-					onChangeText={setPassword}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="lock-closed-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-					<TextField.InputEndContent className="pointer-events-none pr-2">
-						<Ionicons name="eye-outline" size={20} color={mutedColor} />
-					</TextField.InputEndContent>
-				</TextField.Input>
-			</TextField>
+			<TextInput
+				mode="outlined"
+				placeholder="Enter your password"
+				secureTextEntry
+				value={password}
+				onChangeText={setPassword}
+				left={<TextInput.Icon icon="form-textbox-password" />}
+				right={<TextInput.Icon icon="eye-outline" />}
+				className="h-16 rounded-3xl"
+			/>
 			{/* confirm password */}
-			<TextField isRequired>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Confirm your password"
-					secureTextEntry
-					value={confirmPassword}
-					onChangeText={setConfirmPassword}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="lock-closed-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-					<TextField.InputEndContent className="pointer-events-none pr-2">
-						<Ionicons name="checkmark-outline" size={20} color={mutedColor} />
-					</TextField.InputEndContent>
-				</TextField.Input>
-			</TextField>
+			<TextInput
+				mode="outlined"
+				placeholder="Confirm your password"
+				secureTextEntry
+				value={confirmPassword}
+				onChangeText={setConfirmPassword}
+				left={<TextInput.Icon icon="form-textbox-password" />}
+				right={<TextInput.Icon icon="eye-check-outline" />}
+				className="h-16 rounded-3xl"
+			/>
 			{/* submit button */}
 			<Button
 				onPress={handleSignUp}
-				isDisabled={isLoading}
+				disabled={isLoading}
+				mode="contained"
+				loading={isLoading}
 				className="rounded-3xl"
-				size="lg"
 			>
-				<Button.Label>
-					{isLoading ? "Creating Account..." : "Sign Up"}
-				</Button.Label>
-				{isLoading ? <Spinner color={themeColorBackground} /> : null}
+				{isLoading ? "Creating Account..." : "Sign Up"}
 			</Button>
 			<Text className="px-14 text-center text-muted-foreground text-sm">
 				by continuing you agree to our{" "}

@@ -1,30 +1,14 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useQuery } from "convex/react";
 import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
-import { cn } from "heroui-native";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
+import { type Report, ReportCard } from "@/components/report-card";
 import { api } from "@/convex/_generated/api";
 
-type ReportCardType = "payroll" | "discount" | "cash" | "gift" | "supply";
-
-interface ReportCard {
-	id: ReportCardType;
-	title: string;
-	rows: Array<{
-		label: string;
-		value: string;
-		isBold?: boolean;
-		isLarge?: boolean;
-	}>;
-}
-
 export default function ReportsRoute() {
-	const router = useRouter();
-
 	const today = new Date();
 	const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
@@ -105,10 +89,8 @@ export default function ReportsRoute() {
 
 	const totalRealCash = ((totalCompCash || 0) + (totalSupplyCash || 0)) * 1.05;
 
-	const classname = cn("font-semibold text-foreground");
-
 	// Build report cards data
-	const reportCards: ReportCard[] = [
+	const reportCards: Report[] = [
 		{
 			id: "payroll",
 			title: "Payroll",
@@ -187,47 +169,6 @@ export default function ReportsRoute() {
 		},
 	];
 
-	const onPress = (type: ReportCardType) => {
-		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-		router.navigate({
-			pathname: `/report/${type}`,
-			params: {
-				startDate: startDate.getTime().toString(),
-				endDate: endDate.getTime().toString(),
-			},
-		});
-	};
-
-	const renderReportCard = ({ item }: { item: ReportCard }) => (
-		<Pressable onPress={() => onPress(item.id)}>
-			<View className="rounded-lg bg-background p-4">
-				{item.rows.map((row, index) => (
-					<View
-						key={row.label}
-						className={cn(
-							"flex-row justify-between",
-							index < item.rows.length - 1
-								? "border-border border-b pb-2"
-								: "pt-2",
-							index > 0 && index < item.rows.length - 1 && "py-2",
-						)}
-					>
-						<Text className="text-foreground">{row.label}</Text>
-						<Text
-							className={cn(
-								row.isBold && "font-bold",
-								row.isLarge && "text-lg",
-								!row.isBold && classname,
-							)}
-						>
-							{row.value}
-						</Text>
-					</View>
-				))}
-			</View>
-		</Pressable>
-	);
-
 	return (
 		<Animated.View
 			className="flex-1 bg-background-secondary pt-4"
@@ -298,7 +239,9 @@ export default function ReportsRoute() {
 				contentInsetAdjustmentBehavior="automatic"
 				contentContainerClassName="gap-2 pt-2 px-4 pb-24"
 				data={reportCards}
-				renderItem={renderReportCard}
+				renderItem={({ item }) => (
+					<ReportCard item={item} startDate={startDate} endDate={endDate} />
+				)}
 				keyExtractor={(item) => item.id}
 				scrollEnabled={true}
 			/>

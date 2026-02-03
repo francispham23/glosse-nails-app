@@ -1,6 +1,6 @@
-import { Spinner } from "heroui-native";
 import { useEffect, useState } from "react";
 import { Text } from "react-native";
+import { ActivityIndicator } from "react-native-paper";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 interface Props {
@@ -22,7 +22,7 @@ export const ListEmptyComponent = ({ item }: Props) => {
 			exiting={FadeOut}
 		>
 			{spinning ? (
-				<Spinner className="flex-1 items-center justify-center" />
+				<ActivityIndicator className="flex-1 items-center justify-center" />
 			) : (
 				<Text className="text-muted">
 					No {item ? `${item}s` : "data"} to display.

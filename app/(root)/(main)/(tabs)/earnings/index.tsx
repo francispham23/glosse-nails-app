@@ -1,5 +1,4 @@
 import { useMutation, useQuery } from "convex/react";
-import { cn } from "heroui-native";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import Animated, {
@@ -7,13 +6,13 @@ import Animated, {
 	FadeOut,
 	LinearTransition,
 } from "react-native-reanimated";
-
 import { AddButton } from "@/components/Buttons/add-button";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { TechnicianCard } from "@/components/technician-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
+import { cn } from "@/utils";
 import type { User } from "@/utils/types";
 
 export default function HomeRoute() {

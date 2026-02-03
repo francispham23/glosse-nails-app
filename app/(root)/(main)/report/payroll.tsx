@@ -1,6 +1,5 @@
 import { useQuery } from "convex/react";
 import { useLocalSearchParams } from "expo-router";
-import { cn } from "heroui-native";
 import { Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
@@ -8,6 +7,7 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { TechnicianCard } from "@/components/technician-card";
 import { api } from "@/convex/_generated/api";
+import { cn } from "@/utils";
 
 export default function ReportRoute() {
 	const params = useLocalSearchParams();

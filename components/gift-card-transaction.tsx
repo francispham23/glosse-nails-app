@@ -1,8 +1,8 @@
-import { cn } from "heroui-native";
 import { Text, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { useAppTheme } from "@/contexts/app-theme-context";
+import { cn } from "@/utils";
 import type { Transaction } from "@/utils/types";
 
 type Props = {
@@ -18,7 +18,7 @@ export const GiftCardTransaction = ({ transaction }: Props) => {
 			key={transaction._id}
 			entering={FadeIn}
 			exiting={FadeOut}
-			className="gap-2 rounded-lg bg-background-secondary p-3"
+			className="gap-2 rounded-lg bg-gray-300 p-3 shadow-md dark:bg-gray-700"
 		>
 			<View className="flex-row items-center justify-between">
 				<Text className="font-semibold text-foreground text-lg">
