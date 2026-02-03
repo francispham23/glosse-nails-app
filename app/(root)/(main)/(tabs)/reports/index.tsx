@@ -1,8 +1,10 @@
+import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useQuery } from "convex/react";
 import * as Haptics from "expo-haptics";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { View } from "react-native";
+import { Button } from "react-native-paper";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { type Report, ReportCard } from "@/components/report-card";
@@ -177,29 +179,33 @@ export default function ReportsRoute() {
 		>
 			{/* Date range selectors */}
 			<View className="flex-row gap-2 px-6 pt-40 pb-4">
-				<Pressable
-					className={openPicker === "start" ? "opacity-70" : ""}
+				<Button
+					mode="outlined"
 					onPress={() => {
 						Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 						setOpenPicker(openPicker === "start" ? null : "start");
 					}}
+					icon={({ size, color }) => (
+						<Ionicons name="calendar-outline" size={size} color={color} />
+					)}
+					className={openPicker === "start" ? "opacity-70" : ""}
 				>
-					<View className="rounded-lg bg-background px-4 py-2">
-						<Text className="text-foreground">{formatDate(startDate)}</Text>
-					</View>
-				</Pressable>
+					{formatDate(startDate)}
+				</Button>
 
-				<Pressable
-					className={openPicker === "end" ? "opacity-70" : ""}
+				<Button
+					mode="outlined"
 					onPress={() => {
 						Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 						setOpenPicker(openPicker === "end" ? null : "end");
 					}}
+					icon={({ size, color }) => (
+						<Ionicons name="calendar-outline" size={size} color={color} />
+					)}
+					className={openPicker === "end" ? "opacity-70" : ""}
 				>
-					<View className="rounded-lg bg-background px-4 py-2">
-						<Text className="text-foreground">{formatDate(endDate)}</Text>
-					</View>
-				</Pressable>
+					{formatDate(endDate)}
+				</Button>
 			</View>
 			<View className={openPicker ? "h-56" : ""}>
 				{/* Date pickers */}

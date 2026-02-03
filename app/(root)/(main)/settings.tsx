@@ -40,7 +40,7 @@ export default function SettingsRoute() {
 				</View>
 				<View className="mt-4 flex-row justify-end">
 					<Button
-						mode="text"
+						mode="outlined"
 						className="self-start rounded-full"
 						disabled={isSigningOut}
 						loading={isSigningOut}

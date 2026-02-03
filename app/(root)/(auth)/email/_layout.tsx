@@ -1,5 +1,5 @@
 import { Link, Stack } from "expo-router";
-import { Pressable, Text } from "react-native";
+import { Button } from "react-native-paper";
 
 import { HeaderButton } from "@/components/Buttons/header-button";
 import { useNavigationOptions } from "@/hooks/use-navigation-options";
@@ -47,9 +47,9 @@ export default function EmailLayout() {
 const SignUpButton = () => {
 	return (
 		<Link href="/(root)/(auth)/email/signup" asChild>
-			<Pressable className="justify-center rounded-full px-3">
-				<Text className="text-foreground">Sign Up</Text>
-			</Pressable>
+			<Button mode="text" className="rounded-full">
+				Sign Up
+			</Button>
 		</Link>
 	);
 };
