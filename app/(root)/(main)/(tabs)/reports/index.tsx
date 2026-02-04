@@ -8,14 +8,16 @@ import { Button } from "react-native-paper";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { type Report, ReportCard } from "@/components/report-card";
+import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 
 export default function ReportsRoute() {
 	const today = new Date();
 	const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+	const { endOfDay } = useAppDate();
 
 	const [startDate, setStartDate] = useState<Date>(firstDayOfMonth);
-	const [endDate, setEndDate] = useState<Date>(today);
+	const [endDate, setEndDate] = useState<Date>(endOfDay);
 	const [openPicker, setOpenPicker] = useState<"start" | "end" | null>(null);
 
 	// Query technicians with totals for the selected date range
@@ -229,7 +231,7 @@ export default function ReportsRoute() {
 						mode="date"
 						display="spinner"
 						minimumDate={startDate}
-						maximumDate={new Date()}
+						maximumDate={endOfDay}
 						onChange={(_, selectedDate) => {
 							setOpenPicker(null);
 							if (selectedDate) {

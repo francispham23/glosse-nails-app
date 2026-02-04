@@ -210,6 +210,11 @@ export function TransactionForm({
 					<Chip
 						key={method}
 						selected={earning.compensationMethods.includes(method)}
+						className={
+							earning.compensationMethods.includes(method)
+								? "opacity-60"
+								: "opacity-100"
+						}
 						onPress={() => handleSelectMethods(method, "compensation")}
 					>
 						{method}
@@ -296,6 +301,9 @@ export function TransactionForm({
 					<Chip
 						key={input}
 						selected={selectedInputs.includes(input)}
+						className={
+							selectedInputs.includes(input) ? "opacity-60" : "opacity-100"
+						}
 						onPress={() =>
 							setSelectedInputs((prev) => {
 								if (prev.includes(input)) {
@@ -318,6 +326,11 @@ export function TransactionForm({
 							<Chip
 								key={method}
 								selected={earning.tipMethods.includes(method)}
+								className={
+									earning.tipMethods.includes(method)
+										? "opacity-60"
+										: "opacity-100"
+								}
 								onPress={() => handleSelectMethods(method, "tip")}
 							>
 								{method}
@@ -445,6 +458,11 @@ export function TransactionForm({
 					<Chip
 						key={category._id}
 						selected={earning.services.includes(category._id)}
+						className={
+							earning.services.includes(category._id)
+								? "opacity-60"
+								: "opacity-100"
+						}
 						onPress={() => handleSelectServices(category._id)}
 					>
 						{category.name}

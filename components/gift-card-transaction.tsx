@@ -21,7 +21,12 @@ export const GiftCardTransaction = ({ transaction }: Props) => {
 			className="gap-2 rounded-lg bg-gray-300 p-3 shadow-md dark:bg-gray-700"
 		>
 			<View className="flex-row items-center justify-between">
-				<Text className="font-semibold text-foreground text-lg">
+				<Text
+					className={cn(
+						"font-semibold text-foreground text-lg",
+						!isLight && "text-gray-300",
+					)}
+				>
 					$
 					{(
 						(transaction.compInGift || 0) + (transaction.tipInGift || 0)

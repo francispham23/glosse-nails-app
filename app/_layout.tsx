@@ -1,4 +1,5 @@
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { ConvexReactClient } from "convex/react";
 import { Slot } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -31,7 +32,9 @@ function ThemedLayout() {
 
 	return (
 		<PaperProvider theme={paperTheme}>
-			<Slot />
+			<BottomSheetModalProvider>
+				<Slot />
+			</BottomSheetModalProvider>
 		</PaperProvider>
 	);
 }
