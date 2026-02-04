@@ -1,16 +1,16 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { Link } from "expo-router";
-import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Alert } from "react-native";
+import { Button, TextInput } from "react-native-paper";
 
 import FormHeader, { FormContainer } from "@/components/form";
+import { useThemeColor } from "@/utils";
 
 export default function SignInRoute() {
 	const { signIn } = useAuthActions();
-	const mutedColor = useThemeColor("muted");
-	const themeColorBackground = useThemeColor("background");
+
 	const accentForegroundColor = useThemeColor("accent-foreground");
 
 	/* ---------------------------------- state --------------------------------- */
@@ -60,61 +60,47 @@ export default function SignInRoute() {
 			/>
 
 			{/* email text-field*/}
-			<TextField isRequired>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Enter your email"
-					keyboardType="email-address"
-					autoCapitalize="none"
-					value={email}
-					onChangeText={setEmail}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="mail-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-				</TextField.Input>
-			</TextField>
+			<TextInput
+				mode="outlined"
+				placeholder="Enter your email"
+				keyboardType="email-address"
+				autoCapitalize="none"
+				value={email}
+				onChangeText={setEmail}
+				left={<TextInput.Icon icon="email-outline" />}
+				className="h-16 rounded-3xl"
+			/>
 			{/* password text-field */}
-			<TextField isRequired>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Enter your password"
-					secureTextEntry
-					value={password}
-					onChangeText={setPassword}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="lock-closed-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-					<TextField.InputEndContent className="pointer-events-none pr-2">
-						<Ionicons name="eye-outline" size={20} color={mutedColor} />
-					</TextField.InputEndContent>
-				</TextField.Input>
-			</TextField>
+			<TextInput
+				mode="outlined"
+				placeholder="Enter your password"
+				secureTextEntry
+				value={password}
+				onChangeText={setPassword}
+				left={<TextInput.Icon icon="form-textbox-password" />}
+				right={<TextInput.Icon icon="eye-outline" />}
+				className="h-16 rounded-3xl"
+			/>
 
 			{/* submit button */}
 			<Button
 				onPress={handleSignIn}
-				isDisabled={isLoading}
-				size="lg"
+				disabled={isLoading}
+				mode="contained"
+				loading={isLoading}
 				className="rounded-3xl"
 			>
-				<Button.Label>{isLoading ? "Signing In..." : "Sign In"}</Button.Label>
-				{isLoading ? <Spinner color={themeColorBackground} /> : null}
+				{isLoading ? "Signing In..." : "Sign In"}
 			</Button>
 			{/* forgot password route */}
 			<Link href="/(root)/(auth)/email/(reset)/request-password-reset" asChild>
-				<Button
-					variant="tertiary"
-					size="sm"
-					className="self-center rounded-3xl"
-				>
+				<Button mode="text" className="self-center rounded-3xl">
 					<Ionicons
 						name="lock-closed-outline"
 						size={14}
 						color={accentForegroundColor}
 					/>
-					<Button.Label className="mx-1">Forgot Password?</Button.Label>
+					{"  "}Forgot Password?{"  "}
 					<Ionicons
 						name="chevron-forward"
 						size={16}

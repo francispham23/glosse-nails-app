@@ -1,8 +1,7 @@
-import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { useQuery } from "convex/react";
 import { Link, useLocalSearchParams } from "expo-router";
-import { Button, useThemeColor } from "heroui-native";
 import { Text } from "react-native";
+import { Button } from "react-native-paper";
 import Animated, {
 	FadeIn,
 	FadeOut,
@@ -17,7 +16,6 @@ import type { Transaction, User } from "@/utils/types";
 
 export default function TechnicianId() {
 	const { startOfDay, endOfDay } = useAppDate();
-	const background = useThemeColor("background");
 	const params = useLocalSearchParams();
 	const technicianId = params.technicianId as User["_id"];
 	const technician = useQuery(api.users.getUserById, { userId: technicianId });
@@ -54,9 +52,11 @@ export default function TechnicianId() {
 				ListEmptyComponent={<ListEmptyComponent item="transaction" />}
 			/>
 			<Link href=".." asChild>
-				<Button className="absolute bottom-10 self-center overflow-hidden rounded-full">
-					<Button.Label>Create Transaction</Button.Label>
-					<Ionicons name="add-outline" size={18} color={background} />
+				<Button
+					className="absolute bottom-10 self-center overflow-hidden rounded-full"
+					icon="add"
+				>
+					Create Transaction
 				</Button>
 			</Link>
 		</Animated.View>

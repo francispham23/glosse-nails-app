@@ -1,12 +1,11 @@
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { cn } from "heroui-native";
 import { Pressable, Text } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
-import { isToday } from "@/utils";
+import { cn, isToday } from "@/utils";
 import type { Transaction } from "@/utils/types";
 
 type Props = {
@@ -16,7 +15,7 @@ type Props = {
 
 export const TransactionCard = ({ transaction, technicianId }: Props) => {
 	const { isLight } = useAppTheme();
-	const className = cn("text-lg text-muted", !isLight && "-foreground");
+	const className = cn("text-lg text-muted", !isLight && "text-gray-300");
 
 	const { endOfDay } = useAppDate();
 	const isSelectedDateToday = isToday(endOfDay.getTime());
@@ -42,7 +41,7 @@ export const TransactionCard = ({ transaction, technicianId }: Props) => {
 				entering={FadeIn}
 				exiting={FadeOut}
 				className={cn(
-					"gap-3 rounded-lg border-r-accent bg-background-secondary p-3",
+					"gap-3 rounded-lg border-r-accent bg-gray-300 p-3 shadow-md dark:bg-gray-700",
 					isLocalTransaction && "opacity-60",
 				)}
 			>

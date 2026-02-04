@@ -1,5 +1,4 @@
 import { useMutation, useQuery } from "convex/react";
-import { cn } from "heroui-native";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import Animated, {
@@ -14,6 +13,7 @@ import { TechnicianCard } from "@/components/technician-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
+import { cn } from "@/utils";
 import type { User } from "@/utils/types";
 
 export default function HomeRoute() {
@@ -59,7 +59,7 @@ export default function HomeRoute() {
 
 	const className = cn(
 		"min-w-[50] text-right font-bold text-lg",
-		!isLight && "text-white",
+		!isLight && "text-gray-300",
 	);
 
 	return (
@@ -74,7 +74,7 @@ export default function HomeRoute() {
 			{/* Technician List */}
 			<Animated.FlatList
 				contentInsetAdjustmentBehavior="automatic"
-				contentContainerClassName="gap-4 pt-2 px-4 pb-24"
+				contentContainerClassName="gap-4 p-2 pb-24"
 				keyExtractor={(item) => item._id.toString()}
 				data={isSelecting ? convexUsers : selectedUsers}
 				renderItem={({ item }: { item: User }) => {

@@ -1,5 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Button, useThemeColor } from "heroui-native";
+import { FAB } from "react-native-paper";
 
 type AddButtonProps = {
 	isAdding?: boolean;
@@ -7,17 +6,10 @@ type AddButtonProps = {
 };
 
 export const AddButton = ({ isAdding, setIsAdding }: AddButtonProps) => {
-	const color = useThemeColor("background");
 	return (
-		<Button
+		<FAB
+			icon={isAdding ? "check" : "plus"}
 			onPress={() => setIsAdding?.(!isAdding)}
-			className="overflow-hidden rounded-full"
-		>
-			<Ionicons
-				size={18}
-				color={color}
-				name={isAdding ? "checkmark-outline" : "add-outline"}
-			/>
-		</Button>
+		/>
 	);
 };

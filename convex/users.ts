@@ -17,8 +17,6 @@ export const deleteViewer = mutation({
 		if (userId === null) {
 			throw new Error("Not authenticated");
 		}
-		// TODO: Implement soft delete if there are relational dependencies
-		await ctx.db.delete(userId);
 	},
 });
 

@@ -1,10 +1,9 @@
-import Ionicons from "@expo/vector-icons/build/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation } from "convex/react";
 import { useRouter } from "expo-router";
-import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Alert, Keyboard } from "react-native";
+import { Button, TextInput } from "react-native-paper";
 
 import FormHeader from "@/components/form";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
@@ -12,9 +11,6 @@ import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 
 export default function CreateRoute() {
-	const background = useThemeColor("background");
-	const mutedColor = useThemeColor("muted");
-
 	const { endOfDay } = useAppDate();
 	const router = useRouter();
 	const createGiftCard = useMutation(api.giftCards.create);
@@ -71,75 +67,61 @@ export default function CreateRoute() {
 				title="Create Gift Card"
 				description="Add a new gift card to the system"
 			/>
-			<TextField isRequired>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Enter Gift Card Code"
-					autoCapitalize="characters"
-					autoFocus={true}
-					value={code}
-					onChangeText={setCode}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="card-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-				</TextField.Input>
-			</TextField>
+			<TextInput
+				mode="outlined"
+				placeholder="Enter Gift Card Code"
+				autoCapitalize="characters"
+				autoFocus={true}
+				value={code}
+				onChangeText={setCode}
+				left={<TextInput.Icon icon="barcode" />}
+				className="h-16 rounded-3xl"
+			/>
 
-			<TextField isRequired>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Enter Gift Card Value"
-					keyboardType="numeric"
-					value={value}
-					onChangeText={setValue}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="cash-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-				</TextField.Input>
-			</TextField>
+			<TextInput
+				mode="outlined"
+				placeholder="Enter Gift Card Value"
+				keyboardType="numeric"
+				value={value}
+				onChangeText={setValue}
+				left={<TextInput.Icon icon="wallet-giftcard" />}
+				className="h-16 rounded-3xl"
+			/>
 
 			{/* sell time field */}
-			<TextField>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Select service time"
-					value={date.toLocaleTimeString([], {
-						hour: "2-digit",
-						minute: "2-digit",
-					})}
-					editable={false}
-					onPressIn={() => setOpen(!open)}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="time-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-				</TextField.Input>
-				{open && (
-					<DateTimePicker
-						mode="time"
-						value={date}
-						maximumDate={endOfDay}
-						display="spinner"
-						onChange={(_, selectedDate) => {
-							setDate(selectedDate || date);
-							setOpen(false);
-						}}
-					/>
-				)}
-			</TextField>
+			<TextInput
+				mode="outlined"
+				placeholder="Select service time"
+				value={date.toLocaleTimeString([], {
+					hour: "2-digit",
+					minute: "2-digit",
+				})}
+				editable={false}
+				onPressIn={() => setOpen(!open)}
+				left={<TextInput.Icon icon="clock-outline" />}
+				className="h-16 rounded-3xl"
+			/>
+			{open && (
+				<DateTimePicker
+					mode="time"
+					value={date}
+					maximumDate={endOfDay}
+					display="spinner"
+					onChange={(_, selectedDate) => {
+						setDate(selectedDate || date);
+						setOpen(false);
+					}}
+				/>
+			)}
 
 			<Button
 				onPress={handleSubmit}
-				isDisabled={isLoading}
-				size="lg"
+				disabled={isLoading}
+				mode="contained"
+				loading={isLoading}
 				className="rounded-3xl"
 			>
-				<Button.Label>
-					{isLoading ? "Creating..." : "Create Gift Card"}
-				</Button.Label>
-				{isLoading ? <Spinner color={background} /> : null}
+				{isLoading ? "Creating..." : "Create Gift Card"}
 			</Button>
 		</ScreenScrollView>
 	);

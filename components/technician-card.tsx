@@ -1,12 +1,12 @@
 import { useQuery } from "convex/react";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import { cn } from "heroui-native";
 import { Pressable, Text, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
+import { cn } from "@/utils";
 import type { User } from "@/utils/types";
 
 interface Props {
@@ -33,12 +33,12 @@ export const TechnicianCard = ({
 
 	const technicianClassName = cn(
 		"min-w-[50] text-left text-lg text-muted",
-		!isLight && "-foreground",
+		!isLight && "text-gray-300",
 	);
 
 	const className = cn(
 		"text-right text-lg text-muted",
-		!isLight && "-foreground",
+		!isLight && "text-gray-300",
 	);
 
 	return (
@@ -58,7 +58,7 @@ export const TechnicianCard = ({
 				entering={FadeIn}
 				exiting={FadeOut}
 				className={cn(
-					"flex-row justify-between rounded-lg border-r-accent bg-background-secondary p-2",
+					"flex-row justify-between rounded-lg border-r-accent bg-gray-300 p-2 shadow-md dark:bg-gray-700",
 					isSelecting && isSelected && !isLight
 						? "border border-amber-50"
 						: isSelecting && isSelected && isLight

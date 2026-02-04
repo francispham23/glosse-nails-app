@@ -1,14 +1,16 @@
 import { useQuery } from "convex/react";
 import { useLocalSearchParams } from "expo-router";
-import { cn } from "heroui-native";
 import { Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { ListEmptyComponent } from "@/components/list-empty";
+import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
+import { cn } from "@/utils";
 
 export default function SupplyRoute() {
+	const { isLight } = useAppTheme();
 	const params = useLocalSearchParams();
 	const startDate = params.startDate ? Number(params.startDate) : Date.now();
 	const endDate = params.endDate ? Number(params.endDate) : Date.now();
@@ -31,7 +33,10 @@ export default function SupplyRoute() {
 				};
 			}) || [];
 
-	const classname = cn("font-semibold text-foreground");
+	const classname = cn(
+		"font-semibold text-foreground",
+		!isLight && "text-gray-300",
+	);
 
 	return (
 		<Animated.View
@@ -39,14 +44,19 @@ export default function SupplyRoute() {
 			entering={FadeIn}
 			exiting={FadeOut}
 		>
-			<Text className="font-extrabold text-3xl text-foreground">
-				Discount Report
+			<Text
+				className={cn(
+					"font-extrabold text-3xl text-foreground",
+					!isLight && "text-gray-300",
+				)}
+			>
+				Supply Report
 			</Text>
 			<View className="flex-1 pt-6">
 				<View className="mb-2 flex-row justify-between px-2">
 					<Text className={classname}>Date</Text>
 					<Text className={classname}>Technician</Text>
-					<Text className={cn(classname, "text-right")}>Discount</Text>
+					<Text className={cn(classname, "text-right")}>Supply</Text>
 				</View>
 
 				<FlatList
@@ -54,7 +64,7 @@ export default function SupplyRoute() {
 					keyExtractor={(item) => item._id}
 					renderItem={({ item }) => <SupplyCard item={item} />}
 					contentContainerClassName="gap-2"
-					ListEmptyComponent={<ListEmptyComponent item="supply" />}
+					ListEmptyComponent={<ListEmptyComponent item="supplie" />}
 				/>
 			</View>
 		</Animated.View>
@@ -71,10 +81,11 @@ type Props = {
 };
 
 const SupplyCard = ({ item }: Props) => {
-	const classname = cn("text-md text-muted", !true && "-foreground");
+	const { isLight } = useAppTheme();
+	const classname = cn("text-md text-muted", !isLight && "text-gray-300");
 
 	return (
-		<View className="flex-row items-center gap-4 rounded-lg border-r-accent bg-background-secondary p-2">
+		<View className="flex-row items-center gap-4 rounded-lg border-r-accent bg-gray-300 p-2 shadow-md dark:bg-gray-700">
 			<Text className={cn(classname, "min-w-[105]")}>
 				{new Date(item.serviceDate).toLocaleDateString("en-US", {
 					month: "short",

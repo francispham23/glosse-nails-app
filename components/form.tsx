@@ -1,7 +1,7 @@
-import { Ionicons } from "@expo/vector-icons";
-import { TextField, useThemeColor } from "heroui-native";
 import { Text, View } from "react-native";
-
+import { TextInput } from "react-native-paper";
+import { useAppTheme } from "@/contexts/app-theme-context";
+import { cn } from "@/utils";
 import type {
 	Category,
 	EarningFormState,
@@ -30,10 +30,22 @@ export default function FormHeader({
 	description: string;
 	children?: React.ReactNode;
 }) {
+	const { isLight } = useAppTheme();
 	return (
 		<View className="gap-2">
-			<Text className="font-extrabold text-4xl text-foreground">{title}</Text>
-			<Text className="text-muted-foreground">{description}</Text>
+			<Text
+				className={cn(
+					"font-extrabold text-4xl text-foreground",
+					!isLight && "text-gray-300",
+				)}
+			>
+				{title}
+			</Text>
+			<Text
+				className={cn("text-muted-foreground", !isLight && "text-gray-400")}
+			>
+				{description}
+			</Text>
 			{children}
 		</View>
 	);
@@ -47,7 +59,7 @@ export const initialEarningState = {
 	compInCash: "",
 	compInGift: "",
 	compensationMethods: ["Card"] as PaymentMethod[],
-	tip: "",
+	tip: "0",
 	tipInCash: "",
 	tipInGift: "",
 	tipMethods: ["Card"] as PaymentMethod[],
@@ -67,7 +79,6 @@ type GiftCardInputsType = {
 	type?: "tipInGift" | "compInGift";
 };
 
-// TODO: Separate compensation and tip gift card inputs?
 export const GiftCardInputs = ({
 	earning,
 	setEarning,
@@ -76,29 +87,23 @@ export const GiftCardInputs = ({
 	setGiftError,
 	type,
 }: GiftCardInputsType) => {
-	const mutedColor = useThemeColor("muted");
-
 	if (!type) return null;
 
 	return (
 		<>
-			<TextField isRequired>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Enter Gift Card Code"
-					keyboardType="numeric"
-					autoCapitalize="none"
-					value={earning.giftCode?.toString()}
-					onChangeText={(value) => {
-						setEarning({ ...earning, giftCode: value });
-						setGiftError("");
-					}}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="code-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-				</TextField.Input>
-			</TextField>
+			<TextInput
+				mode="outlined"
+				placeholder="Enter Gift Card Code"
+				keyboardType="numeric"
+				autoCapitalize="none"
+				value={earning.giftCode?.toString()}
+				onChangeText={(value) => {
+					setEarning({ ...earning, giftCode: value });
+					setGiftError("");
+				}}
+				left={<TextInput.Icon icon="barcode" />}
+				className="h-16 rounded-3xl"
+			/>
 			{earning.giftCode && giftCard === null && (
 				<Text className="px-4 text-red-500 text-sm">
 					Gift card code not found
@@ -109,30 +114,26 @@ export const GiftCardInputs = ({
 					Available balance: ${giftCard.balance?.toFixed(2) ?? "0.00"}
 				</Text>
 			)}
-			<TextField isRequired>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Enter amount from Gift Card"
-					keyboardType="numeric"
-					autoCapitalize="none"
-					value={earning[type as keyof EarningFormState]?.toString()}
-					onChangeText={(value) => {
-						setEarning({ ...earning, [type]: value });
-						const giftAmount = Number.parseFloat(value || "0");
-						if (giftCard && giftAmount > (giftCard.balance ?? 0)) {
-							setGiftError(
-								`Gift card balance insufficient. Available: $${giftCard.balance?.toFixed(2)}`,
-							);
-						} else {
-							setGiftError("");
-						}
-					}}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="cash-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-				</TextField.Input>
-			</TextField>
+			<TextInput
+				mode="outlined"
+				placeholder="Enter amount from Gift Card"
+				keyboardType="numeric"
+				autoCapitalize="none"
+				value={earning[type as keyof EarningFormState]?.toString()}
+				onChangeText={(value) => {
+					setEarning({ ...earning, [type]: value });
+					const giftAmount = Number.parseFloat(value || "0");
+					if (giftCard && giftAmount > (giftCard.balance ?? 0)) {
+						setGiftError(
+							`Gift card balance insufficient. Available: $${giftCard.balance?.toFixed(2)}`,
+						);
+					} else {
+						setGiftError("");
+					}
+				}}
+				left={<TextInput.Icon icon="wallet-giftcard" />}
+				className="h-16 rounded-3xl"
+			/>
 			{giftError && (
 				<Text className="px-4 text-red-500 text-sm">{giftError}</Text>
 			)}

@@ -1,9 +1,10 @@
 // hooks/useNavigationOptions.ts
 /** biome-ignore-all lint/correctness/useExhaustiveDependencies: intentional theme color dependency */
 import type { NativeStackNavigationOptions } from "@react-navigation/native-stack";
-import { useThemeColor } from "heroui-native";
 import { useMemo } from "react";
 import { Platform } from "react-native";
+
+import { useThemeColor } from "@/utils";
 
 export const useNavigationOptions = () => {
 	const themeColorForeground = useThemeColor("foreground");

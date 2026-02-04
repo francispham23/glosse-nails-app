@@ -1,25 +1,26 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
-import { Button, cn, Spinner, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Alert, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Button } from "react-native-paper";
 import Animated from "react-native-reanimated";
 
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
+import { cn } from "@/utils";
 
 export default function SettingsRoute() {
 	const { isLight } = useAppTheme();
-	const themeColorForeground = useThemeColor("foreground");
 	const user = useQuery(api.users.viewer);
 
 	const { signOut } = useAuthActions();
 
 	const [isSigningOut, setIsSigningOut] = useState(false);
 
-	const className = cn("text-lg text-muted", !isLight && "-foreground");
+	const className = cn("text-lg text-muted", !isLight && "text-gray-300");
 
-	if (!user) return <Spinner className="flex-1 items-center justify-center" />;
+	if (!user)
+		return <ActivityIndicator className="flex-1 items-center justify-center" />;
 
 	return (
 		<Animated.View className="flex-1">
@@ -39,10 +40,10 @@ export default function SettingsRoute() {
 				</View>
 				<View className="mt-4 flex-row justify-end">
 					<Button
-						variant="tertiary"
-						size="sm"
+						mode="outlined"
 						className="self-start rounded-full"
-						isDisabled={isSigningOut}
+						disabled={isSigningOut}
+						loading={isSigningOut}
 						onPress={async () => {
 							setIsSigningOut(true);
 							Alert.alert("Sign Out", "Are you sure you want to sign out?", [
@@ -60,10 +61,7 @@ export default function SettingsRoute() {
 							setIsSigningOut(false);
 						}}
 					>
-						<Button.Label>
-							{isSigningOut ? "Signing Out..." : "Sign Out"}
-						</Button.Label>
-						{isSigningOut ? <Spinner color={themeColorForeground} /> : null}
+						{isSigningOut ? "Signing Out..." : "Sign Out"}
 					</Button>
 				</View>
 			</ScrollView>

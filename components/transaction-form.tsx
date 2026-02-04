@@ -1,10 +1,9 @@
-import Ionicons from "@expo/vector-icons/build/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery } from "convex/react";
 import { router } from "expo-router";
-import { Button, Chip, Spinner, TextField, useThemeColor } from "heroui-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Keyboard, Text, View } from "react-native";
+import { Button, Chip, TextInput } from "react-native-paper";
 
 import FormHeader, {
 	GiftCardInputs,
@@ -15,7 +14,10 @@ import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { useFormValidation } from "@/hooks/use-form-validation";
+import { useThemeColor } from "@/utils";
 import type { Category, EarningFormState, PaymentMethod } from "@/utils/types";
+import { EarningFormSchema } from "@/utils/validation";
 
 interface TransactionFormProps {
 	type: "create" | "edit";
@@ -48,7 +50,6 @@ export function TransactionForm({
 	setGiftError,
 	transactionId,
 }: TransactionFormProps) {
-	const background = useThemeColor("background");
 	const mutedColor = useThemeColor("muted");
 	const { endOfDay } = useAppDate();
 
@@ -62,6 +63,15 @@ export function TransactionForm({
 	/* ---------------------------------- state --------------------------------- */
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [selectedInputs, setSelectedInputs] = useState<string[]>(["Tip"]);
+	const { errors, validate, getFieldError } =
+		useFormValidation(EarningFormSchema);
+
+	/* ------------------- clear validation errors when gift error changes ------------------- */
+	useEffect(() => {
+		if (giftError) {
+			//TODO: Gift validation is handled separately
+		}
+	}, [giftError]);
 
 	/* ------------------- handle select services ------------------- */
 	const handleSelectServices = (categoryId: Category["_id"]) =>
@@ -133,6 +143,13 @@ export function TransactionForm({
 		);
 	};
 
+	/* ------------------- handle validate and submit ------------------- */
+	const handleValidateAndSubmit = () => {
+		if (validate(earning)) {
+			onSubmit();
+		}
+	};
+
 	/* ------------------- transaction types ------------------- */
 	const cash = earning.compensationMethods.includes("Cash");
 	const card = earning.compensationMethods.includes("Card");
@@ -146,22 +163,38 @@ export function TransactionForm({
 	const supply = selectedInputs.includes("Supply");
 	const discount = selectedInputs.includes("Discount");
 
-	const compensationTypes =
-		card && cash
-			? "Card and Cash"
-			: card && !cash
-				? "Card"
-				: cash && !card && "Cash";
-	const placeholder = compensationTypes
-		? `Enter Total ${compensationTypes} Charge`
-		: "";
+	const getPlaceholder = (
+		car: boolean | null,
+		cas: boolean | null,
+		gif: boolean | null,
+	) => {
+		let paymentTypes = "";
+		if (car && cas && gif) {
+			paymentTypes = "Card, Cash, and Gift Card";
+		} else if (car && cas) {
+			paymentTypes = "Card and Cash";
+		} else if (car && gif) {
+			paymentTypes = "Card and Gift Card";
+		} else if (cas && gif) {
+			paymentTypes = "Cash and Gift Card";
+		} else if (car) {
+			paymentTypes = "Card";
+		} else if (cas) {
+			paymentTypes = "Cash";
+		} else if (gif) {
+			paymentTypes = "Gift Card";
+		}
+		return paymentTypes ? `Enter Total ${paymentTypes} Charge` : "";
+	};
 
+	/* ------------------- disable submit if loading or errors ------------------- */
 	const isDisabled =
 		isLoading ||
+		Object.keys(errors).length > 0 ||
 		!!giftError ||
 		(!!earning.giftCode && !giftCard) ||
 		isDeleting ||
-		!compensationTypes;
+		!getPlaceholder(card, cash, gift);
 
 	return (
 		<ScreenScrollView
@@ -176,37 +209,49 @@ export function TransactionForm({
 				{paymentMethods.map((method) => (
 					<Chip
 						key={method}
-						variant={
+						selected={earning.compensationMethods.includes(method)}
+						className={
 							earning.compensationMethods.includes(method)
-								? "primary"
-								: "secondary"
+								? "opacity-60"
+								: "opacity-100"
 						}
 						onPress={() => handleSelectMethods(method, "compensation")}
 					>
-						<Chip.Label>{method}</Chip.Label>
+						{method}
 					</Chip>
 				))}
 			</View>
 
 			{/* compensation text-field*/}
-			<TextField isRequired className="focus">
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder={placeholder}
-					keyboardType="numeric"
-					autoCapitalize="none"
-					autoFocus={true}
-					value={earning.compensation.toString()}
-					onChangeText={(value) =>
-						setEarning({ ...earning, compensation: value })
-					}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="cash-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-				</TextField.Input>
-			</TextField>
-			{!compensationTypes && (
+
+			<TextInput
+				mode="outlined"
+				className="h-16 rounded-3xl"
+				placeholder={
+					getPlaceholder(card, cash, gift) || "Select Compensation Methods"
+				}
+				keyboardType="numeric"
+				autoCapitalize="none"
+				autoFocus={true}
+				value={earning.compensation.toString()}
+				onChangeText={(value) =>
+					setEarning({ ...earning, compensation: value })
+				}
+				left={
+					<TextInput.Icon
+						icon="credit-card-outline"
+						size={22}
+						color={mutedColor}
+					/>
+				}
+			/>
+
+			{getFieldError("compensation") && (
+				<Text className="px-4 text-red-500 text-sm">
+					{getFieldError("compensation")}
+				</Text>
+			)}
+			{!getPlaceholder(card, cash, gift) && (
 				<Text className="px-4 text-red-500 text-sm">
 					Please select at least one compensation method
 				</Text>
@@ -214,23 +259,26 @@ export function TransactionForm({
 
 			{/* compensation In Cash text-field */}
 			{cash && card ? (
-				<TextField isRequired className="focus">
-					<TextField.Input
-						className="h-16 rounded-3xl"
-						placeholder="Enter Cash Amount"
-						keyboardType="numeric"
-						autoCapitalize="none"
-						value={earning.compInCash?.toString()}
-						onChangeText={(value) =>
-							setEarning({ ...earning, compInCash: value })
-						}
-					>
-						<TextField.InputStartContent className="pointer-events-none pl-2">
-							<Ionicons name="cash-outline" size={20} color={mutedColor} />
-						</TextField.InputStartContent>
-					</TextField.Input>
-				</TextField>
+				<TextInput
+					mode="outlined"
+					className="h-16 rounded-3xl"
+					placeholder="Enter Cash Amount"
+					keyboardType="numeric"
+					autoCapitalize="none"
+					value={earning.compInCash?.toString()}
+					onChangeText={(value) =>
+						setEarning({ ...earning, compInCash: value })
+					}
+					left={
+						<TextInput.Icon icon="cash-multiple" size={22} color={mutedColor} />
+					}
+				/>
 			) : null}
+			{getFieldError("compInCash") && (
+				<Text className="px-4 text-red-500 text-sm">
+					{getFieldError("compInCash")}
+				</Text>
+			)}
 
 			{/* gift text-field*/}
 			<GiftCardInputs
@@ -241,13 +289,21 @@ export function TransactionForm({
 				setGiftError={setGiftError}
 				type={gift === true ? "compInGift" : undefined}
 			/>
+			{getFieldError("compInGift") && (
+				<Text className="px-4 text-red-500 text-sm">
+					{getFieldError("compInGift")}
+				</Text>
+			)}
 
 			{/* Other Inputs */}
 			<View className="flex-row flex-wrap gap-2">
 				{otherInputs.map((input) => (
 					<Chip
 						key={input}
-						variant={selectedInputs.includes(input) ? "primary" : "secondary"}
+						selected={selectedInputs.includes(input)}
+						className={
+							selectedInputs.includes(input) ? "opacity-60" : "opacity-100"
+						}
 						onPress={() =>
 							setSelectedInputs((prev) => {
 								if (prev.includes(input)) {
@@ -257,7 +313,7 @@ export function TransactionForm({
 							})
 						}
 					>
-						<Chip.Label>{input}</Chip.Label>
+						{input}
 					</Chip>
 				))}
 			</View>
@@ -269,88 +325,117 @@ export function TransactionForm({
 						{paymentMethods.map((method) => (
 							<Chip
 								key={method}
-								variant={
-									earning.tipMethods.includes(method) ? "primary" : "secondary"
+								selected={earning.tipMethods.includes(method)}
+								className={
+									earning.tipMethods.includes(method)
+										? "opacity-60"
+										: "opacity-100"
 								}
 								onPress={() => handleSelectMethods(method, "tip")}
 							>
-								<Chip.Label>{method}</Chip.Label>
+								{method}
 							</Chip>
 						))}
 					</View>
 					{/* tip text-field */}
-					<TextField isRequired className="focus">
-						<TextField.Input
-							className="h-16 rounded-3xl"
-							placeholder="Enter Total Tip"
-							keyboardType="numeric"
-							autoCapitalize="none"
-							value={earning.tip.toString()}
-							onChangeText={(value) => setEarning({ ...earning, tip: value })}
-						>
-							<TextField.InputStartContent className="pointer-events-none pl-2">
-								<Ionicons name="cash-outline" size={20} color={mutedColor} />
-							</TextField.InputStartContent>
-						</TextField.Input>
-					</TextField>
+
+					<TextInput
+						mode="outlined"
+						className="h-16 rounded-3xl"
+						placeholder={
+							getPlaceholder(tipCard, tipCash, tipGift) || "Select Tip Methods"
+						}
+						keyboardType="numeric"
+						autoCapitalize="none"
+						value={earning.tip === "0" ? "" : earning.tip.toString()}
+						onChangeText={(value) => setEarning({ ...earning, tip: value })}
+						left={
+							<TextInput.Icon
+								icon="credit-card-outline"
+								size={22}
+								color={mutedColor}
+							/>
+						}
+					/>
+
+					{getFieldError("tip") && (
+						<Text className="px-4 text-red-500 text-sm">
+							{getFieldError("tip")}
+						</Text>
+					)}
 					{/* tip In Cash text-field */}
 					{tipCash && tipCard && (
-						<TextField isRequired className="focus">
-							<TextField.Input
-								className="h-16 rounded-3xl"
-								placeholder="Enter Tip in Cash Amount"
-								keyboardType="numeric"
-								autoCapitalize="none"
-								value={earning.tipInCash?.toString()}
-								onChangeText={(value) =>
-									setEarning({ ...earning, tipInCash: value })
-								}
-							>
-								<TextField.InputStartContent className="pointer-events-none pl-2">
-									<Ionicons name="cash-outline" size={20} color={mutedColor} />
-								</TextField.InputStartContent>
-							</TextField.Input>
-						</TextField>
+						<TextInput
+							mode="outlined"
+							className="h-16 rounded-3xl"
+							placeholder="Enter Tip in Cash Amount"
+							keyboardType="numeric"
+							autoCapitalize="none"
+							value={earning.tipInCash?.toString()}
+							onChangeText={(value) =>
+								setEarning({ ...earning, tipInCash: value })
+							}
+							left={
+								<TextInput.Icon
+									icon="cash-multiple"
+									size={22}
+									color={mutedColor}
+								/>
+							}
+						/>
+					)}
+					{getFieldError("tipInCash") && (
+						<Text className="px-4 text-red-500 text-sm">
+							{getFieldError("tipInCash")}
+						</Text>
 					)}
 				</View>
 			) : null}
 
 			{/* discount text-field */}
 			{discount ? (
-				<TextField isRequired className="focus">
-					<TextField.Input
-						className="h-16 rounded-3xl"
-						placeholder="Enter discount"
-						keyboardType="numeric"
-						autoCapitalize="none"
-						value={earning.discount?.toString()}
-						onChangeText={(value) =>
-							setEarning({ ...earning, discount: value })
-						}
-					>
-						<TextField.InputStartContent className="pointer-events-none pl-2">
-							<Ionicons name="cash-outline" size={20} color={mutedColor} />
-						</TextField.InputStartContent>
-					</TextField.Input>
-				</TextField>
+				<TextInput
+					mode="outlined"
+					className="h-16 rounded-3xl"
+					placeholder="Enter discount"
+					keyboardType="numeric"
+					autoCapitalize="none"
+					value={earning.discount?.toString()}
+					onChangeText={(value) => setEarning({ ...earning, discount: value })}
+					left={
+						<TextInput.Icon icon="cash-minus" size={22} color={mutedColor} />
+					}
+				/>
 			) : null}
+			{getFieldError("discount") && (
+				<Text className="px-4 text-red-500 text-sm">
+					{getFieldError("discount")}
+				</Text>
+			)}
 
 			{supply ? (
-				<TextField isRequired className="focus">
-					<TextField.Input
-						className="h-16 rounded-3xl"
-						placeholder="Enter supply cost"
-						keyboardType="numeric"
-						autoCapitalize="none"
-						value={earning.supply?.toString()}
-						onChangeText={(value) => setEarning({ ...earning, supply: value })}
-					>
-						<TextField.InputStartContent className="pointer-events-none pl-2">
-							<Ionicons name="cash-outline" size={20} color={mutedColor} />
-						</TextField.InputStartContent>
-					</TextField.Input>
-				</TextField>
+				<TextInput
+					mode="outlined"
+					className="h-16 rounded-3xl"
+					placeholder="Enter supply cost"
+					keyboardType="numeric"
+					autoCapitalize="none"
+					value={earning.supply?.toString()}
+					onChangeText={(value) => setEarning({ ...earning, supply: value })}
+					left={
+						<TextInput.Icon
+							icon="package-variant"
+							size={22}
+							color={mutedColor}
+						/>
+					}
+				/>
 			) : null}
+			{getFieldError("supply") && (
+				<Text className="px-4 text-red-500 text-sm">
+					{getFieldError("supply")}
+				</Text>
+			)}
 
 			{/* tip gift text-field*/}
 			<GiftCardInputs
@@ -361,78 +446,88 @@ export function TransactionForm({
 				setGiftError={setGiftError}
 				type={tipGift === true ? "tipInGift" : undefined}
 			/>
+			{getFieldError("tipInGift") && (
+				<Text className="px-4 text-red-500 text-sm">
+					{getFieldError("tipInGift")}
+				</Text>
+			)}
 
 			{/* service categories */}
 			<View className="mt-4 mb-4 flex-row flex-wrap gap-2">
 				{categories?.map((category) => (
 					<Chip
 						key={category._id}
-						variant={
-							earning.services.includes(category._id) ? "primary" : "secondary"
+						selected={earning.services.includes(category._id)}
+						className={
+							earning.services.includes(category._id)
+								? "opacity-60"
+								: "opacity-100"
 						}
 						onPress={() => handleSelectServices(category._id)}
 					>
-						<Chip.Label>{category.name}</Chip.Label>
+						{category.name}
 					</Chip>
 				))}
 			</View>
 
 			{/* service time field */}
-			<TextField>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Select service time"
-					value={new Date(earning.serviceDate).toLocaleTimeString([], {
-						hour: "2-digit",
-						minute: "2-digit",
-					})}
-					editable={false}
-					onPressIn={() => setOpen(!open)}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons name="time-outline" size={20} color={mutedColor} />
-					</TextField.InputStartContent>
-				</TextField.Input>
-				{open && (
-					<DateTimePicker
-						mode="time"
-						value={new Date(earning.serviceDate)}
-						maximumDate={endOfDay}
-						display="spinner"
-						onChange={(_, selectedDate) => {
-							setEarning({
-								...earning,
-								serviceDate: selectedDate
-									? selectedDate.getTime()
-									: earning.serviceDate,
-							});
-						}}
+
+			<TextInput
+				mode="outlined"
+				className="h-16 rounded-3xl"
+				placeholder="Select service time"
+				value={new Date(earning.serviceDate).toLocaleTimeString([], {
+					hour: "2-digit",
+					minute: "2-digit",
+				})}
+				editable={false}
+				onPressIn={() => setOpen(!open)}
+				left={
+					<TextInput.Icon
+						icon="clock-time-eight-outline"
+						size={22}
+						color={mutedColor}
 					/>
-				)}
-			</TextField>
+				}
+			/>
+
+			{open && (
+				<DateTimePicker
+					mode="time"
+					value={new Date(earning.serviceDate)}
+					maximumDate={endOfDay}
+					display="spinner"
+					onChange={(_, selectedDate) => {
+						setEarning({
+							...earning,
+							serviceDate: selectedDate
+								? selectedDate.getTime()
+								: earning.serviceDate,
+						});
+					}}
+				/>
+			)}
 
 			<Button
-				onPress={onSubmit}
-				isDisabled={isDisabled}
-				size="lg"
+				onPress={handleValidateAndSubmit}
+				disabled={isDisabled}
+				loading={isLoading}
+				mode="contained"
 				className="rounded-3xl"
 			>
-				<Button.Label>{submitLabel}</Button.Label>
-				{isLoading ? <Spinner color={background} /> : null}
+				{submitLabel}
 			</Button>
 
 			{type === "edit" && (
 				<Button
 					onPress={handleDelete}
-					isDisabled={isDisabled}
-					size="lg"
+					disabled={isDisabled}
+					loading={isDeleting}
+					mode="contained"
 					className="rounded-3xl"
-					variant="destructive"
+					buttonColor="red"
 				>
-					<Button.Label>
-						{isDeleting ? "Deleting..." : "Delete Transaction"}
-					</Button.Label>
-					{isDeleting ? <Spinner color={background} /> : null}
+					Delete Transaction
 				</Button>
 			)}
 		</ScreenScrollView>

@@ -1,12 +1,10 @@
-import Ionicons from "@expo/vector-icons/build/Ionicons";
-import { Button, TextField, Spinner, useThemeColor } from "heroui-native";
 import { useState } from "react";
+import { Button, TextInput } from "react-native-paper";
+
 import FormHeader, { FormContainer } from "@/components/form";
 
 // TODO: Implement password reset request logic here
 export default function RequestPasswordResetRoute() {
-  const mutedColor = useThemeColor("muted");
-	const themeColorBackground = useThemeColor("background");
 	// const router = useRouter();
 
 	/* ---------------------------------- state --------------------------------- */
@@ -61,36 +59,26 @@ export default function RequestPasswordResetRoute() {
 				description="Enter your email to receive a password reset link"
 			/>
 			{/* email */}
-			<TextField isRequired>
-				<TextField.Input
-					className="h-16 rounded-3xl"
-					placeholder="Enter your email"
-					keyboardType="email-address"
-					autoCapitalize="none"
-					value={email}
-					onChangeText={setEmail}
-				>
-					<TextField.InputStartContent className="pointer-events-none pl-2">
-						<Ionicons
-							name="mail-outline"
-							size={20}
-							color={mutedColor}
-						/>
-					</TextField.InputStartContent>
-				</TextField.Input>
-			</TextField>
+			<TextInput
+				mode="outlined"
+				placeholder="Enter your email"
+				keyboardType="email-address"
+				autoCapitalize="none"
+				value={email}
+				onChangeText={setEmail}
+				left={<TextInput.Icon icon="email-outline" />}
+				className="h-16 rounded-3xl"
+			/>
 			{/* submit button */}
 			<Button
-        // onPress={handleRequestReset}
-        isDisabled={isLoading}
-        className="rounded-3xl"
-        size="lg"
-      >
-        <Button.Label>
-          {isLoading ? "Sending..." : "Send Reset Link"}
-        </Button.Label>
-          {isLoading ? <Spinner color={themeColorBackground} /> : null}
-      </Button>
+				// onPress={handleRequestReset}
+				disabled={isLoading}
+				mode="contained"
+				loading={isLoading}
+				className="rounded-3xl"
+			>
+				{isLoading ? "Sending..." : "Send Reset Link"}
+			</Button>
 		</FormContainer>
 	);
 }
