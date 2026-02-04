@@ -17,7 +17,7 @@ export default function SettingsRoute() {
 
 	const [isSigningOut, setIsSigningOut] = useState(false);
 
-	const className = cn("text-lg text-muted", !isLight && "-foreground");
+	const className = cn("text-lg text-muted", !isLight && "text-gray-300");
 
 	if (!user)
 		return <ActivityIndicator className="flex-1 items-center justify-center" />;

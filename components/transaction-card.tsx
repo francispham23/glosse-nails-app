@@ -15,7 +15,7 @@ type Props = {
 
 export const TransactionCard = ({ transaction, technicianId }: Props) => {
 	const { isLight } = useAppTheme();
-	const className = cn("text-lg text-muted", !isLight && "-foreground");
+	const className = cn("text-lg text-muted", !isLight && "text-gray-300");
 
 	const { endOfDay } = useAppDate();
 	const isSelectedDateToday = isToday(endOfDay.getTime());

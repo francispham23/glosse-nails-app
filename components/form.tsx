@@ -1,6 +1,7 @@
 import { Text, View } from "react-native";
 import { TextInput } from "react-native-paper";
-
+import { useAppTheme } from "@/contexts/app-theme-context";
+import { cn } from "@/utils";
 import type {
 	Category,
 	EarningFormState,
@@ -29,10 +30,22 @@ export default function FormHeader({
 	description: string;
 	children?: React.ReactNode;
 }) {
+	const { isLight } = useAppTheme();
 	return (
 		<View className="gap-2">
-			<Text className="font-extrabold text-4xl text-foreground">{title}</Text>
-			<Text className="text-muted-foreground">{description}</Text>
+			<Text
+				className={cn(
+					"font-extrabold text-4xl text-foreground",
+					!isLight && "text-gray-300",
+				)}
+			>
+				{title}
+			</Text>
+			<Text
+				className={cn("text-muted-foreground", !isLight && "text-gray-400")}
+			>
+				{description}
+			</Text>
 			{children}
 		</View>
 	);

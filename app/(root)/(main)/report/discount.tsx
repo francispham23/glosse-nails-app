@@ -5,10 +5,12 @@ import { FlatList } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { ListEmptyComponent } from "@/components/list-empty";
+import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/utils";
 
 export default function DiscountRoute() {
+	const { isLight } = useAppTheme();
 	const params = useLocalSearchParams();
 	const startDate = params.startDate ? Number(params.startDate) : Date.now();
 	const endDate = params.endDate ? Number(params.endDate) : Date.now();
@@ -32,7 +34,10 @@ export default function DiscountRoute() {
 				};
 			}) || [];
 
-	const classname = cn("font-semibold text-foreground");
+	const classname = cn(
+		"font-semibold text-foreground",
+		!isLight && "text-gray-300",
+	);
 
 	return (
 		<Animated.View
@@ -40,7 +45,12 @@ export default function DiscountRoute() {
 			entering={FadeIn}
 			exiting={FadeOut}
 		>
-			<Text className="font-extrabold text-3xl text-foreground">
+			<Text
+				className={cn(
+					"font-extrabold text-3xl text-foreground",
+					!isLight && "text-gray-300",
+				)}
+			>
 				Discount Report
 			</Text>
 			<View className="flex-1 pt-6">
@@ -72,7 +82,8 @@ type Props = {
 };
 
 const DiscountCard = ({ item }: Props) => {
-	const classname = cn("text-md text-muted", !true && "-foreground");
+	const { isLight } = useAppTheme();
+	const classname = cn("text-md text-muted", !isLight && "text-gray-300");
 
 	return (
 		<View className="flex-row items-center gap-4 rounded-lg border-r-accent bg-gray-300 p-2 shadow-md dark:bg-gray-700">

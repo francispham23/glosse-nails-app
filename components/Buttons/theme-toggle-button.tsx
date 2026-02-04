@@ -25,7 +25,7 @@ export function ThemeToggleButton() {
 				</Animated.View>
 			) : (
 				<Animated.View key="sun" entering={ZoomIn} exiting={FadeOut}>
-					<StyledIonicons name="sunny" size={18} className="text-foreground" />
+					<StyledIonicons name="sunny" size={18} className="text-white" />
 				</Animated.View>
 			)}
 		</Pressable>

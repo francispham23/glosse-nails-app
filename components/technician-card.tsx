@@ -33,12 +33,12 @@ export const TechnicianCard = ({
 
 	const technicianClassName = cn(
 		"min-w-[50] text-left text-lg text-muted",
-		!isLight && "-foreground",
+		!isLight && "text-gray-300",
 	);
 
 	const className = cn(
 		"text-right text-lg text-muted",
-		!isLight && "-foreground",
+		!isLight && "text-gray-300",
 	);
 
 	return (

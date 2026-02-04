@@ -11,7 +11,7 @@ type Props = {
 
 export const GiftCardTransaction = ({ transaction }: Props) => {
 	const { isLight } = useAppTheme();
-	const textClassName = cn("text-base text-muted", !isLight && "-foreground");
+	const textClassName = cn("text-base text-muted", !isLight && "text-gray-300");
 
 	return (
 		<Animated.View

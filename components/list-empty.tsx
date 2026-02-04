@@ -3,11 +3,15 @@ import { Text } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
+import { useAppTheme } from "@/contexts/app-theme-context";
+import { cn } from "@/utils";
+
 interface Props {
 	item?: string;
 }
 
 export const ListEmptyComponent = ({ item }: Props) => {
+	const { isLight } = useAppTheme();
 	const [spinning, setSpinning] = useState(true);
 
 	useEffect(() => {
@@ -24,7 +28,7 @@ export const ListEmptyComponent = ({ item }: Props) => {
 			{spinning ? (
 				<ActivityIndicator className="flex-1 items-center justify-center" />
 			) : (
-				<Text className="text-muted">
+				<Text className={cn("text-muted", !isLight && "text-gray-300")}>
 					No {item ? `${item}s` : "data"} to display.
 				</Text>
 			)}

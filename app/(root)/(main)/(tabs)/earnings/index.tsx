@@ -6,6 +6,7 @@ import Animated, {
 	FadeOut,
 	LinearTransition,
 } from "react-native-reanimated";
+
 import { AddButton } from "@/components/Buttons/add-button";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { TechnicianCard } from "@/components/technician-card";
@@ -58,7 +59,7 @@ export default function HomeRoute() {
 
 	const className = cn(
 		"min-w-[50] text-right font-bold text-lg",
-		!isLight && "text-white",
+		!isLight && "text-gray-300",
 	);
 
 	return (

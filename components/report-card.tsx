@@ -2,6 +2,7 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 
+import { useAppTheme } from "@/contexts/app-theme-context";
 import { cn } from "@/utils";
 
 type ReportType = "payroll" | "discount" | "cash" | "gift" | "supply";
@@ -25,6 +26,7 @@ type Props = {
 
 export const ReportCard = ({ item, startDate, endDate }: Props) => {
 	const router = useRouter();
+	const { isLight } = useAppTheme();
 
 	const onPress = (type: ReportType) => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -51,12 +53,17 @@ export const ReportCard = ({ item, startDate, endDate }: Props) => {
 							index > 0 && index < item.rows.length - 1 && "py-2",
 						)}
 					>
-						<Text className="text-foreground">{row.label}</Text>
+						<Text
+							className={cn("text-foreground", !isLight && "text-gray-300")}
+						>
+							{row.label}
+						</Text>
 						<Text
 							className={cn(
 								row.isBold && "font-bold",
 								row.isLarge && "text-lg",
 								!row.isBold && "font-semibold text-foreground",
+								!isLight && "text-gray-300",
 							)}
 						>
 							{row.value}
