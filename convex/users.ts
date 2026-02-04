@@ -61,6 +61,9 @@ export const usersByDateRange = query({
 				};
 			}),
 		);
+		if (report) {
+			return result.filter((tech) => tech.compensation > 0);
+		}
 		return result.sort((a, b) => a.compensation - b.compensation);
 	},
 });

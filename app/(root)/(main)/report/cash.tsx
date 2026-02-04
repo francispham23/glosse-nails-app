@@ -116,7 +116,7 @@ const CashCard = ({ item }: Props) => {
 					: "N/A"}
 			</Text>
 			<Text className={cn(classname, "min-w-[55] flex-1 text-left")}>
-				{item.technician || "Unknown"}
+				{item.technician?.split(" ")[0] || "Unknown"}
 			</Text>
 			<Text className={cn(classname, "min-w-[55] text-right")}>
 				${item.cash.toFixed(2)}

@@ -54,7 +54,7 @@ export default function TechnicianId() {
 			<Link href=".." asChild>
 				<Button
 					className="absolute bottom-10 self-center overflow-hidden rounded-full"
-					icon="add"
+					icon="plus"
 				>
 					Create Transaction
 				</Button>
