@@ -163,4 +163,4 @@ export const GiftCardInputs = ({
 };
 
 /* --------------------------- other inputs --------------------------- */
-export const otherInputs = ["Tip", "Discount", "Supply"];
+export const otherInputs = ["Supply", "Discount"];

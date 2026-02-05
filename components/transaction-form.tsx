@@ -41,13 +41,14 @@ const getPaymentPlaceholder = (
 	hasCard: boolean,
 	hasCash: boolean,
 	hasGift: boolean,
+	isTip = false,
 ): string => {
 	const types = [hasCard && "Card", hasCash && "Cash", hasGift && "Gift Card"]
 		.filter(Boolean)
 		.join(", ")
 		.replace(/, ([^,]*)$/, " and $1");
 
-	return types ? `Enter Total ${types} Charge` : "";
+	return types ? `Enter Total ${isTip ? "Tip" : "Charge"} in ${types}` : "";
 };
 
 /* ------------------------------ Sub-Components ----------------------------- */
@@ -157,7 +158,7 @@ export function TransactionForm({
 
 	/* ---------------------------------- State --------------------------------- */
 	const [isDeleting, setIsDeleting] = useState(false);
-	const [selectedInputs, setSelectedInputs] = useState<string[]>(["Tip"]);
+	const [selectedInputs, setSelectedInputs] = useState<string[]>(["Supply"]);
 	const { errors, validate, getFieldError } =
 		useFormValidation(EarningFormSchema);
 
@@ -174,12 +175,11 @@ export function TransactionForm({
 		[earning.compensationMethods, earning.tipMethods],
 	);
 
-	const showTip = selectedInputs.includes("Tip");
 	const showSupply = selectedInputs.includes("Supply");
 	const showDiscount = selectedInputs.includes("Discount");
 
 	const compensationPlaceholder = getPaymentPlaceholder(card, cash, gift);
-	const tipPlaceholder = getPaymentPlaceholder(tipCard, tipCash, tipGift);
+	const tipPlaceholder = getPaymentPlaceholder(tipCard, tipCash, tipGift, true);
 
 	const isDisabled = useMemo(
 		() =>
@@ -224,6 +224,17 @@ export function TransactionForm({
 
 	const handleSelectCompensationMethod = useCallback(
 		(method: PaymentMethod) => {
+			if (earning.compensationMethods.length === 1) {
+				if (earning.compensationMethods[0] === method) return; // Prevent deselecting the last method
+				if (earning.compensationMethods[0] === "Card" && method === "Cash") {
+					setEarning({
+						...earning,
+						compensationMethods: ["Cash"],
+						tipMethods: ["Cash"],
+					});
+					return;
+				}
+			}
 			const newMethods = earning.compensationMethods.includes(method)
 				? earning.compensationMethods.filter((m) => m !== method)
 				: [...earning.compensationMethods, method];
@@ -236,6 +247,17 @@ export function TransactionForm({
 
 	const handleSelectTipMethod = useCallback(
 		(method: PaymentMethod) => {
+			if (
+				earning.tipMethods.length === 1 &&
+				earning.tipMethods[0] === "Card" &&
+				method === "Cash"
+			) {
+				setEarning({
+					...earning,
+					tipMethods: ["Cash"],
+				});
+				return;
+			}
 			const newMethods = earning.tipMethods.includes(method)
 				? earning.tipMethods.filter((m) => m !== method)
 				: [...earning.tipMethods, method];
@@ -307,8 +329,46 @@ export function TransactionForm({
 		>
 			<FormHeader title={title} description={description} />
 
-			{/* Compensation Methods */}
-			<View className="pt-4">
+			{/* Compensation */}
+			<View className="flex gap-2">
+				{/* Compensation Input */}
+				<NumericInput
+					placeholder={compensationPlaceholder || "Select Compensation Methods"}
+					value={earning.compensation.toString()}
+					onChangeText={(value) => updateEarning("compensation", value)}
+					icon="credit-card-outline"
+					mutedColor={mutedColor}
+				/>
+				<ErrorText error={getFieldError("compensation")} />
+				{!compensationPlaceholder && (
+					<Text className="px-4 text-red-500 text-sm">
+						Please select at least one compensation method
+					</Text>
+				)}
+				{/* Cash Amount (when both Cash and Card selected) */}
+				{cash && card && (
+					<>
+						<NumericInput
+							placeholder="Enter Cash Amount"
+							value={earning.compInCash?.toString()}
+							onChangeText={(value) => updateEarning("compInCash", value)}
+							icon="cash-multiple"
+							mutedColor={mutedColor}
+						/>
+						<ErrorText error={getFieldError("compInCash")} />
+					</>
+				)}
+				{/* Gift Card Inputs for Compensation */}
+				<GiftCardInputs
+					earning={earning}
+					updateEarning={updateEarning}
+					giftCard={giftCard}
+					giftError={giftError}
+					setGiftError={setGiftError}
+					type={gift ? "compInGift" : undefined}
+				/>
+				<ErrorText error={getFieldError("compInGift")} />
+				{/* Compensation Methods */}
 				<PaymentMethodChips
 					methods={paymentMethods}
 					selectedMethods={earning.compensationMethods}
@@ -316,135 +376,91 @@ export function TransactionForm({
 				/>
 			</View>
 
-			{/* Compensation Input */}
-			<NumericInput
-				placeholder={compensationPlaceholder || "Select Compensation Methods"}
-				value={earning.compensation.toString()}
-				onChangeText={(value) => updateEarning("compensation", value)}
-				icon="credit-card-outline"
-				mutedColor={mutedColor}
-			/>
-			<ErrorText error={getFieldError("compensation")} />
-			{!compensationPlaceholder && (
-				<Text className="px-4 text-red-500 text-sm">
-					Please select at least one compensation method
-				</Text>
-			)}
-
-			{/* Cash Amount (when both Cash and Card selected) */}
-			{cash && card && (
-				<>
-					<NumericInput
-						placeholder="Enter Cash Amount"
-						value={earning.compInCash?.toString()}
-						onChangeText={(value) => updateEarning("compInCash", value)}
-						icon="cash-multiple"
-						mutedColor={mutedColor}
-					/>
-					<ErrorText error={getFieldError("compInCash")} />
-				</>
-			)}
-
-			{/* Gift Card Inputs for Compensation */}
-			<GiftCardInputs
-				earning={earning}
-				updateEarning={updateEarning}
-				giftCard={giftCard}
-				giftError={giftError}
-				setGiftError={setGiftError}
-				type={gift ? "compInGift" : undefined}
-			/>
-			<ErrorText error={getFieldError("compInGift")} />
-
-			{/* Other Input Toggles */}
-			<View className="flex-row flex-wrap gap-2">
-				{otherInputs.map((input) => (
-					<Chip
-						key={input}
-						selected={selectedInputs.includes(input)}
-						className={
-							selectedInputs.includes(input) ? "opacity-60" : "opacity-100"
-						}
-						onPress={() => toggleInput(input)}
-					>
-						{input}
-					</Chip>
-				))}
+			{/* Tip */}
+			<View className="flex gap-2">
+				{/* Tip Input */}
+				<NumericInput
+					placeholder={tipPlaceholder || "Select Tip Methods"}
+					value={earning.tip === "0" ? "" : earning.tip.toString()}
+					onChangeText={(value) => updateEarning("tip", value)}
+					icon="credit-card-outline"
+					mutedColor={mutedColor}
+				/>
+				<ErrorText error={getFieldError("tip")} />
+				{tipCash && tipCard && (
+					<>
+						<NumericInput
+							placeholder="Enter Tip in Cash Amount"
+							value={earning.tipInCash?.toString()}
+							onChangeText={(value) => updateEarning("tipInCash", value)}
+							icon="cash-multiple"
+							mutedColor={mutedColor}
+						/>
+						<ErrorText error={getFieldError("tipInCash")} />
+					</>
+				)}
+				{/* Gift Card Inputs for Tip */}
+				<GiftCardInputs
+					earning={earning}
+					updateEarning={updateEarning}
+					giftCard={giftCard}
+					giftError={giftError}
+					setGiftError={setGiftError}
+					type={tipGift ? "tipInGift" : undefined}
+				/>
+				<ErrorText error={getFieldError("tipInGift")} />
+				{/* Tip Methods */}
+				<PaymentMethodChips
+					methods={paymentMethods}
+					selectedMethods={earning.tipMethods}
+					onSelect={handleSelectTipMethod}
+				/>
 			</View>
 
-			{/* Tip Section */}
-			{showTip && (
-				<View className="flex gap-2">
-					<View className="flex-row flex-wrap justify-end gap-2">
-						<PaymentMethodChips
-							methods={paymentMethods}
-							selectedMethods={earning.tipMethods}
-							onSelect={handleSelectTipMethod}
+			{/* Others */}
+			<View className="flex gap-2">
+				{/* Supply Input */}
+				{showSupply && (
+					<>
+						<NumericInput
+							placeholder="Enter supply cost"
+							value={earning.supply?.toString()}
+							onChangeText={(value) => updateEarning("supply", value)}
+							icon="package-variant"
+							mutedColor={mutedColor}
 						/>
-					</View>
-
-					<NumericInput
-						placeholder={tipPlaceholder || "Select Tip Methods"}
-						value={earning.tip === "0" ? "" : earning.tip.toString()}
-						onChangeText={(value) => updateEarning("tip", value)}
-						icon="credit-card-outline"
-						mutedColor={mutedColor}
-					/>
-					<ErrorText error={getFieldError("tip")} />
-
-					{tipCash && tipCard && (
-						<>
-							<NumericInput
-								placeholder="Enter Tip in Cash Amount"
-								value={earning.tipInCash?.toString()}
-								onChangeText={(value) => updateEarning("tipInCash", value)}
-								icon="cash-multiple"
-								mutedColor={mutedColor}
-							/>
-							<ErrorText error={getFieldError("tipInCash")} />
-						</>
-					)}
+						<ErrorText error={getFieldError("supply")} />
+					</>
+				)}
+				{/* Discount Input */}
+				{showDiscount && (
+					<>
+						<NumericInput
+							placeholder="Enter discount"
+							value={earning.discount?.toString()}
+							onChangeText={(value) => updateEarning("discount", value)}
+							icon="cash-minus"
+							mutedColor={mutedColor}
+						/>
+						<ErrorText error={getFieldError("discount")} />
+					</>
+				)}
+				{/* Other Input Toggles */}
+				<View className="flex-row flex-wrap gap-2">
+					{otherInputs.map((input) => (
+						<Chip
+							key={input}
+							selected={selectedInputs.includes(input)}
+							className={
+								selectedInputs.includes(input) ? "opacity-60" : "opacity-100"
+							}
+							onPress={() => toggleInput(input)}
+						>
+							{input}
+						</Chip>
+					))}
 				</View>
-			)}
-
-			{/* Discount Input */}
-			{showDiscount && (
-				<>
-					<NumericInput
-						placeholder="Enter discount"
-						value={earning.discount?.toString()}
-						onChangeText={(value) => updateEarning("discount", value)}
-						icon="cash-minus"
-						mutedColor={mutedColor}
-					/>
-					<ErrorText error={getFieldError("discount")} />
-				</>
-			)}
-
-			{/* Supply Input */}
-			{showSupply && (
-				<>
-					<NumericInput
-						placeholder="Enter supply cost"
-						value={earning.supply?.toString()}
-						onChangeText={(value) => updateEarning("supply", value)}
-						icon="package-variant"
-						mutedColor={mutedColor}
-					/>
-					<ErrorText error={getFieldError("supply")} />
-				</>
-			)}
-
-			{/* Gift Card Inputs for Tip */}
-			<GiftCardInputs
-				earning={earning}
-				updateEarning={updateEarning}
-				giftCard={giftCard}
-				giftError={giftError}
-				setGiftError={setGiftError}
-				type={tipGift ? "tipInGift" : undefined}
-			/>
-			<ErrorText error={getFieldError("tipInGift")} />
+			</View>
 
 			{/* Service Categories */}
 			<ServiceCategoryChips
