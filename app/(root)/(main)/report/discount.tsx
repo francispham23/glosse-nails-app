@@ -95,7 +95,7 @@ const DiscountCard = ({ item }: Props) => {
 				})}
 			</Text>
 			<Text className={cn(classname, "flex-1 text-left")}>
-				{item.technician}
+				{item.technician.split(" ")[0]}
 			</Text>
 			<Text className={cn(classname, "min-w-[40] text-right")}>
 				${item.discount.toFixed(2)}

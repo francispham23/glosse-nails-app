@@ -1,7 +1,7 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery } from "convex/react";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Alert, Keyboard, Text, View } from "react-native";
 import { Button, Chip, TextInput } from "react-native-paper";
 
@@ -19,6 +19,7 @@ import { useThemeColor } from "@/utils";
 import type { Category, EarningFormState, PaymentMethod } from "@/utils/types";
 import { EarningFormSchema } from "@/utils/validation";
 
+/* ---------------------------------- Types --------------------------------- */
 interface TransactionFormProps {
 	type: "create" | "edit";
 	title: string;
@@ -35,6 +36,101 @@ interface TransactionFormProps {
 	transactionId?: Id<"transactions">;
 }
 
+/* --------------------------------- Helpers -------------------------------- */
+const getPaymentPlaceholder = (
+	hasCard: boolean,
+	hasCash: boolean,
+	hasGift: boolean,
+	isTip = false,
+): string => {
+	const types = [hasCard && "Card", hasCash && "Cash", hasGift && "Gift Card"]
+		.filter(Boolean)
+		.join(", ")
+		.replace(/, ([^,]*)$/, " and $1");
+
+	return types ? `Enter Total ${isTip ? "Tip" : "Charge"} in ${types}` : "";
+};
+
+/* ------------------------------ Sub-Components ----------------------------- */
+const ErrorText = ({ error }: { error: string | undefined }) =>
+	error ? <Text className="px-4 text-red-500 text-sm">{error}</Text> : null;
+
+const PaymentMethodChips = ({
+	methods,
+	selectedMethods,
+	onSelect,
+}: {
+	methods: readonly PaymentMethod[];
+	selectedMethods: PaymentMethod[];
+	onSelect: (method: PaymentMethod) => void;
+}) => (
+	<View className="flex-row flex-wrap gap-2">
+		{methods.map((method) => (
+			<Chip
+				key={method}
+				selected={selectedMethods.includes(method)}
+				className={
+					selectedMethods.includes(method) ? "opacity-60" : "opacity-100"
+				}
+				onPress={() => onSelect(method)}
+			>
+				{method}
+			</Chip>
+		))}
+	</View>
+);
+
+const ServiceCategoryChips = ({
+	categories,
+	selectedServices,
+	onSelect,
+}: {
+	categories: Category[] | undefined;
+	selectedServices: string[];
+	onSelect: (id: Category["_id"]) => void;
+}) => (
+	<View className="mt-4 mb-4 flex-row flex-wrap gap-2">
+		{categories?.map((category) => (
+			<Chip
+				key={category._id}
+				selected={selectedServices.includes(category._id)}
+				className={
+					selectedServices.includes(category._id) ? "opacity-60" : "opacity-100"
+				}
+				onPress={() => onSelect(category._id)}
+			>
+				{category.name}
+			</Chip>
+		))}
+	</View>
+);
+
+const NumericInput = ({
+	placeholder,
+	value,
+	onChangeText,
+	icon,
+	mutedColor,
+}: {
+	placeholder: string;
+	value: string | undefined;
+	onChangeText: (value: string) => void;
+	icon: string;
+	mutedColor: string;
+}) => (
+	<TextInput
+		mode="outlined"
+		className="h-16 rounded-3xl"
+		placeholder={placeholder}
+		keyboardType="numeric"
+		autoCapitalize="none"
+		value={value}
+		onChangeText={onChangeText}
+		left={<TextInput.Icon icon={icon} size={22} color={mutedColor} />}
+	/>
+);
+
+/* ------------------------------- Main Component ------------------------------ */
 export function TransactionForm({
 	type,
 	title,
@@ -60,76 +156,153 @@ export function TransactionForm({
 		earning.giftCode ? { code: earning.giftCode } : "skip",
 	);
 
-	/* ---------------------------------- state --------------------------------- */
+	/* ---------------------------------- State --------------------------------- */
 	const [isDeleting, setIsDeleting] = useState(false);
-	const [selectedInputs, setSelectedInputs] = useState<string[]>(["Tip"]);
+	const [selectedInputs, setSelectedInputs] = useState<string[]>(["Supply"]);
 	const { errors, validate, getFieldError } =
 		useFormValidation(EarningFormSchema);
 
-	/* ------------------- clear validation errors when gift error changes ------------------- */
-	useEffect(() => {
-		if (giftError) {
-			//TODO: Gift validation is handled separately
-		}
-	}, [giftError]);
+	/* ----------------------------- Derived State ------------------------------ */
+	const { cash, card, gift, tipCash, tipCard, tipGift } = useMemo(
+		() => ({
+			cash: earning.compensationMethods.includes("Cash"),
+			card: earning.compensationMethods.includes("Card"),
+			gift: earning.compensationMethods.includes("Gift Card"),
+			tipCash: earning.tipMethods.includes("Cash"),
+			tipCard: earning.tipMethods.includes("Card"),
+			tipGift: earning.tipMethods.includes("Gift Card"),
+		}),
+		[earning.compensationMethods, earning.tipMethods],
+	);
 
-	/* ------------------- handle select services ------------------- */
-	const handleSelectServices = (categoryId: Category["_id"]) =>
-		setEarning((prev) => {
-			const services = prev.services.includes(categoryId)
-				? prev.services.filter((id) => id !== categoryId)
-				: [...prev.services, categoryId];
-			return { ...prev, services };
-		});
+	const showSupply = selectedInputs.includes("Supply");
+	const showDiscount = selectedInputs.includes("Discount");
 
-	/* ------------------- handle select methods ------------------- */
-	const handleSelectMethods = (
-		method: PaymentMethod,
-		type: "compensation" | "tip",
-	) =>
-		setEarning((prev) => {
-			const methods =
-				type === "compensation"
-					? prev.compensationMethods.includes(method)
-						? prev.compensationMethods.filter((m) => m !== method)
-						: [...prev.compensationMethods, method]
-					: prev.tipMethods.includes(method)
-						? prev.tipMethods.filter((m) => m !== method)
-						: [...prev.tipMethods, method];
-			return type === "compensation"
-				? { ...prev, compensationMethods: methods }
-				: { ...prev, tipMethods: methods };
-		});
+	const compensationPlaceholder = getPaymentPlaceholder(card, cash, gift);
+	const tipPlaceholder = getPaymentPlaceholder(tipCard, tipCash, tipGift, true);
 
-	/* ------------------- handle delete transaction ------------------- */
-	const handleDelete = async () => {
+	const isDisabled = useMemo(
+		() =>
+			isLoading ||
+			Object.keys(errors).length > 0 ||
+			!!giftError ||
+			(!!earning.giftCode && !giftCard) ||
+			isDeleting ||
+			!compensationPlaceholder,
+		[
+			isLoading,
+			errors,
+			giftError,
+			earning.giftCode,
+			giftCard,
+			isDeleting,
+			compensationPlaceholder,
+		],
+	);
+
+	/* ------------------------------- Handlers --------------------------------- */
+	const updateEarning = useCallback(
+		<K extends keyof EarningFormState>(key: K, value: EarningFormState[K]) => {
+			const newEarning = { ...earning, [key]: value };
+			validate(newEarning);
+			setEarning(newEarning);
+		},
+		[earning, validate, setEarning],
+	);
+
+	const handleSelectServices = useCallback(
+		(categoryId: Category["_id"]) => {
+			const newServices = earning.services.includes(categoryId)
+				? earning.services.filter((id) => id !== categoryId)
+				: [...earning.services, categoryId];
+			const newEarning = { ...earning, services: newServices };
+			validate(newEarning);
+			setEarning(newEarning);
+		},
+		[earning, validate, setEarning],
+	);
+
+	const handleSelectCompensationMethod = useCallback(
+		(method: PaymentMethod) => {
+			if (earning.compensationMethods.length === 1) {
+				if (earning.compensationMethods[0] === method) return; // Prevent deselecting the last method
+				if (earning.compensationMethods[0] === "Card" && method === "Cash") {
+					setEarning({
+						...earning,
+						compensationMethods: ["Cash"],
+						tipMethods: ["Cash"],
+						isCashDiscount: true,
+						isCashSupply: true,
+					});
+					return;
+				}
+			}
+			const newMethods = earning.compensationMethods.includes(method)
+				? earning.compensationMethods.filter((m) => m !== method)
+				: [...earning.compensationMethods, method];
+			const newEarning = {
+				...earning,
+				compensationMethods: newMethods,
+				isCashDiscount: newMethods.includes("Cash"),
+				isCashSupply: newMethods.includes("Cash"),
+			};
+			validate(newEarning);
+			setEarning(newEarning);
+		},
+		[earning, validate, setEarning],
+	);
+
+	const handleSelectTipMethod = useCallback(
+		(method: PaymentMethod) => {
+			if (
+				earning.tipMethods.length === 1 &&
+				earning.tipMethods[0] === "Card" &&
+				method === "Cash"
+			) {
+				setEarning({
+					...earning,
+					tipMethods: ["Cash"],
+				});
+				return;
+			}
+			const newMethods = earning.tipMethods.includes(method)
+				? earning.tipMethods.filter((m) => m !== method)
+				: [...earning.tipMethods, method];
+			const newEarning = {
+				...earning,
+				tipMethods: newMethods,
+				isCashDiscount: newMethods.includes("Cash"),
+				isCashSupply: newMethods.includes("Cash"),
+			};
+			validate(newEarning);
+			setEarning(newEarning);
+		},
+		[earning, validate, setEarning],
+	);
+
+	const toggleInput = useCallback((input: string) => {
+		setSelectedInputs((prev) =>
+			prev.includes(input) ? prev.filter((i) => i !== input) : [...prev, input],
+		);
+	}, []);
+
+	const handleDelete = useCallback(async () => {
 		if (!transactionId) return;
 
 		Alert.alert(
 			"Delete Transaction",
 			"Are you sure you want to delete this transaction? This action cannot be undone.",
 			[
-				{
-					text: "Cancel",
-					style: "cancel",
-				},
+				{ text: "Cancel", style: "cancel" },
 				{
 					text: "Delete",
 					style: "destructive",
 					onPress: async () => {
 						try {
 							setIsDeleting(true);
-
-							// Delete from Convex database
-							await deleteTransaction({
-								id: transactionId as Id<"transactions">,
-							});
-
+							await deleteTransaction({ id: transactionId });
 							Alert.alert("Success", "Transaction deleted successfully", [
-								{
-									text: "OK",
-									onPress: () => router.back(),
-								},
+								{ text: "OK", onPress: () => router.back() },
 							]);
 						} catch (error) {
 							Alert.alert("Error", "Failed to delete transaction");
@@ -141,61 +314,25 @@ export function TransactionForm({
 				},
 			],
 		);
-	};
+	}, [transactionId, deleteTransaction]);
 
-	/* ------------------- handle validate and submit ------------------- */
-	const handleValidateAndSubmit = () => {
+	const handleValidateAndSubmit = useCallback(() => {
 		if (validate(earning)) {
 			onSubmit();
 		}
-	};
+	}, [validate, earning, onSubmit]);
 
-	/* ------------------- transaction types ------------------- */
-	const cash = earning.compensationMethods.includes("Cash");
-	const card = earning.compensationMethods.includes("Card");
-	const gift = earning.compensationMethods.includes("Gift Card");
-	const tipCash = earning.tipMethods.includes("Cash");
-	const tipCard = earning.tipMethods.includes("Card");
-	const tipGift = earning.tipMethods.includes("Gift Card");
+	const handleDateChange = useCallback(
+		(_: unknown, selectedDate: Date | undefined) => {
+			updateEarning(
+				"serviceDate",
+				selectedDate?.getTime() ?? earning.serviceDate,
+			);
+		},
+		[updateEarning, earning.serviceDate],
+	);
 
-	/* ------------------- other input types ------------------- */
-	const tip = selectedInputs.includes("Tip");
-	const supply = selectedInputs.includes("Supply");
-	const discount = selectedInputs.includes("Discount");
-
-	const getPlaceholder = (
-		car: boolean | null,
-		cas: boolean | null,
-		gif: boolean | null,
-	) => {
-		let paymentTypes = "";
-		if (car && cas && gif) {
-			paymentTypes = "Card, Cash, and Gift Card";
-		} else if (car && cas) {
-			paymentTypes = "Card and Cash";
-		} else if (car && gif) {
-			paymentTypes = "Card and Gift Card";
-		} else if (cas && gif) {
-			paymentTypes = "Cash and Gift Card";
-		} else if (car) {
-			paymentTypes = "Card";
-		} else if (cas) {
-			paymentTypes = "Cash";
-		} else if (gif) {
-			paymentTypes = "Gift Card";
-		}
-		return paymentTypes ? `Enter Total ${paymentTypes} Charge` : "";
-	};
-
-	/* ------------------- disable submit if loading or errors ------------------- */
-	const isDisabled =
-		isLoading ||
-		Object.keys(errors).length > 0 ||
-		!!giftError ||
-		(!!earning.giftCode && !giftCard) ||
-		isDeleting ||
-		!getPlaceholder(card, cash, gift);
-
+	/* --------------------------------- Render --------------------------------- */
 	return (
 		<ScreenScrollView
 			contentContainerClassName="gap-4"
@@ -204,274 +341,151 @@ export function TransactionForm({
 		>
 			<FormHeader title={title} description={description} />
 
-			{/* Compensation Methods */}
-			<View className="flex-row flex-wrap gap-2 pt-4">
-				{paymentMethods.map((method) => (
-					<Chip
-						key={method}
-						selected={earning.compensationMethods.includes(method)}
-						className={
-							earning.compensationMethods.includes(method)
-								? "opacity-60"
-								: "opacity-100"
-						}
-						onPress={() => handleSelectMethods(method, "compensation")}
-					>
-						{method}
-					</Chip>
-				))}
-			</View>
-
-			{/* compensation text-field*/}
-
-			<TextInput
-				mode="outlined"
-				className="h-16 rounded-3xl"
-				placeholder={
-					getPlaceholder(card, cash, gift) || "Select Compensation Methods"
-				}
-				keyboardType="numeric"
-				autoCapitalize="none"
-				autoFocus={true}
-				value={earning.compensation.toString()}
-				onChangeText={(value) =>
-					setEarning({ ...earning, compensation: value })
-				}
-				left={
-					<TextInput.Icon
-						icon="credit-card-outline"
-						size={22}
-						color={mutedColor}
-					/>
-				}
-			/>
-
-			{getFieldError("compensation") && (
-				<Text className="px-4 text-red-500 text-sm">
-					{getFieldError("compensation")}
-				</Text>
-			)}
-			{!getPlaceholder(card, cash, gift) && (
-				<Text className="px-4 text-red-500 text-sm">
-					Please select at least one compensation method
-				</Text>
-			)}
-
-			{/* compensation In Cash text-field */}
-			{cash && card ? (
-				<TextInput
-					mode="outlined"
-					className="h-16 rounded-3xl"
-					placeholder="Enter Cash Amount"
-					keyboardType="numeric"
-					autoCapitalize="none"
-					value={earning.compInCash?.toString()}
-					onChangeText={(value) =>
-						setEarning({ ...earning, compInCash: value })
-					}
-					left={
-						<TextInput.Icon icon="cash-multiple" size={22} color={mutedColor} />
-					}
+			{/* Compensation */}
+			<View className="flex gap-2">
+				{/* Compensation Input */}
+				<NumericInput
+					placeholder={compensationPlaceholder || "Select Compensation Methods"}
+					value={earning.compensation.toString()}
+					onChangeText={(value) => updateEarning("compensation", value)}
+					icon="credit-card-outline"
+					mutedColor={mutedColor}
 				/>
-			) : null}
-			{getFieldError("compInCash") && (
-				<Text className="px-4 text-red-500 text-sm">
-					{getFieldError("compInCash")}
-				</Text>
-			)}
-
-			{/* gift text-field*/}
-			<GiftCardInputs
-				earning={earning}
-				setEarning={setEarning}
-				giftCard={giftCard}
-				giftError={giftError}
-				setGiftError={setGiftError}
-				type={gift === true ? "compInGift" : undefined}
-			/>
-			{getFieldError("compInGift") && (
-				<Text className="px-4 text-red-500 text-sm">
-					{getFieldError("compInGift")}
-				</Text>
-			)}
-
-			{/* Other Inputs */}
-			<View className="flex-row flex-wrap gap-2">
-				{otherInputs.map((input) => (
-					<Chip
-						key={input}
-						selected={selectedInputs.includes(input)}
-						className={
-							selectedInputs.includes(input) ? "opacity-60" : "opacity-100"
-						}
-						onPress={() =>
-							setSelectedInputs((prev) => {
-								if (prev.includes(input)) {
-									return prev.filter((i) => i !== input);
-								}
-								return [...prev, input];
-							})
-						}
-					>
-						{input}
-					</Chip>
-				))}
+				<ErrorText error={getFieldError("compensation")} />
+				{!compensationPlaceholder && (
+					<Text className="px-4 text-red-500 text-sm">
+						Please select at least one compensation method
+					</Text>
+				)}
+				{/* Cash Amount (when both Cash and Card selected) */}
+				{cash && card && (
+					<>
+						<NumericInput
+							placeholder="Enter Cash Amount"
+							value={earning.compInCash?.toString()}
+							onChangeText={(value) => updateEarning("compInCash", value)}
+							icon="cash-multiple"
+							mutedColor={mutedColor}
+						/>
+						<ErrorText error={getFieldError("compInCash")} />
+					</>
+				)}
+				{/* Gift Card Inputs for Compensation */}
+				<GiftCardInputs
+					earning={earning}
+					updateEarning={updateEarning}
+					giftCard={giftCard}
+					giftError={giftError}
+					setGiftError={setGiftError}
+					type={gift ? "compInGift" : undefined}
+				/>
+				<ErrorText error={getFieldError("compInGift")} />
+				{/* Compensation Methods */}
+				<PaymentMethodChips
+					methods={paymentMethods}
+					selectedMethods={earning.compensationMethods}
+					onSelect={handleSelectCompensationMethod}
+				/>
 			</View>
 
-			{tip ? (
-				<View className="flex gap-2">
-					{/* Tip Methods */}
-					<View className="flex-row flex-wrap justify-end gap-2">
-						{paymentMethods.map((method) => (
-							<Chip
-								key={method}
-								selected={earning.tipMethods.includes(method)}
-								className={
-									earning.tipMethods.includes(method)
-										? "opacity-60"
-										: "opacity-100"
-								}
-								onPress={() => handleSelectMethods(method, "tip")}
-							>
-								{method}
-							</Chip>
-						))}
-					</View>
-					{/* tip text-field */}
-
-					<TextInput
-						mode="outlined"
-						className="h-16 rounded-3xl"
-						placeholder={
-							getPlaceholder(tipCard, tipCash, tipGift) || "Select Tip Methods"
-						}
-						keyboardType="numeric"
-						autoCapitalize="none"
-						value={earning.tip === "0" ? "" : earning.tip.toString()}
-						onChangeText={(value) => setEarning({ ...earning, tip: value })}
-						left={
-							<TextInput.Icon
-								icon="credit-card-outline"
-								size={22}
-								color={mutedColor}
-							/>
-						}
-					/>
-
-					{getFieldError("tip") && (
-						<Text className="px-4 text-red-500 text-sm">
-							{getFieldError("tip")}
-						</Text>
-					)}
-					{/* tip In Cash text-field */}
-					{tipCash && tipCard && (
-						<TextInput
-							mode="outlined"
-							className="h-16 rounded-3xl"
-							placeholder="Enter Tip in Cash Amount"
-							keyboardType="numeric"
-							autoCapitalize="none"
-							value={earning.tipInCash?.toString()}
-							onChangeText={(value) =>
-								setEarning({ ...earning, tipInCash: value })
-							}
-							left={
-								<TextInput.Icon
+			{/* Tip */}
+			<View className="flex gap-2">
+				{earning.tipMethods.length > 0 && (
+					<>
+						{/* Tip Input */}
+						<NumericInput
+							placeholder={tipPlaceholder || "Select Tip Methods"}
+							value={earning.tip === "0" ? "" : earning.tip.toString()}
+							onChangeText={(value) => updateEarning("tip", value)}
+							icon="credit-card-outline"
+							mutedColor={mutedColor}
+						/>
+						<ErrorText error={getFieldError("tip")} />
+						{tipCash && tipCard && (
+							<>
+								<NumericInput
+									placeholder="Enter Tip in Cash Amount"
+									value={earning.tipInCash?.toString()}
+									onChangeText={(value) => updateEarning("tipInCash", value)}
 									icon="cash-multiple"
-									size={22}
-									color={mutedColor}
+									mutedColor={mutedColor}
 								/>
-							}
+								<ErrorText error={getFieldError("tipInCash")} />
+							</>
+						)}
+						{/* Gift Card Inputs for Tip */}
+						<GiftCardInputs
+							earning={earning}
+							updateEarning={updateEarning}
+							giftCard={giftCard}
+							giftError={giftError}
+							setGiftError={setGiftError}
+							type={tipGift ? "tipInGift" : undefined}
 						/>
-					)}
-					{getFieldError("tipInCash") && (
-						<Text className="px-4 text-red-500 text-sm">
-							{getFieldError("tipInCash")}
-						</Text>
-					)}
-				</View>
-			) : null}
-
-			{/* discount text-field */}
-			{discount ? (
-				<TextInput
-					mode="outlined"
-					className="h-16 rounded-3xl"
-					placeholder="Enter discount"
-					keyboardType="numeric"
-					autoCapitalize="none"
-					value={earning.discount?.toString()}
-					onChangeText={(value) => setEarning({ ...earning, discount: value })}
-					left={
-						<TextInput.Icon icon="cash-minus" size={22} color={mutedColor} />
-					}
+						<ErrorText error={getFieldError("tipInGift")} />
+					</>
+				)}
+				{/* Tip Methods */}
+				<PaymentMethodChips
+					methods={paymentMethods}
+					selectedMethods={earning.tipMethods}
+					onSelect={handleSelectTipMethod}
 				/>
-			) : null}
-			{getFieldError("discount") && (
-				<Text className="px-4 text-red-500 text-sm">
-					{getFieldError("discount")}
-				</Text>
-			)}
-
-			{supply ? (
-				<TextInput
-					mode="outlined"
-					className="h-16 rounded-3xl"
-					placeholder="Enter supply cost"
-					keyboardType="numeric"
-					autoCapitalize="none"
-					value={earning.supply?.toString()}
-					onChangeText={(value) => setEarning({ ...earning, supply: value })}
-					left={
-						<TextInput.Icon
-							icon="package-variant"
-							size={22}
-							color={mutedColor}
-						/>
-					}
-				/>
-			) : null}
-			{getFieldError("supply") && (
-				<Text className="px-4 text-red-500 text-sm">
-					{getFieldError("supply")}
-				</Text>
-			)}
-
-			{/* tip gift text-field*/}
-			<GiftCardInputs
-				earning={earning}
-				setEarning={setEarning}
-				giftCard={giftCard}
-				giftError={giftError}
-				setGiftError={setGiftError}
-				type={tipGift === true ? "tipInGift" : undefined}
-			/>
-			{getFieldError("tipInGift") && (
-				<Text className="px-4 text-red-500 text-sm">
-					{getFieldError("tipInGift")}
-				</Text>
-			)}
-
-			{/* service categories */}
-			<View className="mt-4 mb-4 flex-row flex-wrap gap-2">
-				{categories?.map((category) => (
-					<Chip
-						key={category._id}
-						selected={earning.services.includes(category._id)}
-						className={
-							earning.services.includes(category._id)
-								? "opacity-60"
-								: "opacity-100"
-						}
-						onPress={() => handleSelectServices(category._id)}
-					>
-						{category.name}
-					</Chip>
-				))}
 			</View>
 
-			{/* service time field */}
+			{/* Others */}
+			<View className="flex gap-2">
+				{/* Supply Input */}
+				{showSupply && (
+					<>
+						<NumericInput
+							placeholder={`Enter ${earning.isCashSupply ? "Cash" : ""} Supply Cost`}
+							value={earning.supply?.toString()}
+							onChangeText={(value) => updateEarning("supply", value)}
+							icon="package-variant"
+							mutedColor={mutedColor}
+						/>
+						<ErrorText error={getFieldError("supply")} />
+					</>
+				)}
+				{/* Discount Input */}
+				{showDiscount && (
+					<>
+						<NumericInput
+							placeholder={`Enter ${earning.isCashDiscount ? "Cash" : ""} Discount Amount`}
+							value={earning.discount?.toString()}
+							onChangeText={(value) => updateEarning("discount", value)}
+							icon="cash-minus"
+							mutedColor={mutedColor}
+						/>
+						<ErrorText error={getFieldError("discount")} />
+					</>
+				)}
+				{/* Other Input Toggles */}
+				<View className="flex-row flex-wrap gap-2">
+					{otherInputs.map((input) => (
+						<Chip
+							key={input}
+							selected={selectedInputs.includes(input)}
+							className={
+								selectedInputs.includes(input) ? "opacity-60" : "opacity-100"
+							}
+							onPress={() => toggleInput(input)}
+						>
+							{input}
+						</Chip>
+					))}
+				</View>
+			</View>
 
+			{/* Service Categories */}
+			<ServiceCategoryChips
+				categories={categories}
+				selectedServices={earning.services}
+				onSelect={handleSelectServices}
+			/>
+
+			{/* Service Time Picker */}
 			<TextInput
 				mode="outlined"
 				className="h-16 rounded-3xl"
@@ -497,17 +511,11 @@ export function TransactionForm({
 					value={new Date(earning.serviceDate)}
 					maximumDate={endOfDay}
 					display="spinner"
-					onChange={(_, selectedDate) => {
-						setEarning({
-							...earning,
-							serviceDate: selectedDate
-								? selectedDate.getTime()
-								: earning.serviceDate,
-						});
-					}}
+					onChange={handleDateChange}
 				/>
 			)}
 
+			{/* Submit Button */}
 			<Button
 				onPress={handleValidateAndSubmit}
 				disabled={isDisabled}
@@ -518,6 +526,7 @@ export function TransactionForm({
 				{submitLabel}
 			</Button>
 
+			{/* Delete Button (Edit mode only) */}
 			{type === "edit" && (
 				<Button
 					onPress={handleDelete}

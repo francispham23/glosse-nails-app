@@ -43,7 +43,9 @@ function prepareTransactionData(transaction: {
 	clientId?: Id<"users">;
 	services?: Id<"categories">[];
 	discount?: string;
+	isCashDiscount?: boolean;
 	supply?: string;
+	isCashSupply?: boolean;
 	giftCode?: Id<"giftCards">;
 }) {
 	return {
@@ -72,9 +74,11 @@ function prepareTransactionData(transaction: {
 		discount: transaction.discount
 			? Number.parseFloat(transaction.discount)
 			: undefined,
+		isCashDiscount: transaction.isCashDiscount,
 		supply: transaction.supply
 			? Number.parseFloat(transaction.supply)
 			: undefined,
+		isCashSupply: transaction.isCashSupply,
 		giftCode: transaction.giftCode,
 	};
 }
@@ -96,7 +100,9 @@ async function insertTransaction(
 		services?: Id<"categories">[];
 		clientId?: Id<"users">;
 		discount?: string;
+		isCashDiscount?: boolean;
 		supply?: string;
+		isCashSupply?: boolean;
 		giftCode?: Id<"giftCards">;
 	},
 ) {
@@ -160,7 +166,9 @@ export const addTransaction = mutation({
 			tipInGift: v.optional(v.string()),
 			tipMethods: v.array(v.string()),
 			discount: v.optional(v.string()),
+			isCashDiscount: v.optional(v.boolean()),
 			supply: v.optional(v.string()),
+			isCashSupply: v.optional(v.boolean()),
 			giftCode: v.optional(v.string()),
 			technicianId: v.id("users"),
 			services: v.optional(v.array(v.id("categories"))),
@@ -217,7 +225,9 @@ export const bulkInsertTransactions = mutation({
 				tipInGift: v.optional(v.string()),
 				tipMethods: v.array(v.string()),
 				discount: v.optional(v.string()),
+				isCashDiscount: v.optional(v.boolean()),
 				supply: v.optional(v.string()),
+				isCashSupply: v.optional(v.boolean()),
 				giftCode: v.optional(v.string()),
 				technicianId: v.id("users"),
 				services: v.optional(v.array(v.id("categories"))),
@@ -310,7 +320,9 @@ export const updateTransaction = mutation({
 			tipInGift: v.optional(v.string()),
 			tipMethods: v.array(v.string()),
 			discount: v.optional(v.string()),
+			isCashDiscount: v.optional(v.boolean()),
 			supply: v.optional(v.string()),
+			isCashSupply: v.optional(v.boolean()),
 			giftCode: v.optional(v.string()),
 			technicianId: v.id("users"),
 			services: v.optional(v.array(v.id("categories"))),

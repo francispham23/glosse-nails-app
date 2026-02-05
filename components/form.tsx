@@ -31,6 +31,7 @@ export default function FormHeader({
 	children?: React.ReactNode;
 }) {
 	const { isLight } = useAppTheme();
+
 	return (
 		<View className="gap-2">
 			<Text
@@ -72,7 +73,10 @@ export const initialEarningState = {
 /* ---------------------------- gift card inputs --------------------------- */
 type GiftCardInputsType = {
 	earning: EarningFormState;
-	setEarning: React.Dispatch<React.SetStateAction<EarningFormState>>;
+	updateEarning: <K extends keyof EarningFormState>(
+		key: K,
+		value: EarningFormState[K],
+	) => void;
 	giftError: string;
 	setGiftError: React.Dispatch<React.SetStateAction<string>>;
 	giftCard?: Gift | null;
@@ -81,12 +85,14 @@ type GiftCardInputsType = {
 
 export const GiftCardInputs = ({
 	earning,
-	setEarning,
+	updateEarning,
 	giftCard,
 	giftError,
 	setGiftError,
 	type,
 }: GiftCardInputsType) => {
+	const { isLight } = useAppTheme();
+
 	if (!type) return null;
 
 	return (
@@ -98,7 +104,7 @@ export const GiftCardInputs = ({
 				autoCapitalize="none"
 				value={earning.giftCode?.toString()}
 				onChangeText={(value) => {
-					setEarning({ ...earning, giftCode: value });
+					updateEarning("giftCode", value);
 					setGiftError("");
 				}}
 				left={<TextInput.Icon icon="barcode" />}
@@ -110,7 +116,12 @@ export const GiftCardInputs = ({
 				</Text>
 			)}
 			{giftCard && (
-				<Text className="px-4 text-foreground text-sm">
+				<Text
+					className={cn(
+						"px-4 text-foreground text-sm",
+						!isLight && "text-gray-300",
+					)}
+				>
 					Available balance: ${giftCard.balance?.toFixed(2) ?? "0.00"}
 				</Text>
 			)}
@@ -121,11 +132,21 @@ export const GiftCardInputs = ({
 				autoCapitalize="none"
 				value={earning[type as keyof EarningFormState]?.toString()}
 				onChangeText={(value) => {
-					setEarning({ ...earning, [type]: value });
-					const giftAmount = Number.parseFloat(value || "0");
-					if (giftCard && giftAmount > (giftCard.balance ?? 0)) {
+					updateEarning(type, value);
+
+					if (!giftCard) return;
+
+					const currentAmount = Number.parseFloat(value || "0");
+					const otherAmount =
+						type === "compInGift"
+							? Number.parseFloat(earning.tipInGift || "0")
+							: Number.parseFloat(earning.compInGift || "0");
+					const totalGiftUsage = currentAmount + otherAmount;
+					const balance = giftCard.balance ?? 0;
+
+					if (totalGiftUsage > balance) {
 						setGiftError(
-							`Gift card balance insufficient. Available: $${giftCard.balance?.toFixed(2)}`,
+							`Gift card balance insufficient. Total usage: $${totalGiftUsage.toFixed(2)}, Available: $${balance.toFixed(2)}`,
 						);
 					} else {
 						setGiftError("");
@@ -142,4 +163,4 @@ export const GiftCardInputs = ({
 };
 
 /* --------------------------- other inputs --------------------------- */
-export const otherInputs = ["Tip", "Discount", "Supply"];
+export const otherInputs = ["Supply", "Discount"];

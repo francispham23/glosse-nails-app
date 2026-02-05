@@ -50,9 +50,20 @@ export const usersByDateRange = query({
 						)
 						.toFixed(2),
 				);
-				const tip = Number.parseFloat(
-					transactions.reduce((sum, t) => sum + t.tip, 0).toFixed(2),
-				);
+				let tip: number;
+				if (report) {
+					const finalTip = transactions.reduce((sum, t) => {
+						const nonCashTip = t.tipMethods.includes("Card")
+							? t.tip - (t.tipInCash || 0)
+							: 0;
+						return sum + nonCashTip;
+					}, 0);
+					tip = Number.parseFloat(finalTip.toFixed(2));
+				} else {
+					tip = Number.parseFloat(
+						transactions.reduce((sum, t) => sum + (t.tip || 0), 0).toFixed(2),
+					);
+				}
 
 				return {
 					...tech,
@@ -61,6 +72,9 @@ export const usersByDateRange = query({
 				};
 			}),
 		);
+		if (report) {
+			return result.filter((tech) => tech.compensation > 0);
+		}
 		return result.sort((a, b) => a.compensation - b.compensation);
 	},
 });

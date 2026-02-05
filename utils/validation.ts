@@ -1,115 +1,107 @@
 import { z } from "zod";
 
-export const EarningFormSchema = z.object({
-	compensation: z
+/* --------------------------------- Helpers -------------------------------- */
+const parseNum = (val: string | undefined): number =>
+	val ? Number.parseFloat(val) : 0;
+
+/** Required numeric string field (must be > 0) */
+const requiredPositiveNumericString = (fieldName: string) =>
+	z
 		.string()
-		.refine((val) => val.trim() !== "", "Compensation is required")
+		.min(1, `${fieldName} is required`)
 		.refine(
-			(val) => !Number.isNaN(Number.parseFloat(val)),
-			"Compensation must be a number",
+			(val) => !Number.isNaN(parseNum(val)),
+			`${fieldName} must be a number`,
 		)
-		.refine(
-			(val) => Number.parseFloat(val) > 0,
-			"Compensation must be greater than 0",
-		),
+		.refine((val) => parseNum(val) > 0, `${fieldName} must be greater than 0`);
 
-	compensationMethods: z
-		.array(z.enum(["Cash", "Card", "Gift Card"]))
-		.min(1, "Select at least one compensation method"),
-
-	compInCash: z
+/** Required numeric string field (must be >= 0) */
+const requiredNonNegativeNumericString = (fieldName: string) =>
+	z
 		.string()
-		.optional()
+		.min(1, `${fieldName} is required`)
 		.refine(
-			(val) => !val || !Number.isNaN(Number.parseFloat(val)),
-			"Cash amount must be a number",
+			(val) => !Number.isNaN(parseNum(val)),
+			`${fieldName} must be a number`,
 		)
-		.refine(
-			(val) => !val || Number.parseFloat(val) >= 0,
-			"Cash amount must be positive",
-		),
+		.refine((val) => parseNum(val) >= 0, `${fieldName} must be non-negative`);
 
-	compInGift: z
-		.string()
-		.optional()
-		.refine(
-			(val) => !val || !Number.isNaN(Number.parseFloat(val)),
-			"Gift amount must be a number",
-		)
-		.refine(
-			(val) => !val || Number.parseFloat(val) >= 0,
-			"Gift amount must be positive",
-		),
-
-	giftCode: z.string().optional(),
-
-	tip: z
-		.string()
-		.refine((val) => val.trim() !== "", "Tip is required")
-		.refine(
-			(val) => !Number.isNaN(Number.parseFloat(val)),
-			"Tip must be a number",
-		)
-		.refine((val) => Number.parseFloat(val) >= 0, "Tip must be non-negative"),
-
-	tipMethods: z
-		.array(z.enum(["Cash", "Card", "Gift Card"]))
-		.min(1, "Select at least one tip method"),
-
-	tipInCash: z
+/** Optional numeric string field (must be >= 0 if provided) */
+const optionalPositiveNumericString = (fieldName: string) =>
+	z
 		.string()
 		.optional()
 		.refine(
-			(val) => !val || !Number.isNaN(Number.parseFloat(val)),
-			"Tip cash amount must be a number",
+			(val) => !val || !Number.isNaN(parseNum(val)),
+			`${fieldName} must be a number`,
 		)
 		.refine(
-			(val) => !val || Number.parseFloat(val) >= 0,
-			"Tip cash amount must be positive",
-		),
+			(val) => !val || parseNum(val) >= 0,
+			`${fieldName} must be positive`,
+		);
 
-	tipInGift: z
-		.string()
-		.optional()
-		.refine(
-			(val) => !val || !Number.isNaN(Number.parseFloat(val)),
-			"Tip gift amount must be a number",
-		)
-		.refine(
-			(val) => !val || Number.parseFloat(val) >= 0,
-			"Tip gift amount must be positive",
-		),
+/* --------------------------------- Schema --------------------------------- */
+export const EarningFormSchema = z
+	.object({
+		compensation: requiredPositiveNumericString("Compensation"),
+		compensationMethods: z.array(z.enum(["Cash", "Card", "Gift Card"])),
+		compInCash: optionalPositiveNumericString("Cash amount"),
+		compInGift: optionalPositiveNumericString("Gift amount"),
+		giftCode: z.string().optional(),
 
-	discount: z
-		.string()
-		.optional()
-		.refine(
-			(val) => !val || !Number.isNaN(Number.parseFloat(val)),
-			"Discount must be a number",
-		)
-		.refine(
-			(val) => !val || Number.parseFloat(val) >= 0,
-			"Discount must be positive",
-		),
+		tip: requiredNonNegativeNumericString("Tip"),
+		tipMethods: z.array(z.enum(["Cash", "Card", "Gift Card"])),
+		tipInCash: optionalPositiveNumericString("Tip cash amount"),
+		tipInGift: optionalPositiveNumericString("Tip gift amount"),
 
-	supply: z
-		.string()
-		.optional()
-		.refine(
-			(val) => !val || !Number.isNaN(Number.parseFloat(val)),
-			"Supply cost must be a number",
-		)
-		.refine(
-			(val) => !val || Number.parseFloat(val) >= 0,
-			"Supply cost must be positive",
-		),
+		discount: optionalPositiveNumericString("Discount"),
+		supply: optionalPositiveNumericString("Supply cost"),
 
-	services: z.array(z.string()).optional(),
+		services: z.array(z.string()).optional(),
+		serviceDate: z.number().positive("Service date is required"),
+		technicianId: z.string().min(1, "Technician is required"),
+		clientId: z.string().optional(),
+	})
+	.superRefine((data, ctx) => {
+		const compensation = parseNum(data.compensation);
+		const compInCash = parseNum(data.compInCash);
+		const compInGift = parseNum(data.compInGift);
 
-	serviceDate: z.number().refine((val) => val > 0, "Service date is required"),
+		// Check compInCash first
+		if (data.compInCash && compInCash >= compensation) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Cash amount must be smaller than compensation",
+				path: ["compInCash"],
+			});
+		} else if (compInCash + compInGift > compensation) {
+			// Only check total if compInCash is valid
+			ctx.addIssue({
+				code: "custom",
+				message: "Total cash and gift card amount must not exceed compensation",
+				path: ["compInGift"],
+			});
+		}
 
-	technicianId: z.string(),
-	clientId: z.string().optional(),
-});
+		const tip = parseNum(data.tip);
+		const tipInCash = parseNum(data.tipInCash);
+		const tipInGift = parseNum(data.tipInGift);
+
+		// Check tipInCash first
+		if (data.tipInCash && tipInCash >= tip) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Tip cash amount must be smaller than tip",
+				path: ["tipInCash"],
+			});
+		} else if (tipInCash + tipInGift > tip) {
+			// Only check total if tipInCash is valid
+			ctx.addIssue({
+				code: "custom",
+				message: "Total tip cash and gift card amount must not exceed tip",
+				path: ["tipInGift"],
+			});
+		}
+	});
 
 export type EarningFormValidation = z.infer<typeof EarningFormSchema>;
