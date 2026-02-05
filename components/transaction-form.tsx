@@ -231,6 +231,8 @@ export function TransactionForm({
 						...earning,
 						compensationMethods: ["Cash"],
 						tipMethods: ["Cash"],
+						isCashDiscount: true,
+						isCashSupply: true,
 					});
 					return;
 				}
@@ -238,7 +240,12 @@ export function TransactionForm({
 			const newMethods = earning.compensationMethods.includes(method)
 				? earning.compensationMethods.filter((m) => m !== method)
 				: [...earning.compensationMethods, method];
-			const newEarning = { ...earning, compensationMethods: newMethods };
+			const newEarning = {
+				...earning,
+				compensationMethods: newMethods,
+				isCashDiscount: newMethods.includes("Cash"),
+				isCashSupply: newMethods.includes("Cash"),
+			};
 			validate(newEarning);
 			setEarning(newEarning);
 		},
@@ -261,7 +268,12 @@ export function TransactionForm({
 			const newMethods = earning.tipMethods.includes(method)
 				? earning.tipMethods.filter((m) => m !== method)
 				: [...earning.tipMethods, method];
-			const newEarning = { ...earning, tipMethods: newMethods };
+			const newEarning = {
+				...earning,
+				tipMethods: newMethods,
+				isCashDiscount: newMethods.includes("Cash"),
+				isCashSupply: newMethods.includes("Cash"),
+			};
 			validate(newEarning);
 			setEarning(newEarning);
 		},
@@ -378,37 +390,41 @@ export function TransactionForm({
 
 			{/* Tip */}
 			<View className="flex gap-2">
-				{/* Tip Input */}
-				<NumericInput
-					placeholder={tipPlaceholder || "Select Tip Methods"}
-					value={earning.tip === "0" ? "" : earning.tip.toString()}
-					onChangeText={(value) => updateEarning("tip", value)}
-					icon="credit-card-outline"
-					mutedColor={mutedColor}
-				/>
-				<ErrorText error={getFieldError("tip")} />
-				{tipCash && tipCard && (
+				{earning.tipMethods.length > 0 && (
 					<>
+						{/* Tip Input */}
 						<NumericInput
-							placeholder="Enter Tip in Cash Amount"
-							value={earning.tipInCash?.toString()}
-							onChangeText={(value) => updateEarning("tipInCash", value)}
-							icon="cash-multiple"
+							placeholder={tipPlaceholder || "Select Tip Methods"}
+							value={earning.tip === "0" ? "" : earning.tip.toString()}
+							onChangeText={(value) => updateEarning("tip", value)}
+							icon="credit-card-outline"
 							mutedColor={mutedColor}
 						/>
-						<ErrorText error={getFieldError("tipInCash")} />
+						<ErrorText error={getFieldError("tip")} />
+						{tipCash && tipCard && (
+							<>
+								<NumericInput
+									placeholder="Enter Tip in Cash Amount"
+									value={earning.tipInCash?.toString()}
+									onChangeText={(value) => updateEarning("tipInCash", value)}
+									icon="cash-multiple"
+									mutedColor={mutedColor}
+								/>
+								<ErrorText error={getFieldError("tipInCash")} />
+							</>
+						)}
+						{/* Gift Card Inputs for Tip */}
+						<GiftCardInputs
+							earning={earning}
+							updateEarning={updateEarning}
+							giftCard={giftCard}
+							giftError={giftError}
+							setGiftError={setGiftError}
+							type={tipGift ? "tipInGift" : undefined}
+						/>
+						<ErrorText error={getFieldError("tipInGift")} />
 					</>
 				)}
-				{/* Gift Card Inputs for Tip */}
-				<GiftCardInputs
-					earning={earning}
-					updateEarning={updateEarning}
-					giftCard={giftCard}
-					giftError={giftError}
-					setGiftError={setGiftError}
-					type={tipGift ? "tipInGift" : undefined}
-				/>
-				<ErrorText error={getFieldError("tipInGift")} />
 				{/* Tip Methods */}
 				<PaymentMethodChips
 					methods={paymentMethods}
@@ -423,7 +439,7 @@ export function TransactionForm({
 				{showSupply && (
 					<>
 						<NumericInput
-							placeholder="Enter supply cost"
+							placeholder={`Enter ${earning.isCashSupply ? "Cash" : ""} Supply Cost`}
 							value={earning.supply?.toString()}
 							onChangeText={(value) => updateEarning("supply", value)}
 							icon="package-variant"
@@ -436,7 +452,7 @@ export function TransactionForm({
 				{showDiscount && (
 					<>
 						<NumericInput
-							placeholder="Enter discount"
+							placeholder={`Enter ${earning.isCashDiscount ? "Cash" : ""} Discount Amount`}
 							value={earning.discount?.toString()}
 							onChangeText={(value) => updateEarning("discount", value)}
 							icon="cash-minus"

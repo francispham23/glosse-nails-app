@@ -40,22 +40,17 @@ const optionalPositiveNumericString = (fieldName: string) =>
 			`${fieldName} must be positive`,
 		);
 
-/** Payment methods enum */
-const paymentMethodsSchema = z
-	.array(z.enum(["Cash", "Card", "Gift Card"]))
-	.min(1, "Select at least one payment method");
-
 /* --------------------------------- Schema --------------------------------- */
 export const EarningFormSchema = z
 	.object({
 		compensation: requiredPositiveNumericString("Compensation"),
-		compensationMethods: paymentMethodsSchema,
+		compensationMethods: z.array(z.enum(["Cash", "Card", "Gift Card"])),
 		compInCash: optionalPositiveNumericString("Cash amount"),
 		compInGift: optionalPositiveNumericString("Gift amount"),
 		giftCode: z.string().optional(),
 
 		tip: requiredNonNegativeNumericString("Tip"),
-		tipMethods: paymentMethodsSchema,
+		tipMethods: z.array(z.enum(["Cash", "Card", "Gift Card"])),
 		tipInCash: optionalPositiveNumericString("Tip cash amount"),
 		tipInGift: optionalPositiveNumericString("Tip gift amount"),
 

@@ -65,7 +65,8 @@ export default function ReportsRoute() {
 		(sum, tx) => sum + (tx.compInCash || 0),
 		0,
 	);
-	const totalCompCash = totalCashCharges + (totalPartialCashCharges || 0);
+	const totalCompCash =
+		(totalCashCharges + (totalPartialCashCharges || 0)) * TAX;
 
 	const tipCashTransactions =
 		transactions?.filter(
@@ -85,13 +86,22 @@ export default function ReportsRoute() {
 
 	const totalSupplyCash = transactions?.reduce((sum, tx) => {
 		// Only include supply paid in cash
-		const isCashSupply =
-			tx.compensationMethods?.includes("Cash") &&
-			!tx.compensationMethods?.includes("Card");
+		const isCashSupply = tx.compensationMethods?.includes("Cash");
 		return sum + (isCashSupply ? tx.supply || 0 : 0);
 	}, 0);
 
-	const totalRealCash = ((totalCompCash || 0) + (totalSupplyCash || 0)) * 1.05;
+	const totalDiscountCash = transactions?.reduce((sum, tx) => {
+		// Only include discount given in cash
+		const isCashDiscount =
+			tx.compensationMethods?.includes("Cash") &&
+			!tx.compensationMethods?.includes("Card");
+		return sum + (isCashDiscount ? tx.discount || 0 : 0);
+	}, 0);
+
+	const totalRealCash =
+		(totalCompCash || 0) +
+		(totalSupplyCash || 0) * 1.05 -
+		(totalDiscountCash || 0);
 
 	// Build report cards data
 	const reportCards: Report[] = [
@@ -264,3 +274,5 @@ const formatDate = (date: Date) => {
 		year: "numeric",
 	});
 };
+
+const TAX = 1.05;
