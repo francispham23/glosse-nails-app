@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, TextInput } from "react-native-paper";
 
-import FormHeader, { FormContainer } from "@/components/form";
+import FormHeader, { FormContainer } from "@/components/Form/form";
 
 // TODO: Implement password reset request logic here
 export default function RequestPasswordResetRoute() {

@@ -5,11 +5,15 @@ import { useCallback, useMemo, useState } from "react";
 import { Alert, Keyboard, Text, View } from "react-native";
 import { Button, Chip, TextInput } from "react-native-paper";
 
-import FormHeader, {
-	GiftCardInputs,
-	otherInputs,
-	paymentMethods,
-} from "@/components/form";
+import { otherInputs, paymentMethods } from "@/components/Form/constants";
+import FormHeader, { ErrorText } from "@/components/Form/form";
+import {
+	PaymentMethodChips,
+	ServiceCategoryChips,
+} from "@/components/Form/form-chips";
+import { GiftCardInputs } from "@/components/Form/gift-card-inputs";
+import { getPaymentPlaceholder } from "@/components/Form/helpers";
+import { NumericInput } from "@/components/Form/numeric-input";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
@@ -35,100 +39,6 @@ interface TransactionFormProps {
 	setGiftError: React.Dispatch<React.SetStateAction<string>>;
 	transactionId?: Id<"transactions">;
 }
-
-/* --------------------------------- Helpers -------------------------------- */
-const getPaymentPlaceholder = (
-	hasCard: boolean,
-	hasCash: boolean,
-	hasGift: boolean,
-	isTip = false,
-): string => {
-	const types = [hasCard && "Card", hasCash && "Cash", hasGift && "Gift Card"]
-		.filter(Boolean)
-		.join(", ")
-		.replace(/, ([^,]*)$/, " and $1");
-
-	return types ? `Enter Total ${isTip ? "Tip" : "Charge"} in ${types}` : "";
-};
-
-/* ------------------------------ Sub-Components ----------------------------- */
-const ErrorText = ({ error }: { error: string | undefined }) =>
-	error ? <Text className="px-4 text-red-500 text-sm">{error}</Text> : null;
-
-const PaymentMethodChips = ({
-	methods,
-	selectedMethods,
-	onSelect,
-}: {
-	methods: readonly PaymentMethod[];
-	selectedMethods: PaymentMethod[];
-	onSelect: (method: PaymentMethod) => void;
-}) => (
-	<View className="flex-row flex-wrap gap-2">
-		{methods.map((method) => (
-			<Chip
-				key={method}
-				selected={selectedMethods.includes(method)}
-				className={
-					selectedMethods.includes(method) ? "opacity-60" : "opacity-100"
-				}
-				onPress={() => onSelect(method)}
-			>
-				{method}
-			</Chip>
-		))}
-	</View>
-);
-
-const ServiceCategoryChips = ({
-	categories,
-	selectedServices,
-	onSelect,
-}: {
-	categories: Category[] | undefined;
-	selectedServices: string[];
-	onSelect: (id: Category["_id"]) => void;
-}) => (
-	<View className="mt-4 mb-4 flex-row flex-wrap gap-2">
-		{categories?.map((category) => (
-			<Chip
-				key={category._id}
-				selected={selectedServices.includes(category._id)}
-				className={
-					selectedServices.includes(category._id) ? "opacity-60" : "opacity-100"
-				}
-				onPress={() => onSelect(category._id)}
-			>
-				{category.name}
-			</Chip>
-		))}
-	</View>
-);
-
-const NumericInput = ({
-	placeholder,
-	value,
-	onChangeText,
-	icon,
-	mutedColor,
-}: {
-	placeholder: string;
-	value: string | undefined;
-	onChangeText: (value: string) => void;
-	icon: string;
-	mutedColor: string;
-}) => (
-	<TextInput
-		mode="outlined"
-		className="h-16 rounded-3xl"
-		placeholder={placeholder}
-		keyboardType="numeric"
-		autoCapitalize="none"
-		value={value}
-		onChangeText={onChangeText}
-		left={<TextInput.Icon icon={icon} size={22} color={mutedColor} />}
-	/>
-);
 
 /* ------------------------------- Main Component ------------------------------ */
 export function TransactionForm({
@@ -349,7 +259,7 @@ export function TransactionForm({
 					value={earning.compensation.toString()}
 					onChangeText={(value) => updateEarning("compensation", value)}
 					icon="credit-card-outline"
-					mutedColor={mutedColor}
+					iconColor={mutedColor}
 				/>
 				<ErrorText error={getFieldError("compensation")} />
 				{!compensationPlaceholder && (
@@ -365,7 +275,7 @@ export function TransactionForm({
 							value={earning.compInCash?.toString()}
 							onChangeText={(value) => updateEarning("compInCash", value)}
 							icon="cash-multiple"
-							mutedColor={mutedColor}
+							iconColor={mutedColor}
 						/>
 						<ErrorText error={getFieldError("compInCash")} />
 					</>
@@ -398,7 +308,7 @@ export function TransactionForm({
 							value={earning.tip === "0" ? "" : earning.tip.toString()}
 							onChangeText={(value) => updateEarning("tip", value)}
 							icon="credit-card-outline"
-							mutedColor={mutedColor}
+							iconColor={mutedColor}
 						/>
 						<ErrorText error={getFieldError("tip")} />
 						{tipCash && tipCard && (
@@ -408,7 +318,7 @@ export function TransactionForm({
 									value={earning.tipInCash?.toString()}
 									onChangeText={(value) => updateEarning("tipInCash", value)}
 									icon="cash-multiple"
-									mutedColor={mutedColor}
+									iconColor={mutedColor}
 								/>
 								<ErrorText error={getFieldError("tipInCash")} />
 							</>
@@ -443,7 +353,7 @@ export function TransactionForm({
 							value={earning.supply?.toString()}
 							onChangeText={(value) => updateEarning("supply", value)}
 							icon="package-variant"
-							mutedColor={mutedColor}
+							iconColor={mutedColor}
 						/>
 						<ErrorText error={getFieldError("supply")} />
 					</>
@@ -456,7 +366,7 @@ export function TransactionForm({
 							value={earning.discount?.toString()}
 							onChangeText={(value) => updateEarning("discount", value)}
 							icon="cash-minus"
-							mutedColor={mutedColor}
+							iconColor={mutedColor}
 						/>
 						<ErrorText error={getFieldError("discount")} />
 					</>
@@ -497,11 +407,7 @@ export function TransactionForm({
 				editable={false}
 				onPressIn={() => setOpen(!open)}
 				left={
-					<TextInput.Icon
-						icon="clock-time-eight-outline"
-						size={22}
-						color={mutedColor}
-					/>
+					<TextInput.Icon icon="clock-outline" size={22} color={mutedColor} />
 				}
 			/>
 

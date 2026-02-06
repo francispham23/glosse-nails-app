@@ -84,23 +84,19 @@ export default function ReportsRoute() {
 	const totalTipCash = totalTipCashOnly + (totalPartialTipCash || 0);
 	const totalCash = totalCompCash + totalTipCash;
 
-	const totalSupplyCash = transactions?.reduce((sum, tx) => {
-		// Only include supply paid in cash
-		const isCashSupply = tx.compensationMethods?.includes("Cash");
-		return sum + (isCashSupply ? tx.supply || 0 : 0);
-	}, 0);
+	const totalSupplyCash =
+		transactions?.reduce((sum, tx) => {
+			return sum + (tx.isCashSupply ? tx.supply || 0 : 0);
+		}, 0) ?? 0;
 
-	const totalDiscountCash = transactions?.reduce((sum, tx) => {
-		// Only include discount given in cash
-		const isCashDiscount =
-			tx.compensationMethods?.includes("Cash") &&
-			!tx.compensationMethods?.includes("Card");
-		return sum + (isCashDiscount ? tx.discount || 0 : 0);
-	}, 0);
+	const totalDiscountCash =
+		transactions?.reduce((sum, tx) => {
+			return sum + (tx.isCashDiscount ? tx.discount || 0 : 0);
+		}, 0) ?? 0;
 
 	const totalRealCash =
 		(totalCompCash || 0) +
-		(totalSupplyCash || 0) * 1.05 -
+		(totalSupplyCash || 0) * TAX -
 		(totalDiscountCash || 0);
 
 	// Build report cards data
@@ -131,6 +127,14 @@ export default function ReportsRoute() {
 					value: `$${totalCompCash.toFixed(2)}`,
 				},
 				{ label: "Total Tip Cash:", value: `$${totalTipCash.toFixed(2)}` },
+				{
+					label: "Total Supply Cash:",
+					value: `$${totalSupplyCash.toFixed(2)}`,
+				},
+				{
+					label: "Total Discount Cash:",
+					value: `$${totalDiscountCash.toFixed(2)}`,
+				},
 				{
 					label: "Grand Total Cash:",
 					value: `$${totalCash.toFixed(2)}`,

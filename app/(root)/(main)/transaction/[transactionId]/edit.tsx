@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Alert, View } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 
-import { initialEarningState } from "@/components/form";
+import { initialEarningState } from "@/components/Form/constants";
 import { TransactionForm } from "@/components/transaction-form";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";

@@ -1,77 +1,10 @@
-import { Text, View } from "react-native";
+import { Text } from "react-native";
 import { TextInput } from "react-native-paper";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { cn } from "@/utils";
-import type {
-	Category,
-	EarningFormState,
-	Gift,
-	PaymentMethod,
-} from "@/utils/types";
+import type { EarningFormState, Gift } from "@/utils/types";
 
-/* ----------------------------- form container ----------------------------- */
-export function FormContainer({ children }: { children: React.ReactNode }) {
-	/**
-	 * reason for this FormContainer is to later add keyboard avoiding view
-	 * to the form
-	 *
-	 * i think maybe that would be a good idea??
-	 */
-	return <View className="flex-1 gap-4 px-6 pt-20">{children}</View>;
-}
-
-/* ------------------------------- form header ------------------------------ */
-export default function FormHeader({
-	title,
-	description,
-	children,
-}: {
-	title: string;
-	description: string;
-	children?: React.ReactNode;
-}) {
-	const { isLight } = useAppTheme();
-
-	return (
-		<View className="gap-2">
-			<Text
-				className={cn(
-					"font-extrabold text-4xl text-foreground",
-					!isLight && "text-gray-300",
-				)}
-			>
-				{title}
-			</Text>
-			<Text
-				className={cn("text-muted-foreground", !isLight && "text-gray-400")}
-			>
-				{description}
-			</Text>
-			{children}
-		</View>
-	);
-}
-
-/* ---------------------------- earning form state --------------------------- */
-export const paymentMethods = ["Card", "Cash", "Gift Card"] as PaymentMethod[];
-
-export const initialEarningState = {
-	compensation: "",
-	compInCash: "",
-	compInGift: "",
-	compensationMethods: ["Card"] as PaymentMethod[],
-	tip: "0",
-	tipInCash: "",
-	tipInGift: "",
-	tipMethods: ["Card"] as PaymentMethod[],
-	discount: "",
-	supply: "",
-	giftCode: "",
-	services: [] as Category["_id"][],
-};
-
-/* ---------------------------- gift card inputs --------------------------- */
-type GiftCardInputsType = {
+type GiftCardInputsProps = {
 	earning: EarningFormState;
 	updateEarning: <K extends keyof EarningFormState>(
 		key: K,
@@ -90,7 +23,7 @@ export const GiftCardInputs = ({
 	giftError,
 	setGiftError,
 	type,
-}: GiftCardInputsType) => {
+}: GiftCardInputsProps) => {
 	const { isLight } = useAppTheme();
 
 	if (!type) return null;
@@ -161,6 +94,3 @@ export const GiftCardInputs = ({
 		</>
 	);
 };
-
-/* --------------------------- other inputs --------------------------- */
-export const otherInputs = ["Supply", "Discount"];

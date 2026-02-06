@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert } from "react-native";
 
-import { initialEarningState } from "@/components/form";
+import { initialEarningState } from "@/components/Form/constants";
 import { TransactionForm } from "@/components/transaction-form";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";

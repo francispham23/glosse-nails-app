@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Alert, Text } from "react-native";
 import { Button, TextInput } from "react-native-paper";
 
-import FormHeader, { FormContainer } from "@/components/form";
+import FormHeader, { FormContainer } from "@/components/Form/form";
 
 export default function SignUpRoute() {
 	const { signIn } = useAuthActions();
