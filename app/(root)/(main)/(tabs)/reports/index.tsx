@@ -12,29 +12,27 @@ import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 
 export default function ReportsRoute() {
-	const today = new Date();
-	const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-	const { endOfDay } = useAppDate();
+	const { startOfDay, endOfDay } = useAppDate();
 
-	const [startDate, setStartDate] = useState<Date>(firstDayOfMonth);
+	const [startDate, setStartDate] = useState<Date>(startOfDay);
 	const [endDate, setEndDate] = useState<Date>(endOfDay);
 	const [openPicker, setOpenPicker] = useState<"start" | "end" | null>(null);
 
 	// Query technicians with totals for the selected date range
 	const technicians = useQuery(api.users.usersByDateRange, {
-		startDate: startDate.getTime(),
-		endDate: endDate.getTime(),
+		startDate: startDate.setHours(0, 0, 0, 0),
+		endDate: endDate.setHours(23, 59, 59, 999),
 		report: true,
 	});
 
 	const transactions = useQuery(api.transactions.listByDateRange, {
-		startDate: startDate.getTime(),
-		endDate: endDate.getTime(),
+		startDate: startDate.setHours(0, 0, 0, 0),
+		endDate: endDate.setHours(23, 59, 59, 999),
 	});
 
 	const giftCards = useQuery(api.giftCards.listByDateRange, {
-		startDate: startDate.getTime(),
-		endDate: endDate.getTime(),
+		startDate: startDate.setHours(0, 0, 0, 0),
+		endDate: endDate.setHours(23, 59, 59, 999),
 	});
 
 	const totalGiftCardBalance =

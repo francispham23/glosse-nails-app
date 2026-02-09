@@ -11,10 +11,13 @@ import Animated, {
 import { ListEmptyComponent } from "@/components/list-empty";
 import { TransactionCard } from "@/components/transaction-card";
 import { useAppDate } from "@/contexts/app-date-context";
+import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
+import { cn } from "@/utils";
 import type { Transaction, User } from "@/utils/types";
 
 export default function TechnicianId() {
+	const { isLight } = useAppTheme();
 	const { startOfDay, endOfDay } = useAppDate();
 	const params = useLocalSearchParams();
 	const technicianId = params.technicianId as User["_id"];
@@ -31,7 +34,12 @@ export default function TechnicianId() {
 			entering={FadeIn}
 			exiting={FadeOut}
 		>
-			<Text className="font-extrabold text-3xl text-foreground">
+			<Text
+				className={cn(
+					"font-extrabold text-3xl text-foreground",
+					!isLight && "text-gray-300",
+				)}
+			>
 				{technician?.name}
 			</Text>
 			<Animated.FlatList
