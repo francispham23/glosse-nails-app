@@ -95,10 +95,11 @@ export const listByDateRange = query({
 	handler: async (ctx, args) => {
 		const giftCards = await ctx.db
 			.query("giftCards")
-			.filter(
-				(q) =>
-					q.gte(q.field("sellDate"), args.startDate) &&
+			.filter((q) =>
+				q.and(
+					q.gte(q.field("sellDate"), args.startDate),
 					q.lte(q.field("sellDate"), args.endDate),
+				),
 			)
 			.collect();
 

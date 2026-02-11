@@ -151,7 +151,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 								Gift Card: {giftCard.code}
 							</Text>
 							<Text className={textClassName}>
-								Created on {formatCreationDate(giftCard._creationTime)}
+								Sold on {formatCreationDate(giftCard.sellDate)}
 							</Text>
 						</View>
 						<Pressable

@@ -147,18 +147,7 @@ export default function ReportsRoute() {
 				},
 			],
 		},
-		{
-			id: "gift",
-			title: "Gift Cards",
-			rows: [
-				{
-					label: "Total Balance Gift Cards:",
-					value: `$${totalGiftCardBalance.toFixed(2)}`,
-					isBold: true,
-					isLarge: true,
-				},
-			],
-		},
+
 		{
 			id: "discount",
 			title: "Discounts",
@@ -178,6 +167,18 @@ export default function ReportsRoute() {
 				{
 					label: "Total Supply:",
 					value: `$${totalSupply.toFixed(2)}`,
+					isBold: true,
+					isLarge: true,
+				},
+			],
+		},
+		{
+			id: "gift",
+			title: "Gift Cards",
+			rows: [
+				{
+					label: "Total Balance Gift Cards:",
+					value: `$${totalGiftCardBalance.toFixed(2)}`,
 					isBold: true,
 					isLarge: true,
 				},

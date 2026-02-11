@@ -92,18 +92,15 @@ export default function CreateRoute() {
 			<TextInput
 				mode="outlined"
 				className="h-16 rounded-3xl"
-				placeholder="Select service time"
-				value={date.toLocaleTimeString([], {
-					hour: "2-digit",
-					minute: "2-digit",
-				})}
+				placeholder="Select service date"
+				value={date.toLocaleDateString([])}
 				editable={false}
 				onPressIn={() => setOpen(!open)}
-				left={<TextInput.Icon icon="clock-outline" color={mutedColor} />}
+				left={<TextInput.Icon icon="calendar-outline" color={mutedColor} />}
 			/>
 			{open && (
 				<DateTimePicker
-					mode="time"
+					mode="date"
 					value={date}
 					maximumDate={endOfDay}
 					display="spinner"
