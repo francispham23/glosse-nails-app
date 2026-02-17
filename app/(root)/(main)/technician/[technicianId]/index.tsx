@@ -63,6 +63,7 @@ export default function TechnicianId() {
 				<Button
 					className="absolute bottom-10 self-center overflow-hidden rounded-full"
 					icon="plus"
+					mode="contained"
 				>
 					Create Transaction
 				</Button>

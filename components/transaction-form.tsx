@@ -1,7 +1,7 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery } from "convex/react";
 import { router } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Keyboard, Text, View } from "react-native";
 import { Button, Chip, TextInput } from "react-native-paper";
 
@@ -71,6 +71,22 @@ export function TransactionForm({
 	const [selectedInputs, setSelectedInputs] = useState<string[]>(["Supply"]);
 	const { errors, validate, getFieldError } =
 		useFormValidation(EarningFormSchema);
+
+	useEffect(() => {
+		if (type === "edit") {
+			if (earning.discount && !selectedInputs.includes("Discount")) {
+				setSelectedInputs((prev) => [...prev, "Discount"]);
+			} else if (!earning.discount && selectedInputs.includes("Discount")) {
+				setSelectedInputs((prev) => prev.filter((i) => i !== "Discount"));
+			}
+
+			if (earning.supply && !selectedInputs.includes("Supply")) {
+				setSelectedInputs((prev) => [...prev, "Supply"]);
+			} else if (!earning.supply && selectedInputs.includes("Supply")) {
+				setSelectedInputs((prev) => prev.filter((i) => i !== "Supply"));
+			}
+		}
+	}, [earning.discount, earning.supply, selectedInputs, type]);
 
 	/* ----------------------------- Derived State ------------------------------ */
 	const { cash, card, gift, tipCash, tipCard, tipGift } = useMemo(

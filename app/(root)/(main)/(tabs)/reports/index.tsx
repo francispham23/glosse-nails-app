@@ -186,6 +186,9 @@ export default function ReportsRoute() {
 		},
 	];
 
+	const endOfToday = new Date();
+	endOfToday.setHours(23, 59, 59, 999);
+
 	return (
 		<Animated.View
 			className="flex-1 bg-background-secondary pt-4"
@@ -244,7 +247,7 @@ export default function ReportsRoute() {
 						mode="date"
 						display="spinner"
 						minimumDate={startDate}
-						maximumDate={endOfDay}
+						maximumDate={endOfToday}
 						onChange={(_, selectedDate) => {
 							setOpenPicker(null);
 							if (selectedDate) {

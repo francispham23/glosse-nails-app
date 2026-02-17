@@ -24,12 +24,16 @@ export default function CreateRoute() {
 	const [open, setOpen] = useState(false);
 	const [giftError, setGiftError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
-	const [earning, setEarning] = useState<EarningFormState>({
+
+	const initialEarning = {
 		...initialEarningState,
 		technicianId,
 		// TODO: allow selecting client ID later
 		clientId: technicianId, // Default client ID
 		serviceDate: date.getTime(),
+	};
+	const [earning, setEarning] = useState<EarningFormState>({
+		...initialEarning,
 	});
 
 	/* ----------------------------- handle create transaction ----------------------------- */
@@ -50,13 +54,7 @@ export default function CreateRoute() {
 			const tip = earning.tip.length > 0 ? earning.tip : "0";
 			await addTransaction({ body: { ...earning, tip } });
 
-			setEarning({
-				...initialEarningState,
-				technicianId,
-				// TODO: allow selecting client ID later
-				clientId: technicianId, // Default client ID
-				serviceDate: Date.now(),
-			});
+			setEarning({ ...initialEarning });
 			Alert.alert("Success", "Earning saved successfully");
 			router.push(`/technician/${technicianId}`);
 		} catch (error) {
