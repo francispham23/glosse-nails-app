@@ -58,47 +58,59 @@ export function TransactionForm({
 }: TransactionFormProps) {
 	const mutedColor = useThemeColor("muted");
 	const { endOfDay } = useAppDate();
+	const {
+		discount,
+		supply,
+		giftCode,
+		compensationMethods,
+		tipMethods,
+		serviceDate,
+		compensation,
+		tip,
+		compInCash,
+		tipInCash,
+		services,
+		isCashSupply,
+		isCashDiscount,
+	} = earning;
 
 	const deleteTransaction = useMutation(api.transactions.deleteTransaction);
 	const categories = useQuery(api.categories.getFormCategories);
 	const giftCard = useQuery(
 		api.giftCards.getByCode,
-		earning.giftCode ? { code: earning.giftCode } : "skip",
+		giftCode ? { code: giftCode } : "skip",
 	);
 
 	/* ---------------------------------- State --------------------------------- */
-	const [isDeleting, setIsDeleting] = useState(false);
-	const [selectedInputs, setSelectedInputs] = useState<string[]>(["Supply"]);
+	const initialInputs = type === "edit" ? [] : ["Supply"];
+	const [selectedInputs, setSelectedInputs] = useState<string[]>(initialInputs);
 	const { errors, validate, getFieldError } =
 		useFormValidation(EarningFormSchema);
+	const [isDeleting, setIsDeleting] = useState(false);
 
 	useEffect(() => {
 		if (type === "edit") {
-			if (earning.discount && !selectedInputs.includes("Discount")) {
+			if (discount && !selectedInputs.includes("Discount")) {
 				setSelectedInputs((prev) => [...prev, "Discount"]);
-			} else if (!earning.discount && selectedInputs.includes("Discount")) {
-				setSelectedInputs((prev) => prev.filter((i) => i !== "Discount"));
 			}
 
-			if (earning.supply && !selectedInputs.includes("Supply")) {
+			if (supply && !selectedInputs.includes("Supply")) {
 				setSelectedInputs((prev) => [...prev, "Supply"]);
-			} else if (!earning.supply && selectedInputs.includes("Supply")) {
-				setSelectedInputs((prev) => prev.filter((i) => i !== "Supply"));
 			}
 		}
-	}, [earning.discount, earning.supply, selectedInputs, type]);
+	}, [discount, supply, selectedInputs, type]);
 
 	/* ----------------------------- Derived State ------------------------------ */
 	const { cash, card, gift, tipCash, tipCard, tipGift } = useMemo(
 		() => ({
-			cash: earning.compensationMethods.includes("Cash"),
-			card: earning.compensationMethods.includes("Card"),
-			gift: earning.compensationMethods.includes("Gift Card"),
-			tipCash: earning.tipMethods.includes("Cash"),
-			tipCard: earning.tipMethods.includes("Card"),
-			tipGift: earning.tipMethods.includes("Gift Card"),
+			cash: compensationMethods.includes("Cash"),
+			card: compensationMethods.includes("Card"),
+			gift: compensationMethods.includes("Gift Card"),
+			tipCash: tipMethods.includes("Cash"),
+			tipCard: tipMethods.includes("Card"),
+			tipGift: tipMethods.includes("Gift Card"),
 		}),
-		[earning.compensationMethods, earning.tipMethods],
+		[compensationMethods, tipMethods],
 	);
 
 	const showSupply = selectedInputs.includes("Supply");
@@ -112,14 +124,14 @@ export function TransactionForm({
 			isLoading ||
 			Object.keys(errors).length > 0 ||
 			!!giftError ||
-			(!!earning.giftCode && !giftCard) ||
+			(!!giftCode && !giftCard) ||
 			isDeleting ||
 			!compensationPlaceholder,
 		[
 			isLoading,
 			errors,
 			giftError,
-			earning.giftCode,
+			giftCode,
 			giftCard,
 			isDeleting,
 			compensationPlaceholder,
@@ -250,12 +262,9 @@ export function TransactionForm({
 
 	const handleDateChange = useCallback(
 		(_: unknown, selectedDate: Date | undefined) => {
-			updateEarning(
-				"serviceDate",
-				selectedDate?.getTime() ?? earning.serviceDate,
-			);
+			updateEarning("serviceDate", selectedDate?.getTime() ?? serviceDate);
 		},
-		[updateEarning, earning.serviceDate],
+		[updateEarning, serviceDate],
 	);
 
 	/* --------------------------------- Render --------------------------------- */
@@ -272,7 +281,7 @@ export function TransactionForm({
 				{/* Compensation Input */}
 				<NumericInput
 					placeholder={compensationPlaceholder || "Select Compensation Methods"}
-					value={earning.compensation.toString()}
+					value={compensation.toString()}
 					onChangeText={(value) => updateEarning("compensation", value)}
 					icon="credit-card-outline"
 					iconColor={mutedColor}
@@ -288,7 +297,7 @@ export function TransactionForm({
 					<>
 						<NumericInput
 							placeholder="Enter Cash Amount"
-							value={earning.compInCash?.toString()}
+							value={compInCash?.toString()}
 							onChangeText={(value) => updateEarning("compInCash", value)}
 							icon="cash-multiple"
 							iconColor={mutedColor}
@@ -309,19 +318,19 @@ export function TransactionForm({
 				{/* Compensation Methods */}
 				<PaymentMethodChips
 					methods={paymentMethods}
-					selectedMethods={earning.compensationMethods}
+					selectedMethods={compensationMethods}
 					onSelect={handleSelectCompensationMethod}
 				/>
 			</View>
 
 			{/* Tip */}
 			<View className="flex gap-2">
-				{earning.tipMethods.length > 0 && (
+				{tipMethods.length > 0 && (
 					<>
 						{/* Tip Input */}
 						<NumericInput
 							placeholder={tipPlaceholder || "Select Tip Methods"}
-							value={earning.tip === "0" ? "" : earning.tip.toString()}
+							value={tip === "0" ? "" : tip.toString()}
 							onChangeText={(value) => updateEarning("tip", value)}
 							icon="credit-card-outline"
 							iconColor={mutedColor}
@@ -331,7 +340,7 @@ export function TransactionForm({
 							<>
 								<NumericInput
 									placeholder="Enter Tip in Cash Amount"
-									value={earning.tipInCash?.toString()}
+									value={tipInCash?.toString()}
 									onChangeText={(value) => updateEarning("tipInCash", value)}
 									icon="cash-multiple"
 									iconColor={mutedColor}
@@ -354,8 +363,9 @@ export function TransactionForm({
 				{/* Tip Methods */}
 				<PaymentMethodChips
 					methods={paymentMethods}
-					selectedMethods={earning.tipMethods}
+					selectedMethods={tipMethods}
 					onSelect={handleSelectTipMethod}
+					disableGift={earning.compInGift === ""} // Disable selecting Gift Card for tip if no gift card usage for compensation
 				/>
 			</View>
 
@@ -365,8 +375,8 @@ export function TransactionForm({
 				{showSupply && (
 					<>
 						<NumericInput
-							placeholder={`Enter ${earning.isCashSupply ? "Cash" : ""} Supply Cost`}
-							value={earning.supply?.toString()}
+							placeholder={`Enter ${isCashSupply ? "Cash" : ""} Supply Cost`}
+							value={supply?.toString()}
 							onChangeText={(value) => updateEarning("supply", value)}
 							icon="package-variant"
 							iconColor={mutedColor}
@@ -378,8 +388,8 @@ export function TransactionForm({
 				{showDiscount && (
 					<>
 						<NumericInput
-							placeholder={`Enter ${earning.isCashDiscount ? "Cash" : ""} Discount Amount`}
-							value={earning.discount?.toString()}
+							placeholder={`Enter ${isCashDiscount ? "Cash" : ""} Discount Amount`}
+							value={discount?.toString()}
 							onChangeText={(value) => updateEarning("discount", value)}
 							icon="cash-minus"
 							iconColor={mutedColor}
@@ -393,6 +403,11 @@ export function TransactionForm({
 						<Chip
 							key={input}
 							selected={selectedInputs.includes(input)}
+							disabled={
+								selectedInputs.includes(input) &&
+								earning[input.toLocaleLowerCase() as keyof EarningFormState] !==
+									""
+							}
 							className={
 								selectedInputs.includes(input) ? "opacity-60" : "opacity-100"
 							}
@@ -407,7 +422,7 @@ export function TransactionForm({
 			{/* Service Categories */}
 			<ServiceCategoryChips
 				categories={categories}
-				selectedServices={earning.services}
+				selectedServices={services}
 				onSelect={handleSelectServices}
 			/>
 
@@ -416,7 +431,7 @@ export function TransactionForm({
 				mode="outlined"
 				className="h-16 rounded-3xl"
 				placeholder="Select service time"
-				value={new Date(earning.serviceDate).toLocaleTimeString([], {
+				value={new Date(serviceDate).toLocaleTimeString([], {
 					hour: "2-digit",
 					minute: "2-digit",
 				})}
@@ -430,7 +445,7 @@ export function TransactionForm({
 			{open && (
 				<DateTimePicker
 					mode="time"
-					value={new Date(earning.serviceDate)}
+					value={new Date(serviceDate)}
 					maximumDate={endOfDay}
 					display="spinner"
 					onChange={handleDateChange}

@@ -7,6 +7,7 @@ import { View } from "react-native";
 import { Button } from "react-native-paper";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
+import { TAX_RATE } from "@/components/Form/constants";
 import { type Report, ReportCard } from "@/components/report-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
@@ -64,7 +65,7 @@ export default function ReportsRoute() {
 		0,
 	);
 	const totalCompCash =
-		(totalCashCharges + (totalPartialCashCharges || 0)) * TAX;
+		(totalCashCharges + (totalPartialCashCharges || 0)) * TAX_RATE;
 
 	const tipCashTransactions =
 		transactions?.filter(
@@ -94,7 +95,7 @@ export default function ReportsRoute() {
 
 	const totalRealCash =
 		(totalCompCash || 0) +
-		(totalSupplyCash || 0) * TAX -
+		(totalSupplyCash || 0) * TAX_RATE -
 		(totalDiscountCash || 0);
 
 	// Build report cards data
@@ -280,5 +281,3 @@ const formatDate = (date: Date) => {
 		year: "numeric",
 	});
 };
-
-const TAX = 1.05;

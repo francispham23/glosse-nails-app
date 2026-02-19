@@ -19,4 +19,7 @@ export const initialEarningState = {
 };
 
 /* --------------------------- other inputs --------------------------- */
-export const otherInputs = ["Supply", "Discount"];
+export const otherInputs = ["Supply", "Discount"] as const;
+
+/* ----------------------------- Tax Rate ----------------------------- */
+export const TAX_RATE = 1.05;

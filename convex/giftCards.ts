@@ -15,7 +15,7 @@ export const list = query({
 					.withIndex("by_gift_card", (q) => q.eq("giftCode", giftCard._id))
 					.collect();
 				const totalRedeemed = transactions.reduce((sum, tx) => {
-					return sum + (tx.compInGift || 0) + (tx.tipInGift || 0);
+					return sum + (tx.compInGift || 0) * 1.05 + (tx.tipInGift || 0);
 				}, 0);
 				const balance = Number.parseFloat(
 					(giftCard.value - totalRedeemed).toFixed(2),

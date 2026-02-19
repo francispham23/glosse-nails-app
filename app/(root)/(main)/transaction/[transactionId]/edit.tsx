@@ -27,11 +27,15 @@ export default function EditTransactionScreen() {
 	const [open, setOpen] = useState(false);
 	const [isUpdating, setIsUpdating] = useState(false);
 	const [giftError, setGiftError] = useState("");
-	const [earning, setEarning] = useState<EarningFormState>({
+
+	const initialEarning = {
 		...initialEarningState,
 		technicianId: "" as User["_id"],
 		clientId: "" as User["_id"],
 		serviceDate: Date.now(),
+	};
+	const [earning, setEarning] = useState<EarningFormState>({
+		...initialEarning,
 	});
 
 	/* -------------- Populate form when transaction loads -------------- */
@@ -92,6 +96,9 @@ export default function EditTransactionScreen() {
 			console.error("Failed to update transaction:", error);
 		} finally {
 			setIsUpdating(false);
+			setOpen(false);
+			setGiftError("");
+			setEarning({ ...initialEarning });
 		}
 	};
 

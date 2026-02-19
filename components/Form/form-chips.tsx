@@ -7,18 +7,21 @@ type PaymentMethodChipsProps = {
 	methods: readonly PaymentMethod[];
 	selectedMethods: PaymentMethod[];
 	onSelect: (method: PaymentMethod) => void;
+	disableGift?: boolean;
 };
 
 export const PaymentMethodChips = ({
 	methods,
 	selectedMethods,
 	onSelect,
+	disableGift,
 }: PaymentMethodChipsProps) => (
 	<View className="flex-row flex-wrap gap-2">
 		{methods.map((method) => (
 			<Chip
 				key={method}
 				selected={selectedMethods.includes(method)}
+				disabled={disableGift && method === "Gift Card"}
 				className={
 					selectedMethods.includes(method) ? "opacity-60" : "opacity-100"
 				}

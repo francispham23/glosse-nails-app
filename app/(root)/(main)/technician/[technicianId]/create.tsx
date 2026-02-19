@@ -62,6 +62,9 @@ export default function CreateRoute() {
 			Alert.alert("Error", "Failed to save earning. Please try again.");
 		} finally {
 			setIsLoading(false);
+			setOpen(false);
+			setGiftError("");
+			setEarning({ ...initialEarning });
 		}
 	};
 
