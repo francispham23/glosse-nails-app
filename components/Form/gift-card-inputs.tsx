@@ -1,10 +1,15 @@
+import { useEffect } from "react";
 import { Text } from "react-native";
 import { TextInput } from "react-native-paper";
+
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { cn } from "@/utils";
 import type { EarningFormState, Gift } from "@/utils/types";
 import { TAX_RATE } from "./constants";
+import { ErrorText } from "./form";
 import { formatCurrency, roundCurrency, toCents } from "./helpers";
+
+type GiftType = "tipInGift" | "compInGift";
 
 type GiftCardInputsProps = {
 	earning: EarningFormState;
@@ -15,90 +20,8 @@ type GiftCardInputsProps = {
 	giftError: string;
 	setGiftError: React.Dispatch<React.SetStateAction<string>>;
 	giftCard?: Gift | null;
-	type?: "tipInGift" | "compInGift";
+	type?: GiftType;
 };
-
-type GiftType = "tipInGift" | "compInGift";
-
-/* ----------------------------- Utility Functions ----------------------------- */
-
-const calculateAmountWithTax = (value: string, applyTax: boolean): number => {
-	const cents = toCents(value);
-	return applyTax ? Math.round(cents * TAX_RATE) : cents;
-};
-
-const calculateTotalUsage = (
-	type: GiftType,
-	currentValue: string,
-	tipInGift: string,
-	compInGift: string,
-): number => {
-	const isComp = type === "compInGift";
-
-	const currentCents = calculateAmountWithTax(currentValue, isComp);
-	const otherCents = calculateAmountWithTax(
-		isComp ? tipInGift : compInGift,
-		!isComp,
-	);
-
-	return currentCents + otherCents;
-};
-
-const calculateAvailableBalance = (
-	balance: number,
-	compInGift?: string,
-): number => {
-	const compUsage = compInGift
-		? roundCurrency(Number.parseFloat(compInGift) * TAX_RATE)
-		: 0;
-	return roundCurrency(balance - compUsage);
-};
-
-/* ----------------------------- Sub-Components ----------------------------- */
-
-const GiftCodeInput = ({
-	value,
-	onChange,
-}: {
-	value?: string;
-	onChange: (value: string) => void;
-}) => (
-	<TextInput
-		mode="outlined"
-		placeholder="Enter Gift Card Code"
-		keyboardType="numeric"
-		autoCapitalize="none"
-		value={value}
-		onChangeText={onChange}
-		left={<TextInput.Icon icon="barcode" />}
-		className="h-16 rounded-3xl"
-	/>
-);
-
-const GiftAmountInput = ({
-	value,
-	onChange,
-}: {
-	value?: string;
-	onChange: (value: string) => void;
-}) => (
-	<TextInput
-		mode="outlined"
-		placeholder="Enter amount from Gift Card"
-		keyboardType="numeric"
-		autoCapitalize="none"
-		value={value}
-		onChangeText={onChange}
-		left={<TextInput.Icon icon="wallet-giftcard" />}
-		className="h-16 rounded-3xl"
-	/>
-);
-
-const ErrorText = ({ message }: { message: string }) => (
-	<Text className="px-4 text-red-500 text-sm">{message}</Text>
-);
-
-/* ----------------------------- Main Component ----------------------------- */
 
 export const GiftCardInputs = ({
 	earning,
@@ -109,7 +32,21 @@ export const GiftCardInputs = ({
 	type,
 }: GiftCardInputsProps) => {
 	const { isLight } = useAppTheme();
-	const { giftCode, tipInGift, compInGift } = earning;
+	const { giftCode, tipInGift, compInGift, supply } = earning;
+
+	const availableBalance = giftCard?.balance
+		? calculateAvailableBalance(giftCard.balance, compInGift, supply)
+		: 0;
+
+	useEffect(() => {
+		if (giftCard && availableBalance < 0) {
+			setGiftError(
+				`Gift card balance insufficient. Available: $${availableBalance.toFixed(2)}`,
+			);
+		} else {
+			setGiftError("");
+		}
+	}, [availableBalance, giftCard, setGiftError]);
 
 	if (!type) return null;
 
@@ -127,6 +64,7 @@ export const GiftCardInputs = ({
 			value,
 			tipInGift ?? "",
 			compInGift ?? "",
+			supply ?? "",
 		);
 		const balanceCents = toCents((giftCard.balance ?? 0).toString());
 
@@ -140,15 +78,21 @@ export const GiftCardInputs = ({
 	};
 
 	const showNotFoundError = giftCode && giftCard === null;
-	const availableBalance = giftCard?.balance
-		? calculateAvailableBalance(giftCard.balance, compInGift)
-		: 0;
 
 	return (
 		<>
-			<GiftCodeInput value={giftCode} onChange={handleCodeChange} />
+			<TextInput
+				mode="outlined"
+				placeholder="Enter Gift Card Code"
+				keyboardType="numeric"
+				autoCapitalize="none"
+				value={giftCode}
+				onChangeText={handleCodeChange}
+				left={<TextInput.Icon icon="barcode" />}
+				className="h-16 rounded-3xl"
+			/>
 
-			{showNotFoundError && <ErrorText message="Gift card code not found" />}
+			{showNotFoundError && <ErrorText error="Gift card code not found" />}
 
 			{giftCard && (
 				<>
@@ -160,14 +104,60 @@ export const GiftCardInputs = ({
 					>
 						Available balance: ${availableBalance.toFixed(2)}
 					</Text>
-					<GiftAmountInput
+					<TextInput
+						mode="outlined"
+						placeholder="Enter amount from Gift Card"
+						keyboardType="numeric"
+						autoCapitalize="none"
 						value={earning[type]?.toString()}
-						onChange={handleAmountChange}
+						onChangeText={handleAmountChange}
+						left={<TextInput.Icon icon="wallet-giftcard" />}
+						className="h-16 rounded-3xl"
 					/>
 				</>
 			)}
 
-			{giftError && <ErrorText message={giftError} />}
+			{giftError && <ErrorText error={giftError} />}
 		</>
 	);
+};
+
+/* ----------------------------- Utility Functions ----------------------------- */
+
+const calculateAmountWithTax = (value: string, applyTax: boolean): number => {
+	const cents = toCents(value);
+	return applyTax ? Math.round(cents * TAX_RATE) : cents;
+};
+
+const calculateTotalUsage = (
+	type: GiftType,
+	currentValue: string,
+	tipInGift: string,
+	compInGift: string,
+	supply: string,
+): number => {
+	const isComp = type === "compInGift";
+
+	const currentCents = calculateAmountWithTax(currentValue, isComp);
+	const otherCents = calculateAmountWithTax(
+		isComp ? tipInGift : compInGift,
+		!isComp,
+	);
+	const supplyCents = calculateAmountWithTax(supply, true);
+
+	return currentCents + otherCents + supplyCents;
+};
+
+const calculateAvailableBalance = (
+	balance: number,
+	compInGift?: string,
+	supply?: string,
+): number => {
+	const compUsage = compInGift
+		? roundCurrency(Number.parseFloat(compInGift) * TAX_RATE)
+		: 0;
+	const supplyUsage = supply
+		? roundCurrency(Number.parseFloat(supply) * TAX_RATE)
+		: 0;
+	return roundCurrency(balance - compUsage - supplyUsage);
 };

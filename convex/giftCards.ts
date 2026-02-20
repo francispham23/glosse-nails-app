@@ -15,7 +15,11 @@ export const list = query({
 					.withIndex("by_gift_card", (q) => q.eq("giftCode", giftCard._id))
 					.collect();
 				const totalRedeemed = transactions.reduce((sum, tx) => {
-					return sum + (tx.compInGift || 0) * 1.05 + (tx.tipInGift || 0);
+					return (
+						sum +
+						((tx.compInGift || 0) + (tx.supply || 0)) * 1.05 +
+						(tx.tipInGift || 0)
+					);
 				}, 0);
 				const balance = Number.parseFloat(
 					(giftCard.value - totalRedeemed).toFixed(2),
@@ -32,7 +36,7 @@ export const list = query({
 });
 
 export const getByCode = query({
-	args: { code: v.string() },
+	args: { code: v.string(), transactionId: v.optional(v.id("transactions")) },
 	handler: async (ctx, args) => {
 		const giftCard = await ctx.db
 			.query("giftCards")
@@ -45,9 +49,15 @@ export const getByCode = query({
 			.withIndex("by_gift_card", (q) => q.eq("giftCode", giftCard?._id))
 			.collect();
 
-		const totalRedeemed = transactions.reduce((sum, tx) => {
-			return sum + (tx.compInGift || 0) + (tx.tipInGift || 0);
-		}, 0);
+		const totalRedeemed = transactions
+			.filter((tx) => tx._id !== args.transactionId)
+			.reduce((sum, tx) => {
+				return (
+					sum +
+					((tx.compInGift || 0) + (tx.supply || 0)) * 1.05 +
+					(tx.tipInGift || 0)
+				);
+			}, 0);
 
 		const balance = giftCard
 			? Number.parseFloat((giftCard.value - totalRedeemed).toFixed(2))
@@ -112,7 +122,11 @@ export const listByDateRange = query({
 					.withIndex("by_gift_card", (q) => q.eq("giftCode", giftCard._id))
 					.collect();
 				const totalRedeemed = transactions.reduce((sum, tx) => {
-					return sum + (tx.compInGift || 0) + (tx.tipInGift || 0);
+					return (
+						sum +
+						((tx.compInGift || 0) + (tx.supply || 0)) * 1.05 +
+						(tx.tipInGift || 0)
+					);
 				}, 0);
 				const balance = Number.parseFloat(
 					(giftCard.value - totalRedeemed).toFixed(2),

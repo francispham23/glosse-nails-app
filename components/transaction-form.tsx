@@ -76,10 +76,10 @@ export function TransactionForm({
 
 	const deleteTransaction = useMutation(api.transactions.deleteTransaction);
 	const categories = useQuery(api.categories.getFormCategories);
-	const giftCard = useQuery(
-		api.giftCards.getByCode,
-		giftCode ? { code: giftCode } : "skip",
-	);
+	const giftCard = useQuery(api.giftCards.getByCode, {
+		code: giftCode ? giftCode : "skip",
+		transactionId,
+	});
 
 	/* ---------------------------------- State --------------------------------- */
 	const initialInputs = type === "edit" ? [] : ["Supply"];
