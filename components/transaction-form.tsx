@@ -1,7 +1,7 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery } from "convex/react";
 import { router } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Alert, Keyboard, Text, View } from "react-native";
 import { Button, Chip, TextInput } from "react-native-paper";
 
@@ -24,6 +24,8 @@ import type { Category, EarningFormState, PaymentMethod } from "@/utils/types";
 import { EarningFormSchema } from "@/utils/validation";
 
 /* ---------------------------------- Types --------------------------------- */
+export type SelectedInput = (typeof otherInputs)[number];
+
 interface TransactionFormProps {
 	type: "create" | "edit";
 	title: string;
@@ -38,6 +40,8 @@ interface TransactionFormProps {
 	giftError: string;
 	setGiftError: React.Dispatch<React.SetStateAction<string>>;
 	transactionId?: Id<"transactions">;
+	selectedInputs: SelectedInput[];
+	setSelectedInputs: React.Dispatch<React.SetStateAction<SelectedInput[]>>;
 }
 
 /* ------------------------------- Main Component ------------------------------ */
@@ -55,6 +59,8 @@ export function TransactionForm({
 	giftError,
 	setGiftError,
 	transactionId,
+	selectedInputs,
+	setSelectedInputs,
 }: TransactionFormProps) {
 	const mutedColor = useThemeColor("muted");
 	const { endOfDay } = useAppDate();
@@ -82,23 +88,9 @@ export function TransactionForm({
 	});
 
 	/* ---------------------------------- State --------------------------------- */
-	const initialInputs = type === "edit" ? [] : ["Supply"];
-	const [selectedInputs, setSelectedInputs] = useState<string[]>(initialInputs);
 	const { errors, validate, getFieldError } =
 		useFormValidation(EarningFormSchema);
 	const [isDeleting, setIsDeleting] = useState(false);
-
-	useEffect(() => {
-		if (type === "edit") {
-			if (discount && !selectedInputs.includes("Discount")) {
-				setSelectedInputs((prev) => [...prev, "Discount"]);
-			}
-
-			if (supply && !selectedInputs.includes("Supply")) {
-				setSelectedInputs((prev) => [...prev, "Supply"]);
-			}
-		}
-	}, [discount, supply, selectedInputs, type]);
 
 	/* ----------------------------- Derived State ------------------------------ */
 	const { cash, card, gift, tipCash, tipCard, tipGift } = useMemo(
@@ -218,11 +210,16 @@ export function TransactionForm({
 		[earning, validate, setEarning],
 	);
 
-	const toggleInput = useCallback((input: string) => {
-		setSelectedInputs((prev) =>
-			prev.includes(input) ? prev.filter((i) => i !== input) : [...prev, input],
-		);
-	}, []);
+	const toggleInput = useCallback(
+		(input: SelectedInput) => {
+			setSelectedInputs((prev) =>
+				prev.includes(input)
+					? prev.filter((i) => i !== input)
+					: [...prev, input],
+			);
+		},
+		[setSelectedInputs],
+	);
 
 	const handleDelete = useCallback(async () => {
 		if (!transactionId) return;
@@ -419,13 +416,6 @@ export function TransactionForm({
 				</View>
 			</View>
 
-			{/* Service Categories */}
-			<ServiceCategoryChips
-				categories={categories}
-				selectedServices={services}
-				onSelect={handleSelectServices}
-			/>
-
 			{/* Service Time Picker */}
 			<TextInput
 				mode="outlined"
@@ -451,6 +441,13 @@ export function TransactionForm({
 					onChange={handleDateChange}
 				/>
 			)}
+
+			{/* Service Categories */}
+			<ServiceCategoryChips
+				categories={categories}
+				selectedServices={services}
+				onSelect={handleSelectServices}
+			/>
 
 			{/* Submit Button */}
 			<Button

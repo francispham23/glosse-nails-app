@@ -5,7 +5,10 @@ import { Alert, View } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 
 import { initialEarningState } from "@/components/Form/constants";
-import { TransactionForm } from "@/components/transaction-form";
+import {
+	type SelectedInput,
+	TransactionForm,
+} from "@/components/transaction-form";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { EarningFormState, PaymentMethod, User } from "@/utils/types";
@@ -27,6 +30,7 @@ export default function EditTransactionScreen() {
 	const [open, setOpen] = useState(false);
 	const [isUpdating, setIsUpdating] = useState(false);
 	const [giftError, setGiftError] = useState("");
+	const [selectedInputs, setSelectedInputs] = useState<SelectedInput[]>([]);
 
 	const initialEarning = {
 		...initialEarningState,
@@ -60,8 +64,16 @@ export default function EditTransactionScreen() {
 				clientId: transaction.client,
 				serviceDate: transaction.serviceDate || Date.now(),
 			});
+
+			if (transaction.discount && !selectedInputs.includes("Discount")) {
+				setSelectedInputs((prev) => [...prev, "Discount"]);
+			}
+
+			if (transaction.supply && !selectedInputs.includes("Supply")) {
+				setSelectedInputs((prev) => [...prev, "Supply"]);
+			}
 		}
-	}, [transaction, giftCode]);
+	}, [transaction, giftCode, selectedInputs]);
 
 	/* ----------------------------- handle edit transaction ----------------------------- */
 	const handleSubmit = async () => {
@@ -99,6 +111,7 @@ export default function EditTransactionScreen() {
 			setOpen(false);
 			setGiftError("");
 			setEarning({ ...initialEarning });
+			setSelectedInputs([]);
 		}
 	};
 
@@ -125,6 +138,8 @@ export default function EditTransactionScreen() {
 			title={"Edit Transaction"}
 			description="Update transaction details"
 			transactionId={transactionId as Id<"transactions">}
+			selectedInputs={selectedInputs}
+			setSelectedInputs={setSelectedInputs}
 		/>
 	);
 }

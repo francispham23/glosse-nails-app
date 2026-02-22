@@ -4,7 +4,10 @@ import { useState } from "react";
 import { Alert } from "react-native";
 
 import { initialEarningState } from "@/components/Form/constants";
-import { TransactionForm } from "@/components/transaction-form";
+import {
+	type SelectedInput,
+	TransactionForm,
+} from "@/components/transaction-form";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import type { EarningFormState, User } from "@/utils/types";
@@ -24,6 +27,9 @@ export default function CreateRoute() {
 	const [open, setOpen] = useState(false);
 	const [giftError, setGiftError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
+	const [selectedInputs, setSelectedInputs] = useState<SelectedInput[]>([
+		"Supply",
+	]);
 
 	const initialEarning = {
 		...initialEarningState,
@@ -65,6 +71,7 @@ export default function CreateRoute() {
 			setOpen(false);
 			setGiftError("");
 			setEarning({ ...initialEarning });
+			setSelectedInputs(["Supply"]);
 		}
 	};
 
@@ -82,6 +89,8 @@ export default function CreateRoute() {
 			setGiftError={setGiftError}
 			title={`${technician?.name?.split(" ")[0]}'s Earning`}
 			description="Add a new earning for this technician"
+			selectedInputs={selectedInputs}
+			setSelectedInputs={setSelectedInputs}
 		/>
 	);
 }
