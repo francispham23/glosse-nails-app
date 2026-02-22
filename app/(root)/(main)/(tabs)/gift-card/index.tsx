@@ -27,6 +27,16 @@ export default function GiftCardRoute() {
 				router.navigate("/gift/create");
 			});
 
+	const sortedGiftCards = giftCards
+		? giftCards
+				.sort((a, b) => a.code.localeCompare(b.code))
+				.sort((a, b) => {
+					if (a.balance === 0 && b.balance !== 0) return 1;
+					if (a.balance !== 0 && b.balance === 0) return -1;
+					return 0;
+				})
+		: [];
+
 	const className = cn(
 		"min-w-[50] text-right font-bold text-lg",
 		!isLight && "text-gray-300",
@@ -46,7 +56,7 @@ export default function GiftCardRoute() {
 				contentContainerClassName="gap-4 px-4 pb-24"
 				entering={FadeIn}
 				exiting={FadeOut}
-				data={giftCards}
+				data={sortedGiftCards}
 				renderItem={({ item }: { item: GiftType }) => (
 					<GiftCard giftCard={item} />
 				)}
