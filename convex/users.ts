@@ -27,7 +27,10 @@ export const usersByDateRange = query({
 		report: v.optional(v.boolean()),
 	},
 	handler: async (ctx, { startDate, endDate, report }) => {
-		const technicians = await ctx.db.query("users").collect();
+		const technicians = await ctx.db
+			.query("users")
+			.filter((q) => q.eq(q.field("isAnonymous"), undefined))
+			.collect();
 
 		// Return all technicians with total tips and compensation
 		const result = await Promise.all(
@@ -85,12 +88,5 @@ export const getUserById = query({
 		if (userId) {
 			return await ctx.db.get(userId);
 		}
-	},
-});
-
-export const list = query({
-	args: {},
-	handler: async (ctx) => {
-		return await ctx.db.query("users").collect();
 	},
 });

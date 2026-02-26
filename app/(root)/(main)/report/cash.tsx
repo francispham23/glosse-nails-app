@@ -154,12 +154,16 @@ export default function CashReportRoute() {
 		return transactions.filter(isCashTransaction).map((tx) => {
 			const compensation = getCashCompensation(tx);
 			const tip = getCashTip(tx);
-			const supply = tx.supply || 0;
+			const supply = tx.isCashSupply ? tx.supply || 0 : 0;
+			const discount = tx.isCashDiscount ? tx.discount || 0 : 0;
+			const realCash = (compensation + supply) * 1.05;
 			return {
 				...tx,
 				tip,
+				supply,
+				discount,
 				compensation,
-				realCash: (compensation + supply) * 1.05,
+				realCash,
 			};
 		});
 	}, [transactions]);

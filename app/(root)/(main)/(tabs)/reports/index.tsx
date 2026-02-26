@@ -7,34 +7,33 @@ import { View } from "react-native";
 import { Button } from "react-native-paper";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
+import { TAX_RATE } from "@/components/Form/constants";
 import { type Report, ReportCard } from "@/components/report-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 
 export default function ReportsRoute() {
-	const today = new Date();
-	const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-	const { endOfDay } = useAppDate();
+	const { startOfDay, endOfDay } = useAppDate();
 
-	const [startDate, setStartDate] = useState<Date>(firstDayOfMonth);
+	const [startDate, setStartDate] = useState<Date>(startOfDay);
 	const [endDate, setEndDate] = useState<Date>(endOfDay);
 	const [openPicker, setOpenPicker] = useState<"start" | "end" | null>(null);
 
 	// Query technicians with totals for the selected date range
 	const technicians = useQuery(api.users.usersByDateRange, {
-		startDate: startDate.getTime(),
-		endDate: endDate.getTime(),
+		startDate: startDate.setHours(0, 0, 0, 0),
+		endDate: endDate.setHours(23, 59, 59, 999),
 		report: true,
 	});
 
 	const transactions = useQuery(api.transactions.listByDateRange, {
-		startDate: startDate.getTime(),
-		endDate: endDate.getTime(),
+		startDate: startDate.setHours(0, 0, 0, 0),
+		endDate: endDate.setHours(23, 59, 59, 999),
 	});
 
 	const giftCards = useQuery(api.giftCards.listByDateRange, {
-		startDate: startDate.getTime(),
-		endDate: endDate.getTime(),
+		startDate: startDate.setHours(0, 0, 0, 0),
+		endDate: endDate.setHours(23, 59, 59, 999),
 	});
 
 	const totalGiftCardBalance =
@@ -66,7 +65,7 @@ export default function ReportsRoute() {
 		0,
 	);
 	const totalCompCash =
-		(totalCashCharges + (totalPartialCashCharges || 0)) * TAX;
+		(totalCashCharges + (totalPartialCashCharges || 0)) * TAX_RATE;
 
 	const tipCashTransactions =
 		transactions?.filter(
@@ -84,23 +83,19 @@ export default function ReportsRoute() {
 	const totalTipCash = totalTipCashOnly + (totalPartialTipCash || 0);
 	const totalCash = totalCompCash + totalTipCash;
 
-	const totalSupplyCash = transactions?.reduce((sum, tx) => {
-		// Only include supply paid in cash
-		const isCashSupply = tx.compensationMethods?.includes("Cash");
-		return sum + (isCashSupply ? tx.supply || 0 : 0);
-	}, 0);
+	const totalSupplyCash =
+		transactions?.reduce((sum, tx) => {
+			return sum + (tx.isCashSupply ? tx.supply || 0 : 0);
+		}, 0) ?? 0;
 
-	const totalDiscountCash = transactions?.reduce((sum, tx) => {
-		// Only include discount given in cash
-		const isCashDiscount =
-			tx.compensationMethods?.includes("Cash") &&
-			!tx.compensationMethods?.includes("Card");
-		return sum + (isCashDiscount ? tx.discount || 0 : 0);
-	}, 0);
+	const totalDiscountCash =
+		transactions?.reduce((sum, tx) => {
+			return sum + (tx.isCashDiscount ? tx.discount || 0 : 0);
+		}, 0) ?? 0;
 
 	const totalRealCash =
 		(totalCompCash || 0) +
-		(totalSupplyCash || 0) * 1.05 -
+		(totalSupplyCash || 0) * TAX_RATE -
 		(totalDiscountCash || 0);
 
 	// Build report cards data
@@ -132,6 +127,14 @@ export default function ReportsRoute() {
 				},
 				{ label: "Total Tip Cash:", value: `$${totalTipCash.toFixed(2)}` },
 				{
+					label: "Total Supply Cash:",
+					value: `$${totalSupplyCash.toFixed(2)}`,
+				},
+				{
+					label: "Total Discount Cash:",
+					value: `$${totalDiscountCash.toFixed(2)}`,
+				},
+				{
 					label: "Grand Total Cash:",
 					value: `$${totalCash.toFixed(2)}`,
 					isBold: true,
@@ -145,18 +148,7 @@ export default function ReportsRoute() {
 				},
 			],
 		},
-		{
-			id: "gift",
-			title: "Gift Cards",
-			rows: [
-				{
-					label: "Total Balance Gift Cards:",
-					value: `$${totalGiftCardBalance.toFixed(2)}`,
-					isBold: true,
-					isLarge: true,
-				},
-			],
-		},
+
 		{
 			id: "discount",
 			title: "Discounts",
@@ -181,7 +173,22 @@ export default function ReportsRoute() {
 				},
 			],
 		},
+		{
+			id: "gift",
+			title: "Gift Cards",
+			rows: [
+				{
+					label: "Total Balance Gift Cards:",
+					value: `$${totalGiftCardBalance.toFixed(2)}`,
+					isBold: true,
+					isLarge: true,
+				},
+			],
+		},
 	];
+
+	const endOfToday = new Date();
+	endOfToday.setHours(23, 59, 59, 999);
 
 	return (
 		<Animated.View
@@ -241,7 +248,7 @@ export default function ReportsRoute() {
 						mode="date"
 						display="spinner"
 						minimumDate={startDate}
-						maximumDate={endOfDay}
+						maximumDate={endOfToday}
 						onChange={(_, selectedDate) => {
 							setOpenPicker(null);
 							if (selectedDate) {
@@ -274,5 +281,3 @@ const formatDate = (date: Date) => {
 		year: "numeric",
 	});
 };
-
-const TAX = 1.05;

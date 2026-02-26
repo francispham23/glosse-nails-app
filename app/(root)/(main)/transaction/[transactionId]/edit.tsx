@@ -4,8 +4,11 @@ import { useEffect, useState } from "react";
 import { Alert, View } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 
-import { initialEarningState } from "@/components/form";
-import { TransactionForm } from "@/components/transaction-form";
+import { initialEarningState } from "@/components/Form/constants";
+import {
+	type SelectedInput,
+	TransactionForm,
+} from "@/components/transaction-form";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { EarningFormState, PaymentMethod, User } from "@/utils/types";
@@ -27,11 +30,16 @@ export default function EditTransactionScreen() {
 	const [open, setOpen] = useState(false);
 	const [isUpdating, setIsUpdating] = useState(false);
 	const [giftError, setGiftError] = useState("");
-	const [earning, setEarning] = useState<EarningFormState>({
+	const [selectedInputs, setSelectedInputs] = useState<SelectedInput[]>([]);
+
+	const initialEarning = {
 		...initialEarningState,
 		technicianId: "" as User["_id"],
 		clientId: "" as User["_id"],
 		serviceDate: Date.now(),
+	};
+	const [earning, setEarning] = useState<EarningFormState>({
+		...initialEarning,
 	});
 
 	/* -------------- Populate form when transaction loads -------------- */
@@ -56,8 +64,16 @@ export default function EditTransactionScreen() {
 				clientId: transaction.client,
 				serviceDate: transaction.serviceDate || Date.now(),
 			});
+
+			if (transaction.discount && !selectedInputs.includes("Discount")) {
+				setSelectedInputs((prev) => [...prev, "Discount"]);
+			}
+
+			if (transaction.supply && !selectedInputs.includes("Supply")) {
+				setSelectedInputs((prev) => [...prev, "Supply"]);
+			}
 		}
-	}, [transaction, giftCode]);
+	}, [transaction, giftCode, selectedInputs]);
 
 	/* ----------------------------- handle edit transaction ----------------------------- */
 	const handleSubmit = async () => {
@@ -92,6 +108,10 @@ export default function EditTransactionScreen() {
 			console.error("Failed to update transaction:", error);
 		} finally {
 			setIsUpdating(false);
+			setOpen(false);
+			setGiftError("");
+			setEarning({ ...initialEarning });
+			setSelectedInputs([]);
 		}
 	};
 
@@ -118,6 +138,8 @@ export default function EditTransactionScreen() {
 			title={"Edit Transaction"}
 			description="Update transaction details"
 			transactionId={transactionId as Id<"transactions">}
+			selectedInputs={selectedInputs}
+			setSelectedInputs={setSelectedInputs}
 		/>
 	);
 }

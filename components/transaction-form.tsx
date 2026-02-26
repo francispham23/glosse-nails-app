@@ -5,11 +5,15 @@ import { useCallback, useMemo, useState } from "react";
 import { Alert, Keyboard, Text, View } from "react-native";
 import { Button, Chip, TextInput } from "react-native-paper";
 
-import FormHeader, {
-	GiftCardInputs,
-	otherInputs,
-	paymentMethods,
-} from "@/components/form";
+import { otherInputs, paymentMethods } from "@/components/Form/constants";
+import FormHeader, { ErrorText } from "@/components/Form/form";
+import {
+	PaymentMethodChips,
+	ServiceCategoryChips,
+} from "@/components/Form/form-chips";
+import { GiftCardInputs } from "@/components/Form/gift-card-inputs";
+import { getPaymentPlaceholder } from "@/components/Form/helpers";
+import { NumericInput } from "@/components/Form/numeric-input";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
@@ -20,6 +24,8 @@ import type { Category, EarningFormState, PaymentMethod } from "@/utils/types";
 import { EarningFormSchema } from "@/utils/validation";
 
 /* ---------------------------------- Types --------------------------------- */
+export type SelectedInput = (typeof otherInputs)[number];
+
 interface TransactionFormProps {
 	type: "create" | "edit";
 	title: string;
@@ -34,101 +40,9 @@ interface TransactionFormProps {
 	giftError: string;
 	setGiftError: React.Dispatch<React.SetStateAction<string>>;
 	transactionId?: Id<"transactions">;
+	selectedInputs: SelectedInput[];
+	setSelectedInputs: React.Dispatch<React.SetStateAction<SelectedInput[]>>;
 }
-
-/* --------------------------------- Helpers -------------------------------- */
-const getPaymentPlaceholder = (
-	hasCard: boolean,
-	hasCash: boolean,
-	hasGift: boolean,
-	isTip = false,
-): string => {
-	const types = [hasCard && "Card", hasCash && "Cash", hasGift && "Gift Card"]
-		.filter(Boolean)
-		.join(", ")
-		.replace(/, ([^,]*)$/, " and $1");
-
-	return types ? `Enter Total ${isTip ? "Tip" : "Charge"} in ${types}` : "";
-};
-
-/* ------------------------------ Sub-Components ----------------------------- */
-const ErrorText = ({ error }: { error: string | undefined }) =>
-	error ? <Text className="px-4 text-red-500 text-sm">{error}</Text> : null;
-
-const PaymentMethodChips = ({
-	methods,
-	selectedMethods,
-	onSelect,
-}: {
-	methods: readonly PaymentMethod[];
-	selectedMethods: PaymentMethod[];
-	onSelect: (method: PaymentMethod) => void;
-}) => (
-	<View className="flex-row flex-wrap gap-2">
-		{methods.map((method) => (
-			<Chip
-				key={method}
-				selected={selectedMethods.includes(method)}
-				className={
-					selectedMethods.includes(method) ? "opacity-60" : "opacity-100"
-				}
-				onPress={() => onSelect(method)}
-			>
-				{method}
-			</Chip>
-		))}
-	</View>
-);
-
-const ServiceCategoryChips = ({
-	categories,
-	selectedServices,
-	onSelect,
-}: {
-	categories: Category[] | undefined;
-	selectedServices: string[];
-	onSelect: (id: Category["_id"]) => void;
-}) => (
-	<View className="mt-4 mb-4 flex-row flex-wrap gap-2">
-		{categories?.map((category) => (
-			<Chip
-				key={category._id}
-				selected={selectedServices.includes(category._id)}
-				className={
-					selectedServices.includes(category._id) ? "opacity-60" : "opacity-100"
-				}
-				onPress={() => onSelect(category._id)}
-			>
-				{category.name}
-			</Chip>
-		))}
-	</View>
-);
-
-const NumericInput = ({
-	placeholder,
-	value,
-	onChangeText,
-	icon,
-	mutedColor,
-}: {
-	placeholder: string;
-	value: string | undefined;
-	onChangeText: (value: string) => void;
-	icon: string;
-	mutedColor: string;
-}) => (
-	<TextInput
-		mode="outlined"
-		className="h-16 rounded-3xl"
-		placeholder={placeholder}
-		keyboardType="numeric"
-		autoCapitalize="none"
-		value={value}
-		onChangeText={onChangeText}
-		left={<TextInput.Icon icon={icon} size={22} color={mutedColor} />}
-	/>
-);
 
 /* ------------------------------- Main Component ------------------------------ */
 export function TransactionForm({
@@ -145,34 +59,50 @@ export function TransactionForm({
 	giftError,
 	setGiftError,
 	transactionId,
+	selectedInputs,
+	setSelectedInputs,
 }: TransactionFormProps) {
 	const mutedColor = useThemeColor("muted");
 	const { endOfDay } = useAppDate();
+	const {
+		discount,
+		supply,
+		giftCode,
+		compensationMethods,
+		tipMethods,
+		serviceDate,
+		compensation,
+		tip,
+		compInCash,
+		tipInCash,
+		services,
+		isCashSupply,
+		isCashDiscount,
+	} = earning;
 
 	const deleteTransaction = useMutation(api.transactions.deleteTransaction);
 	const categories = useQuery(api.categories.getFormCategories);
-	const giftCard = useQuery(
-		api.giftCards.getByCode,
-		earning.giftCode ? { code: earning.giftCode } : "skip",
-	);
+	const giftCard = useQuery(api.giftCards.getByCode, {
+		code: giftCode ? giftCode : "skip",
+		transactionId,
+	});
 
 	/* ---------------------------------- State --------------------------------- */
-	const [isDeleting, setIsDeleting] = useState(false);
-	const [selectedInputs, setSelectedInputs] = useState<string[]>(["Supply"]);
 	const { errors, validate, getFieldError } =
 		useFormValidation(EarningFormSchema);
+	const [isDeleting, setIsDeleting] = useState(false);
 
 	/* ----------------------------- Derived State ------------------------------ */
 	const { cash, card, gift, tipCash, tipCard, tipGift } = useMemo(
 		() => ({
-			cash: earning.compensationMethods.includes("Cash"),
-			card: earning.compensationMethods.includes("Card"),
-			gift: earning.compensationMethods.includes("Gift Card"),
-			tipCash: earning.tipMethods.includes("Cash"),
-			tipCard: earning.tipMethods.includes("Card"),
-			tipGift: earning.tipMethods.includes("Gift Card"),
+			cash: compensationMethods.includes("Cash"),
+			card: compensationMethods.includes("Card"),
+			gift: compensationMethods.includes("Gift Card"),
+			tipCash: tipMethods.includes("Cash"),
+			tipCard: tipMethods.includes("Card"),
+			tipGift: tipMethods.includes("Gift Card"),
 		}),
-		[earning.compensationMethods, earning.tipMethods],
+		[compensationMethods, tipMethods],
 	);
 
 	const showSupply = selectedInputs.includes("Supply");
@@ -186,14 +116,14 @@ export function TransactionForm({
 			isLoading ||
 			Object.keys(errors).length > 0 ||
 			!!giftError ||
-			(!!earning.giftCode && !giftCard) ||
+			(!!giftCode && !giftCard) ||
 			isDeleting ||
 			!compensationPlaceholder,
 		[
 			isLoading,
 			errors,
 			giftError,
-			earning.giftCode,
+			giftCode,
 			giftCard,
 			isDeleting,
 			compensationPlaceholder,
@@ -280,11 +210,16 @@ export function TransactionForm({
 		[earning, validate, setEarning],
 	);
 
-	const toggleInput = useCallback((input: string) => {
-		setSelectedInputs((prev) =>
-			prev.includes(input) ? prev.filter((i) => i !== input) : [...prev, input],
-		);
-	}, []);
+	const toggleInput = useCallback(
+		(input: SelectedInput) => {
+			setSelectedInputs((prev) =>
+				prev.includes(input)
+					? prev.filter((i) => i !== input)
+					: [...prev, input],
+			);
+		},
+		[setSelectedInputs],
+	);
 
 	const handleDelete = useCallback(async () => {
 		if (!transactionId) return;
@@ -324,12 +259,9 @@ export function TransactionForm({
 
 	const handleDateChange = useCallback(
 		(_: unknown, selectedDate: Date | undefined) => {
-			updateEarning(
-				"serviceDate",
-				selectedDate?.getTime() ?? earning.serviceDate,
-			);
+			updateEarning("serviceDate", selectedDate?.getTime() ?? serviceDate);
 		},
-		[updateEarning, earning.serviceDate],
+		[updateEarning, serviceDate],
 	);
 
 	/* --------------------------------- Render --------------------------------- */
@@ -346,10 +278,10 @@ export function TransactionForm({
 				{/* Compensation Input */}
 				<NumericInput
 					placeholder={compensationPlaceholder || "Select Compensation Methods"}
-					value={earning.compensation.toString()}
+					value={compensation.toString()}
 					onChangeText={(value) => updateEarning("compensation", value)}
 					icon="credit-card-outline"
-					mutedColor={mutedColor}
+					iconColor={mutedColor}
 				/>
 				<ErrorText error={getFieldError("compensation")} />
 				{!compensationPlaceholder && (
@@ -362,10 +294,10 @@ export function TransactionForm({
 					<>
 						<NumericInput
 							placeholder="Enter Cash Amount"
-							value={earning.compInCash?.toString()}
+							value={compInCash?.toString()}
 							onChangeText={(value) => updateEarning("compInCash", value)}
 							icon="cash-multiple"
-							mutedColor={mutedColor}
+							iconColor={mutedColor}
 						/>
 						<ErrorText error={getFieldError("compInCash")} />
 					</>
@@ -383,32 +315,32 @@ export function TransactionForm({
 				{/* Compensation Methods */}
 				<PaymentMethodChips
 					methods={paymentMethods}
-					selectedMethods={earning.compensationMethods}
+					selectedMethods={compensationMethods}
 					onSelect={handleSelectCompensationMethod}
 				/>
 			</View>
 
 			{/* Tip */}
 			<View className="flex gap-2">
-				{earning.tipMethods.length > 0 && (
+				{tipMethods.length > 0 && (
 					<>
 						{/* Tip Input */}
 						<NumericInput
 							placeholder={tipPlaceholder || "Select Tip Methods"}
-							value={earning.tip === "0" ? "" : earning.tip.toString()}
+							value={tip === "0" ? "" : tip.toString()}
 							onChangeText={(value) => updateEarning("tip", value)}
 							icon="credit-card-outline"
-							mutedColor={mutedColor}
+							iconColor={mutedColor}
 						/>
 						<ErrorText error={getFieldError("tip")} />
 						{tipCash && tipCard && (
 							<>
 								<NumericInput
 									placeholder="Enter Tip in Cash Amount"
-									value={earning.tipInCash?.toString()}
+									value={tipInCash?.toString()}
 									onChangeText={(value) => updateEarning("tipInCash", value)}
 									icon="cash-multiple"
-									mutedColor={mutedColor}
+									iconColor={mutedColor}
 								/>
 								<ErrorText error={getFieldError("tipInCash")} />
 							</>
@@ -428,8 +360,9 @@ export function TransactionForm({
 				{/* Tip Methods */}
 				<PaymentMethodChips
 					methods={paymentMethods}
-					selectedMethods={earning.tipMethods}
+					selectedMethods={tipMethods}
 					onSelect={handleSelectTipMethod}
+					disableGift={earning.compInGift === ""} // Disable selecting Gift Card for tip if no gift card usage for compensation
 				/>
 			</View>
 
@@ -439,11 +372,11 @@ export function TransactionForm({
 				{showSupply && (
 					<>
 						<NumericInput
-							placeholder={`Enter ${earning.isCashSupply ? "Cash" : ""} Supply Cost`}
-							value={earning.supply?.toString()}
+							placeholder={`Enter ${isCashSupply ? "Cash" : ""} Supply Cost`}
+							value={supply?.toString()}
 							onChangeText={(value) => updateEarning("supply", value)}
 							icon="package-variant"
-							mutedColor={mutedColor}
+							iconColor={mutedColor}
 						/>
 						<ErrorText error={getFieldError("supply")} />
 					</>
@@ -452,11 +385,11 @@ export function TransactionForm({
 				{showDiscount && (
 					<>
 						<NumericInput
-							placeholder={`Enter ${earning.isCashDiscount ? "Cash" : ""} Discount Amount`}
-							value={earning.discount?.toString()}
+							placeholder={`Enter ${isCashDiscount ? "Cash" : ""} Discount Amount`}
+							value={discount?.toString()}
 							onChangeText={(value) => updateEarning("discount", value)}
 							icon="cash-minus"
-							mutedColor={mutedColor}
+							iconColor={mutedColor}
 						/>
 						<ErrorText error={getFieldError("discount")} />
 					</>
@@ -467,6 +400,11 @@ export function TransactionForm({
 						<Chip
 							key={input}
 							selected={selectedInputs.includes(input)}
+							disabled={
+								selectedInputs.includes(input) &&
+								earning[input.toLocaleLowerCase() as keyof EarningFormState] !==
+									""
+							}
 							className={
 								selectedInputs.includes(input) ? "opacity-60" : "opacity-100"
 							}
@@ -478,42 +416,38 @@ export function TransactionForm({
 				</View>
 			</View>
 
-			{/* Service Categories */}
-			<ServiceCategoryChips
-				categories={categories}
-				selectedServices={earning.services}
-				onSelect={handleSelectServices}
-			/>
-
 			{/* Service Time Picker */}
 			<TextInput
 				mode="outlined"
 				className="h-16 rounded-3xl"
 				placeholder="Select service time"
-				value={new Date(earning.serviceDate).toLocaleTimeString([], {
+				value={new Date(serviceDate).toLocaleTimeString([], {
 					hour: "2-digit",
 					minute: "2-digit",
 				})}
 				editable={false}
 				onPressIn={() => setOpen(!open)}
 				left={
-					<TextInput.Icon
-						icon="clock-time-eight-outline"
-						size={22}
-						color={mutedColor}
-					/>
+					<TextInput.Icon icon="clock-outline" size={22} color={mutedColor} />
 				}
 			/>
 
 			{open && (
 				<DateTimePicker
 					mode="time"
-					value={new Date(earning.serviceDate)}
+					value={new Date(serviceDate)}
 					maximumDate={endOfDay}
 					display="spinner"
 					onChange={handleDateChange}
 				/>
 			)}
+
+			{/* Service Categories */}
+			<ServiceCategoryChips
+				categories={categories}
+				selectedServices={services}
+				onSelect={handleSelectServices}
+			/>
 
 			{/* Submit Button */}
 			<Button

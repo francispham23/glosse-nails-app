@@ -136,7 +136,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 				enablePanDownToClose
 				backgroundStyle={{ backgroundColor: isLight ? "#fff" : "#1f2937" }}
 				handleIndicatorStyle={{
-					backgroundColor: isLight ? "#9ca3af" : "#6b7280",
+					backgroundColor: isLight ? "#2d2e31" : "#6b7280",
 				}}
 			>
 				<BottomSheetView className="flex-1 px-6 pb-6">
@@ -151,7 +151,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 								Gift Card: {giftCard.code}
 							</Text>
 							<Text className={textClassName}>
-								Created on {formatCreationDate(giftCard._creationTime)}
+								Sold on {formatCreationDate(giftCard.sellDate)}
 							</Text>
 						</View>
 						<Pressable
@@ -195,44 +195,47 @@ export const GiftCard = ({ giftCard }: Props) => {
 							</Text>
 						</View>
 					</View>
-					<Text
-						className={cn(
-							"mb-2 font-semibold text-foreground",
-							!isLight && "text-gray-300",
-						)}
-					>
-						Transaction History
-					</Text>
-					<Animated.FlatList
-						contentInsetAdjustmentBehavior="automatic"
-						contentContainerClassName="gap-3"
-						data={transactions}
-						renderItem={({ item }: { item: Transaction }) => (
-							<GiftCardTransaction key={item._id} transaction={item} />
-						)}
-						keyExtractor={(item) => item._id.toString()}
-						ListEmptyComponent={
-							<View className="items-center justify-center py-8">
-								<Text className={textClassName}>
-									No transactions found for this gift card
-								</Text>
+					{/* History View */}
+					<View className="max-h-[50%] flex-1">
+						<Text
+							className={cn(
+								"mb-2 font-semibold text-foreground",
+								!isLight && "text-gray-300",
+							)}
+						>
+							Transaction History
+						</Text>
+						<Animated.FlatList
+							contentInsetAdjustmentBehavior="automatic"
+							contentContainerClassName="gap-3"
+							data={transactions}
+							renderItem={({ item }: { item: Transaction }) => (
+								<GiftCardTransaction key={item._id} transaction={item} />
+							)}
+							keyExtractor={(item) => item._id.toString()}
+							ListEmptyComponent={
+								<View className="items-center justify-center py-8">
+									<Text className={textClassName}>
+										No transactions found for this gift card
+									</Text>
+								</View>
+							}
+						/>
+						{isUnused && (
+							<View className="mt-4">
+								<Button
+									onPress={handleDelete}
+									disabled={isDeleting}
+									mode="contained"
+									className="rounded-3xl"
+									buttonColor="#ef4444"
+									loading={isDeleting}
+								>
+									{isDeleting ? "Deleting..." : "Delete Gift Card"}
+								</Button>
 							</View>
-						}
-					/>
-					{isUnused && (
-						<View className="mt-4">
-							<Button
-								onPress={handleDelete}
-								disabled={isDeleting}
-								mode="contained"
-								className="rounded-3xl"
-								buttonColor="#ef4444"
-								loading={isDeleting}
-							>
-								{isDeleting ? "Deleting..." : "Delete Gift Card"}
-							</Button>
-						</View>
-					)}
+						)}
+					</View>
 				</BottomSheetView>
 			</BottomSheetModal>
 		</>

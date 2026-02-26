@@ -21,7 +21,7 @@ export default function HomeRoute() {
 	const { startOfDay, endOfDay } = useAppDate();
 
 	// Query Convex only when not showing today's data
-	const convexUsers = useQuery(api.users.usersByDateRange, {
+	const technicians = useQuery(api.users.usersByDateRange, {
 		startDate: startOfDay.getTime(),
 		endDate: endOfDay.getTime(),
 	});
@@ -34,28 +34,28 @@ export default function HomeRoute() {
 	// Mutation to save shift
 	const saveShift = useMutation(api.shifts.saveShift);
 
-	const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+	const [selectedTechnicians, setSelectedTechnicians] = useState<User[]>([]);
 	const [isSelecting, setIsSelecting] = useState(false);
 
 	useEffect(() => {
-		// Filter convexUsers based on onShiftTechs
-		if (onShiftTechs && onShiftTechs.length > 0 && convexUsers) {
+		// Filter technicians based on onShiftTechs
+		if (onShiftTechs && onShiftTechs.length > 0 && technicians) {
 			const shiftUserIds = new Set(onShiftTechs.map((user) => user._id));
-			const filteredUsers = convexUsers.filter((user) =>
+			const filteredUsers = technicians.filter((user) =>
 				shiftUserIds.has(user._id),
 			);
-			setSelectedUsers(filteredUsers);
-		} else if (!isSelecting && convexUsers) {
+			setSelectedTechnicians(filteredUsers);
+		} else if (!isSelecting && technicians) {
 			// Update selected users when Convex data changes and not selecting
-			setSelectedUsers((prev) =>
+			setSelectedTechnicians((prev) =>
 				prev.map((u) => {
 					// Update selected users info with new Convex data
-					const updated = convexUsers.find((cu) => cu._id === u._id);
+					const updated = technicians.find((cu) => cu._id === u._id);
 					return updated || u;
 				}),
 			);
 		}
-	}, [convexUsers, isSelecting, onShiftTechs]);
+	}, [technicians, isSelecting, onShiftTechs]);
 
 	const className = cn(
 		"min-w-[50] text-right font-bold text-lg",
@@ -76,9 +76,11 @@ export default function HomeRoute() {
 				contentInsetAdjustmentBehavior="automatic"
 				contentContainerClassName="gap-4 p-2 pb-24"
 				keyExtractor={(item) => item._id.toString()}
-				data={isSelecting ? convexUsers : selectedUsers}
+				data={isSelecting ? technicians : selectedTechnicians}
 				renderItem={({ item }: { item: User }) => {
-					const isSelected = selectedUsers.some((u) => u._id === item._id);
+					const isSelected = selectedTechnicians.some(
+						(u) => u._id === item._id,
+					);
 					return (
 						<TechnicianCard
 							key={item._id}
@@ -87,11 +89,11 @@ export default function HomeRoute() {
 							isSelected={isSelected}
 							onToggleSelect={(user) => {
 								if (isSelected) {
-									setSelectedUsers((prev) =>
+									setSelectedTechnicians((prev) =>
 										prev.filter((u) => u._id !== user._id),
 									);
 								} else {
-									setSelectedUsers((prev) => [...prev, user]);
+									setSelectedTechnicians((prev) => [...prev, user]);
 								}
 							}}
 						/>
@@ -105,10 +107,10 @@ export default function HomeRoute() {
 					isAdding={isSelecting}
 					setIsAdding={async (adding) => {
 						// When exiting selection mode, save the shift
-						if (isSelecting && !adding && selectedUsers.length > 0) {
+						if (isSelecting && !adding && selectedTechnicians.length > 0) {
 							try {
 								await saveShift({
-									technicians: selectedUsers.map((u) => u._id),
+									technicians: selectedTechnicians.map((u) => u._id),
 									shiftDate: startOfDay.getTime(),
 								});
 							} catch (error) {

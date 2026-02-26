@@ -5,12 +5,15 @@ import { useState } from "react";
 import { Alert, Keyboard } from "react-native";
 import { Button, TextInput } from "react-native-paper";
 
-import FormHeader from "@/components/form";
+import FormHeader from "@/components/Form/form";
+import { NumericInput } from "@/components/Form/numeric-input";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
+import { useThemeColor } from "@/utils";
 
 export default function CreateRoute() {
+	const mutedColor = useThemeColor("muted");
 	const { endOfDay } = useAppDate();
 	const router = useRouter();
 	const createGiftCard = useMutation(api.giftCards.create);
@@ -67,43 +70,37 @@ export default function CreateRoute() {
 				title="Create Gift Card"
 				description="Add a new gift card to the system"
 			/>
-			<TextInput
-				mode="outlined"
+			{/* gift card code field */}
+			<NumericInput
 				placeholder="Enter Gift Card Code"
-				autoCapitalize="characters"
-				autoFocus={true}
 				value={code}
 				onChangeText={setCode}
-				left={<TextInput.Icon icon="barcode" />}
-				className="h-16 rounded-3xl"
+				icon="barcode"
+				iconColor={mutedColor}
 			/>
 
-			<TextInput
-				mode="outlined"
+			{/* gift card value field */}
+			<NumericInput
 				placeholder="Enter Gift Card Value"
-				keyboardType="numeric"
 				value={value}
 				onChangeText={setValue}
-				left={<TextInput.Icon icon="wallet-giftcard" />}
-				className="h-16 rounded-3xl"
+				icon="wallet-giftcard"
+				iconColor={mutedColor}
 			/>
 
-			{/* sell time field */}
+			{/* Sell Time Picker */}
 			<TextInput
 				mode="outlined"
-				placeholder="Select service time"
-				value={date.toLocaleTimeString([], {
-					hour: "2-digit",
-					minute: "2-digit",
-				})}
+				className="h-16 rounded-3xl"
+				placeholder="Select service date"
+				value={date.toLocaleDateString([])}
 				editable={false}
 				onPressIn={() => setOpen(!open)}
-				left={<TextInput.Icon icon="clock-outline" />}
-				className="h-16 rounded-3xl"
+				left={<TextInput.Icon icon="calendar-outline" color={mutedColor} />}
 			/>
 			{open && (
 				<DateTimePicker
-					mode="time"
+					mode="date"
 					value={date}
 					maximumDate={endOfDay}
 					display="spinner"
@@ -114,6 +111,7 @@ export default function CreateRoute() {
 				/>
 			)}
 
+			{/* Submit Button */}
 			<Button
 				onPress={handleSubmit}
 				disabled={isLoading}

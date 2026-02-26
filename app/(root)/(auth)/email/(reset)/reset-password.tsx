@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Text, View } from "react-native";
 import { Button, TextInput } from "react-native-paper";
 
-import FormHeader, { FormContainer } from "@/components/form";
+import FormHeader, { FormContainer } from "@/components/Form/form";
 import { useThemeColor } from "@/utils";
 
 // TODO: Implement password reset logic here

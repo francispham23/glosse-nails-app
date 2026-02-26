@@ -1,74 +1,116 @@
-# Welcome to your Expo app 👋
+# Glossé Nails
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native nail salon management app for managing technicians' turns, payroll by tracking transactions, technicians, earnings, gift cards, and services.
 
-## Get started
+## Tech Stack
 
-1. Install dependencies
+- **Framework**: [Expo](https://expo.dev) SDK 54 + React Native 0.81 + React 19
+- **Routing**: [Expo Router](https://docs.expo.dev/router/introduction/) v6 (file-based, typed routes)
+- **Backend**: [Convex](https://www.convex.dev/) (real-time database + auth)
+- **Styling**: [Uniwind](https://github.com/nicksrandall/uniwind) (Tailwind for React Native) + TailwindCSS v4
+- **Theming**: [React Native Papers](https://github.com/callstack/react-native-paper) Material Design for React Native (Android & iOS)
+- **Forms**: Zod validation
+- **Code Quality**: [Biome](https://biomejs.dev/) (linter + formatter)
 
-   ```bash
-   npm install
-   ```
+## Getting Started
 
-2. Start the app
+### Prerequisites
 
-   ```bash
-   npx convex dev
-   npx expo start
-   ```
+- Node.js 18+
+- iOS Simulator (Xcode) or physical device
+- Convex account & project
 
-## Deploy Production
-
-```bash
-   eas build --platform ios --profile production
-   eas submit --platform ios
-```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### Install
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Environment Variables
 
-## Learn more
+Create a `.env.local` file in the project root:
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+EXPO_PUBLIC_CONVEX_URL=<your-convex-deployment-url>
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Development
 
-## Join the community
+Run both processes simultaneously in separate terminals:
 
-Join our community of developers creating universal apps.
+```bash
+# Terminal 1 — Start Convex backend (watches for schema/function changes)
+npx convex dev
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+# Terminal 2 — Start Expo dev server
+npx expo start --clear
+```
 
-## Convex Authentication Setup
+Then press `i` to open the iOS Simulator, or scan the QR code with Expo Go on a physical device.
 
-- [Convex Auth documentation](https://labs.convex.dev/auth/setup/)
+## Project Structure
+
+```bash
+app/                    # Expo Router file-based routes
+├── _layout.tsx         # Root layout (providers: Convex, Theme, SafeArea)
+├── (root)/
+│   ├── (auth)/         # Authentication screens
+│   └── (main)/
+│       ├── (tabs)/     # Tab navigation (earnings, transactions)
+│       ├── technician/ # Technician management
+│       ├── transaction/# Transaction forms & details
+│       ├── gift/       # Gift card management
+│       ├── report/     # Reporting screens
+│       └── settings.tsx
+components/             # Shared UI components
+contexts/               # React contexts (theme, date)
+convex/                 # Convex backend (schema, queries, mutations)
+hooks/                  # Custom hooks
+utils/                  # Helpers, types, validation
+```
+
+## Database Schema
+
+Managed by Convex in `convex/schema.ts`:
+
+| Table                   | Purpose                                  |
+| ----------------------- | ---------------------------------------- |
+| `transactions`          | Salon transactions with payment details  |
+| `categories`            | Service categories                       |
+| `services`              | Individual services with pricing         |
+| `giftCards`             | Gift card tracking                       |
+| `dailyTechnicianShifts` | Daily shift assignments                  |
+| `users`                 | User accounts (via Convex Auth)          |
+
+## Code Quality
+
+Biome handles linting and formatting with tab indentation, double quotes, organized imports, and sorted Tailwind classes.
+
+```bash
+npm run lint
+```
+
+## Build & Deploy
+
+```bash
+# Deploy Convex Backend
+npx convex deploy
+
+# iOS production build
+eas build --platform ios --profile production
+
+# Submit to App Store
+eas submit --platform ios
+```
+
+## Convex Auth Setup
+
+Reference docs for initial auth configuration:
+
+- [Convex Auth docs](https://labs.convex.dev/auth/setup/)
 
 ```bash
 npm install @convex-dev/auth @auth/core@0.37.0
 npx @convex-dev/auth
 npx expo install expo-secure-store
-```
-
-- [Convex Auth with Google OAuth](https://labs.convex.dev/auth/config/oauth/google)
-
-```bash
-npm i expo-auth-session
 ```

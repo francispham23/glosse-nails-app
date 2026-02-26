@@ -3,8 +3,11 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert } from "react-native";
 
-import { initialEarningState } from "@/components/form";
-import { TransactionForm } from "@/components/transaction-form";
+import { initialEarningState } from "@/components/Form/constants";
+import {
+	type SelectedInput,
+	TransactionForm,
+} from "@/components/transaction-form";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import type { EarningFormState, User } from "@/utils/types";
@@ -24,12 +27,19 @@ export default function CreateRoute() {
 	const [open, setOpen] = useState(false);
 	const [giftError, setGiftError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
-	const [earning, setEarning] = useState<EarningFormState>({
+	const [selectedInputs, setSelectedInputs] = useState<SelectedInput[]>([
+		"Supply",
+	]);
+
+	const initialEarning = {
 		...initialEarningState,
 		technicianId,
 		// TODO: allow selecting client ID later
 		clientId: technicianId, // Default client ID
 		serviceDate: date.getTime(),
+	};
+	const [earning, setEarning] = useState<EarningFormState>({
+		...initialEarning,
 	});
 
 	/* ----------------------------- handle create transaction ----------------------------- */
@@ -50,13 +60,7 @@ export default function CreateRoute() {
 			const tip = earning.tip.length > 0 ? earning.tip : "0";
 			await addTransaction({ body: { ...earning, tip } });
 
-			setEarning({
-				...initialEarningState,
-				technicianId,
-				// TODO: allow selecting client ID later
-				clientId: technicianId, // Default client ID
-				serviceDate: Date.now(),
-			});
+			setEarning({ ...initialEarning });
 			Alert.alert("Success", "Earning saved successfully");
 			router.push(`/technician/${technicianId}`);
 		} catch (error) {
@@ -64,6 +68,10 @@ export default function CreateRoute() {
 			Alert.alert("Error", "Failed to save earning. Please try again.");
 		} finally {
 			setIsLoading(false);
+			setOpen(false);
+			setGiftError("");
+			setEarning({ ...initialEarning });
+			setSelectedInputs(["Supply"]);
 		}
 	};
 
@@ -81,6 +89,8 @@ export default function CreateRoute() {
 			setGiftError={setGiftError}
 			title={`${technician?.name?.split(" ")[0]}'s Earning`}
 			description="Add a new earning for this technician"
+			selectedInputs={selectedInputs}
+			setSelectedInputs={setSelectedInputs}
 		/>
 	);
 }
