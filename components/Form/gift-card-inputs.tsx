@@ -35,7 +35,7 @@ export const GiftCardInputs = ({
 	const { giftCode, tipInGift, compInGift, supply } = earning;
 
 	const availableBalance = giftCard?.balance
-		? calculateAvailableBalance(giftCard.balance, compInGift, supply)
+		? calculateAvailableBalance(giftCard.balance, compInGift, tipInGift, supply)
 		: 0;
 
 	useEffect(() => {
@@ -151,13 +151,16 @@ const calculateTotalUsage = (
 const calculateAvailableBalance = (
 	balance: number,
 	compInGift?: string,
+	tipInGift?: string,
 	supply?: string,
 ): number => {
 	const compUsage = compInGift
 		? roundCurrency(Number.parseFloat(compInGift) * TAX_RATE)
 		: 0;
+	const tipUsage = tipInGift ? roundCurrency(Number.parseFloat(tipInGift)) : 0;
 	const supplyUsage = supply
 		? roundCurrency(Number.parseFloat(supply) * TAX_RATE)
 		: 0;
-	return roundCurrency(balance - compUsage - supplyUsage);
+
+	return roundCurrency(balance - compUsage - tipUsage - supplyUsage);
 };
