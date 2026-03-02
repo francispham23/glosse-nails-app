@@ -2,7 +2,7 @@
 	"expo": {
 		"name": "Glossé Nails",
 		"slug": "glosse-nail-app",
-		"version": "0.3.5",
+		"version": "0.3.6",
 		"orientation": "portrait",
 		"icon": "./assets/icon.png",
 		"scheme": "glossenailapp",
@@ -15,7 +15,8 @@
 			"@react-native-community/datetimepicker",
 			"expo-router",
 			"expo-secure-store",
-			"expo-web-browser"
+			"expo-web-browser",
+			"expo-font"
 		],
 		"experiments": {
 			"typedRoutes": true,
