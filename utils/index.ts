@@ -1,6 +1,12 @@
 import { useTheme } from "react-native-paper";
 import { twMerge } from "tailwind-merge";
 
+const APP_ENV =
+	process.env.EXPO_PUBLIC_APP_ENV ?? (__DEV__ ? "development" : "production");
+
+// Export environment variables
+export const isProduction = APP_ENV === "production";
+
 // Export cn utility for classname merging
 export const cn = twMerge;
 

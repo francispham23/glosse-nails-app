@@ -3,6 +3,7 @@ import { Button } from "react-native-paper";
 
 import { HeaderButton } from "@/components/Buttons/header-button";
 import { useNavigationOptions } from "@/hooks/use-navigation-options";
+import { isProduction } from "@/utils";
 
 export default function EmailLayout() {
 	const { modal } = useNavigationOptions();
@@ -18,7 +19,7 @@ export default function EmailLayout() {
 				name="signin"
 				options={{
 					headerLeft: () => <HeaderButton iconName="close" />,
-					headerRight: () => <SignUpButton />,
+					headerRight: () => (isProduction ? null : <SignUpButton />),
 					title: "",
 				}}
 			/>
