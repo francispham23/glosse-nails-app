@@ -67,7 +67,6 @@ export function TransactionForm({
 	const {
 		discount,
 		supply,
-		giftCode,
 		compensationMethods,
 		tipMethods,
 		serviceDate,
@@ -78,6 +77,9 @@ export function TransactionForm({
 		services,
 		isCashSupply,
 		isCashDiscount,
+		giftCode,
+		compInGift,
+		tipInGift,
 	} = earning;
 
 	const deleteTransaction = useMutation(api.transactions.deleteTransaction);
@@ -142,72 +144,80 @@ export function TransactionForm({
 
 	const handleSelectServices = useCallback(
 		(categoryId: Category["_id"]) => {
-			const newServices = earning.services.includes(categoryId)
-				? earning.services.filter((id) => id !== categoryId)
-				: [...earning.services, categoryId];
-			const newEarning = { ...earning, services: newServices };
-			validate(newEarning);
-			setEarning(newEarning);
+			const newServices = services.includes(categoryId)
+				? services.filter((id) => id !== categoryId)
+				: [...services, categoryId];
+
+			setEarning((prev) => {
+				const newEarning = { ...prev, services: newServices };
+				validate(newEarning);
+				return newEarning;
+			});
 		},
-		[earning, validate, setEarning],
+		[services, validate, setEarning],
 	);
 
 	const handleSelectCompensationMethod = useCallback(
 		(method: PaymentMethod) => {
-			if (earning.compensationMethods.length === 1) {
-				if (earning.compensationMethods[0] === method) return; // Prevent deselecting the last method
-				if (earning.compensationMethods[0] === "Card" && method === "Cash") {
-					setEarning({
-						...earning,
+			if (compensationMethods.length === 1) {
+				if (compensationMethods[0] === method) return; // Prevent deselecting the last method
+				if (compensationMethods[0] === "Card" && method === "Cash") {
+					setEarning((prev) => ({
+						...prev,
 						compensationMethods: ["Cash"],
 						tipMethods: ["Cash"],
 						isCashDiscount: true,
 						isCashSupply: true,
-					});
+					}));
 					return;
 				}
 			}
-			const newMethods = earning.compensationMethods.includes(method)
-				? earning.compensationMethods.filter((m) => m !== method)
-				: [...earning.compensationMethods, method];
-			const newEarning = {
-				...earning,
-				compensationMethods: newMethods,
-				isCashDiscount: newMethods.includes("Cash"),
-				isCashSupply: newMethods.includes("Cash"),
-			};
-			validate(newEarning);
-			setEarning(newEarning);
+			const newMethods = compensationMethods.includes(method)
+				? compensationMethods.filter((m) => m !== method)
+				: [...compensationMethods, method];
+			setEarning((prev) => {
+				const newEarning = {
+					...prev,
+					compensationMethods: newMethods,
+					isCashDiscount: newMethods.includes("Cash"),
+					isCashSupply: newMethods.includes("Cash"),
+				};
+				validate(newEarning);
+				return newEarning;
+			});
 		},
-		[earning, validate, setEarning],
+		[validate, setEarning, compensationMethods],
 	);
 
 	const handleSelectTipMethod = useCallback(
 		(method: PaymentMethod) => {
 			if (
-				earning.tipMethods.length === 1 &&
-				earning.tipMethods[0] === "Card" &&
+				tipMethods.length === 1 &&
+				tipMethods[0] === "Card" &&
 				method === "Cash"
 			) {
-				setEarning({
-					...earning,
+				setEarning((prev) => ({
+					...prev,
 					tipMethods: ["Cash"],
-				});
+				}));
 				return;
 			}
-			const newMethods = earning.tipMethods.includes(method)
-				? earning.tipMethods.filter((m) => m !== method)
-				: [...earning.tipMethods, method];
-			const newEarning = {
-				...earning,
-				tipMethods: newMethods,
-				isCashDiscount: newMethods.includes("Cash"),
-				isCashSupply: newMethods.includes("Cash"),
-			};
-			validate(newEarning);
-			setEarning(newEarning);
+			const newMethods = tipMethods.includes(method)
+				? tipMethods.filter((m) => m !== method)
+				: [...tipMethods, method];
+
+			setEarning((prev) => {
+				const newEarning = {
+					...prev,
+					tipMethods: newMethods,
+					isCashDiscount: newMethods.includes("Cash"),
+					isCashSupply: newMethods.includes("Cash"),
+				};
+				validate(newEarning);
+				return newEarning;
+			});
 		},
-		[earning, validate, setEarning],
+		[tipMethods, validate, setEarning],
 	);
 
 	const toggleInput = useCallback(
@@ -317,6 +327,7 @@ export function TransactionForm({
 					methods={paymentMethods}
 					selectedMethods={compensationMethods}
 					onSelect={handleSelectCompensationMethod}
+					disableGift={!!compInGift} // Disable selecting Gift Card for compensation if gift card usage for compensation already has a value
 				/>
 			</View>
 
@@ -362,7 +373,7 @@ export function TransactionForm({
 					methods={paymentMethods}
 					selectedMethods={tipMethods}
 					onSelect={handleSelectTipMethod}
-					disableGift={earning.compInGift === ""} // Disable selecting Gift Card for tip if no gift card usage for compensation
+					disableGift={compInGift === "" || !!tipInGift} // Disable selecting Gift Card for tip if no gift card usage for compensation
 				/>
 			</View>
 

@@ -59,7 +59,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 			0,
 		) || 0;
 
-	const isUnused = giftCard.transactionIds.length === 0;
+	const isUnused = giftCard.transactionIds.length === 0 || totalUsed === 0;
 
 	const handleDelete = async () => {
 		if (!isUnused) {
