@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 
 import { HeaderButton } from "@/components/Buttons/header-button";
-import { useNavigationOptions } from "@/hooks/use-navigation-options";
+import { useNavigationOptions } from "@/hooks";
 
 export default function ReportLayout() {
 	const { modal } = useNavigationOptions();

@@ -6,7 +6,7 @@ import { Platform } from "react-native";
 
 import { useThemeColor } from "@/utils";
 
-export const useNavigationOptions = () => {
+export function useNavigationOptions() {
 	const themeColorForeground = useThemeColor("foreground");
 	const themeColorBackground = useThemeColor("background");
 
@@ -69,5 +69,5 @@ export const useNavigationOptions = () => {
 				},
 			},
 		};
-	}, [themeColorBackground]);
-};
+	}, [themeColorBackground, themeColorForeground]);
+}

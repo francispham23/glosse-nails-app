@@ -2,7 +2,7 @@ import { Link, Stack } from "expo-router";
 import { Button } from "react-native-paper";
 
 import { HeaderButton } from "@/components/Buttons/header-button";
-import { useNavigationOptions } from "@/hooks/use-navigation-options";
+import { useNavigationOptions } from "@/hooks";
 import { isProduction } from "@/utils";
 
 export default function EmailLayout() {

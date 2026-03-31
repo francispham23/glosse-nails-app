@@ -1,6 +1,6 @@
 import { useConvexAuth } from "convex/react";
 import { Stack } from "expo-router";
-import { useNavigationOptions } from "@/hooks/use-navigation-options";
+import { useNavigationOptions } from "@/hooks";
 
 export default function RootLayout() {
 	const { isAuthenticated } = useConvexAuth();

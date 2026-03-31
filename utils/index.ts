@@ -10,6 +10,24 @@ export const isProduction = APP_ENV === "production";
 // Export cn utility for classname merging
 export const cn = twMerge;
 
+export function getErrorMessage(error: unknown, fallback: string): string {
+	if (
+		typeof error === "object" &&
+		error !== null &&
+		"data" in error &&
+		typeof (error as { data?: { message?: unknown } }).data?.message ===
+			"string"
+	) {
+		return (error as { data: { message: string } }).data.message;
+	}
+
+	if (error instanceof Error) {
+		return error.message;
+	}
+
+	return fallback;
+}
+
 // Custom hook to get theme colors compatible with Paper
 export function useThemeColor(colorName: string): string {
 	const theme = useTheme();
@@ -44,3 +62,9 @@ export function isBeforeToday(timestamp: number): boolean {
 	txDate.setHours(0, 0, 0, 0);
 	return txDate < today;
 }
+
+// Export Types
+export * from "./types";
+
+// Export Validation Schemas
+export * from "./validation";

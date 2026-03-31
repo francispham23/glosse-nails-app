@@ -10,7 +10,7 @@ import { NumericInput } from "@/components/Form/numeric-input";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
-import { useThemeColor } from "@/utils";
+import { getErrorMessage, useThemeColor } from "@/utils";
 
 export default function CreateRoute() {
 	const mutedColor = useThemeColor("muted");
@@ -52,7 +52,7 @@ export default function CreateRoute() {
 		} catch (error) {
 			Alert.alert(
 				"Error",
-				error instanceof Error ? error.message : "Failed to create gift card",
+				getErrorMessage(error, "Failed to create gift card"),
 			);
 		} finally {
 			setIsLoading(false);

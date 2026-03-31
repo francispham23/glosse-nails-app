@@ -18,10 +18,15 @@ import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { useFormValidation } from "@/hooks/use-form-validation";
-import { useThemeColor } from "@/utils";
-import type { Category, EarningFormState, PaymentMethod } from "@/utils/types";
-import { EarningFormSchema } from "@/utils/validation";
+import { useFormValidation } from "@/hooks";
+import {
+	type Category,
+	EarningFormSchema,
+	type EarningFormState,
+	getErrorMessage,
+	type PaymentMethod,
+	useThemeColor,
+} from "@/utils";
 
 /* ---------------------------------- Types --------------------------------- */
 export type SelectedInput = (typeof otherInputs)[number];
@@ -250,7 +255,10 @@ export function TransactionForm({
 								{ text: "OK", onPress: () => router.back() },
 							]);
 						} catch (error) {
-							Alert.alert("Error", "Failed to delete transaction");
+							Alert.alert(
+								"Error",
+								getErrorMessage(error, "Failed to delete transaction"),
+							);
 							console.error("Failed to delete transaction:", error);
 						} finally {
 							setIsDeleting(false);

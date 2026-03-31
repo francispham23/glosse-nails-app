@@ -10,21 +10,19 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { cn } from "@/utils";
-import type { Gift, Transaction } from "@/utils/types";
+import { cn, type Gift, getErrorMessage, type Transaction } from "@/utils";
 import { GiftCardTransaction } from "./gift-card-transaction";
 
 type Props = {
 	giftCard: Gift;
+	isAuthorized: boolean;
 };
 
-export const GiftCard = ({ giftCard }: Props) => {
+export const GiftCard = ({ giftCard, isAuthorized }: Props) => {
 	const { isLight } = useAppTheme();
-
 	const bottomSheetRef = useRef<BottomSheetModal>(null);
 	const [isOpen, setIsOpen] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
-
 	const snapPoints = useMemo(() => ["80%"], []);
 
 	const handleSheetChanges = useCallback((index: number) => {
@@ -92,9 +90,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 						} catch (error) {
 							Alert.alert(
 								"Error",
-								error instanceof Error
-									? error.message
-									: "Failed to delete gift card",
+								getErrorMessage(error, "Failed to delete gift card"),
 							);
 							console.error("Failed to delete gift card:", error);
 						} finally {
@@ -221,7 +217,7 @@ export const GiftCard = ({ giftCard }: Props) => {
 								</View>
 							}
 						/>
-						{isUnused && (
+						{isUnused && isAuthorized && (
 							<View className="mt-4">
 								<Button
 									onPress={handleDelete}

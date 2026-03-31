@@ -10,7 +10,7 @@ import {
 } from "@/components/transaction-form";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
-import type { EarningFormState, User } from "@/utils/types";
+import { type EarningFormState, getErrorMessage, type User } from "@/utils";
 
 export default function CreateRoute() {
 	const router = useRouter();
@@ -65,7 +65,10 @@ export default function CreateRoute() {
 			router.push(`/technician/${technicianId}`);
 		} catch (error) {
 			console.error("Error storing earning:", error);
-			Alert.alert("Error", "Failed to save earning. Please try again.");
+			Alert.alert(
+				"Error",
+				getErrorMessage(error, "Failed to save earning. Please try again."),
+			);
 		} finally {
 			setIsLoading(false);
 			setOpen(false);

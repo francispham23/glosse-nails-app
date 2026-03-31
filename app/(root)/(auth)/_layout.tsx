@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-import { useNavigationOptions } from "@/hooks/use-navigation-options";
+import { useNavigationOptions } from "@/hooks";
 
 export default function AuthLayout() {
 	const { root, standard } = useNavigationOptions();

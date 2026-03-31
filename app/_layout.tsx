@@ -26,6 +26,11 @@ const secureStorage = {
 	removeItem: SecureStore.deleteItemAsync,
 };
 
+const storage =
+	Platform.OS === "android" || Platform.OS === "ios"
+		? secureStorage
+		: undefined;
+
 /* ------------------------------ themed route ------------------------------ */
 function ThemedLayout() {
 	const { paperTheme } = useAppTheme();
@@ -43,14 +48,7 @@ function ThemedLayout() {
 export default function Layout() {
 	return (
 		<GestureHandlerRootView className="flex-1">
-			<ConvexAuthProvider
-				client={convex}
-				storage={
-					Platform.OS === "android" || Platform.OS === "ios"
-						? secureStorage
-						: undefined
-				}
-			>
+			<ConvexAuthProvider client={convex} storage={storage}>
 				<SafeAreaProvider>
 					<AppDateProvider>
 						<AppThemeProvider>

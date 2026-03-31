@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 import Animated, {
 	FadeIn,
 	FadeOut,
@@ -13,8 +13,7 @@ import { TechnicianCard } from "@/components/technician-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
-import { cn } from "@/utils";
-import type { User } from "@/utils/types";
+import { cn, getErrorMessage, type User } from "@/utils";
 
 export default function HomeRoute() {
 	const { isLight } = useAppTheme();
@@ -114,6 +113,10 @@ export default function HomeRoute() {
 									shiftDate: startOfDay.getTime(),
 								});
 							} catch (error) {
+								Alert.alert(
+									"Error",
+									getErrorMessage(error, "Failed to save shift"),
+								);
 								console.error("Failed to save shift:", error);
 							}
 						}

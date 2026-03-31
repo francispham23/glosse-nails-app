@@ -11,7 +11,12 @@ import {
 } from "@/components/transaction-form";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import type { EarningFormState, PaymentMethod, User } from "@/utils/types";
+import {
+	type EarningFormState,
+	getErrorMessage,
+	type PaymentMethod,
+	type User,
+} from "@/utils";
 
 export default function EditTransactionScreen() {
 	const { transactionId } = useLocalSearchParams<{ transactionId: string }>();
@@ -104,7 +109,10 @@ export default function EditTransactionScreen() {
 				},
 			]);
 		} catch (error) {
-			Alert.alert("Error", "Failed to update transaction");
+			Alert.alert(
+				"Error",
+				getErrorMessage(error, "Failed to update transaction"),
+			);
 			console.error("Failed to update transaction:", error);
 		} finally {
 			setIsUpdating(false);
