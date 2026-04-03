@@ -14,6 +14,7 @@ interface Props {
 	report?: boolean;
 	isSelecting?: boolean;
 	isSelected?: boolean;
+	isAuthorized?: boolean;
 	onToggleSelect?: (user: User) => void;
 }
 
@@ -22,6 +23,7 @@ export const TechnicianCard = ({
 	report,
 	isSelecting = false,
 	isSelected = false,
+	isAuthorized = false,
 	onToggleSelect,
 }: Props) => {
 	const { isLight } = useAppTheme();
@@ -43,8 +45,9 @@ export const TechnicianCard = ({
 
 	return (
 		<Pressable
+			disabled={report || !isAuthorized}
 			onPress={() => {
-				if (report) return;
+				if (report || !isAuthorized) return;
 				Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 				if (isSelecting && onToggleSelect) {
 					onToggleSelect(item);

@@ -1,22 +1,74 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { query } from "./_generated/server";
+import { getStaffRoleRecord, hasAnyRole, requireActor } from "./authz";
 
 export const viewer = query({
 	args: {},
 	handler: async (ctx) => {
-		const userId = await getAuthUserId(ctx);
-		return userId !== null ? ctx.db.get(userId) : null;
+		const { userId, role } = await requireActor(ctx);
+		const user = await ctx.db.get(userId);
+		return user ? { ...user, role } : null;
 	},
 });
 
-export const deleteViewer = mutation({
+export const viewerRole = query({
+	args: {},
+	handler: async (ctx) => {
+		const { role } = await requireActor(ctx);
+		return role;
+	},
+});
+
+export const viewerAccess = query({
 	args: {},
 	handler: async (ctx) => {
 		const userId = await getAuthUserId(ctx);
-		if (userId === null) {
-			throw new Error("Not authenticated");
+		if (!userId) {
+			return {
+				authenticated: false,
+				role: null,
+				isActive: false,
+				isAuthorized: false,
+				message: "Please sign in to continue.",
+			};
 		}
+
+		const user = await ctx.db.get(userId);
+		const roleRecord = await getStaffRoleRecord(ctx, userId);
+		if (!roleRecord) {
+			return {
+				authenticated: true,
+				role: null,
+				isActive: false,
+				isAuthorized: false,
+				user,
+				message: "Your account does not have access yet.",
+			};
+		}
+
+		if (!roleRecord.isActive) {
+			return {
+				authenticated: true,
+				role: roleRecord.role,
+				isActive: false,
+				isAuthorized: false,
+				user,
+				message:
+					"Your account is inactive. Please contact an owner or manager.",
+			};
+		}
+
+		const isAuthorized = hasAnyRole(roleRecord.role, ["owner", "manager"]);
+
+		return {
+			authenticated: true,
+			role: roleRecord.role,
+			isActive: roleRecord.isActive,
+			isAuthorized,
+			user,
+			message: isAuthorized ? null : "Forbidden to manage this area.",
+		};
 	},
 });
 
@@ -85,8 +137,6 @@ export const usersByDateRange = query({
 export const getUserById = query({
 	args: { userId: v.optional(v.id("users")) },
 	handler: async (ctx, { userId }) => {
-		if (userId) {
-			return await ctx.db.get(userId);
-		}
+		if (userId) return await ctx.db.get(userId);
 	},
 });

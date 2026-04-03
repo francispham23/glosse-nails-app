@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireAnyRole } from "./authz";
 
 // Save technicians for today's shift
 export const saveShift = mutation({
@@ -8,6 +9,7 @@ export const saveShift = mutation({
 		shiftDate: v.number(),
 	},
 	handler: async (ctx, args) => {
+		await requireAnyRole(ctx, ["owner", "manager"]);
 		// Check if shift already exists for this date
 		const existingShift = await ctx.db
 			.query("dailyTechnicianShifts")

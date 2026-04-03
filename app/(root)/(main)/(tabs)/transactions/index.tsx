@@ -5,10 +5,13 @@ import { ListEmptyComponent } from "@/components/list-empty";
 import { TransactionCard } from "@/components/transaction-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
+import { useAuthorization } from "@/hooks/use-authorization";
 import type { Transaction } from "@/utils/types";
 
 export default function Transactions() {
 	const { startOfDay, endOfDay } = useAppDate();
+	const { isAuthorized, user } = useAuthorization();
+
 	const transactions = useQuery(api.transactions.listByDateRange, {
 		startDate: startOfDay.getTime(),
 		endDate: endOfDay.getTime(),
@@ -20,7 +23,11 @@ export default function Transactions() {
 			contentContainerClassName="gap-4 pt-2 px-3 pb-24"
 			data={transactions}
 			renderItem={({ item }: { item: Transaction }) => (
-				<TransactionCard transaction={item} />
+				<TransactionCard
+					transaction={item}
+					userName={user?.name}
+					isAuthorized={isAuthorized}
+				/>
 			)}
 			keyExtractor={(item) => item._id.toString()}
 			ListEmptyComponent={<ListEmptyComponent item="transaction" />}

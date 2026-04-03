@@ -4,6 +4,19 @@ import { v } from "convex/values";
 
 const schema = defineSchema({
 	...authTables,
+	staffRoles: defineTable({
+		userId: v.id("users"),
+		role: v.union(
+			v.literal("owner"),
+			v.literal("manager"),
+			v.literal("technician"),
+		),
+		isActive: v.boolean(),
+		createdBy: v.optional(v.id("users")),
+		updatedAt: v.number(),
+	})
+		.index("by_userId", ["userId"])
+		.index("by_role", ["role"]),
 	// Transactions table
 	transactions: defineTable({
 		compensation: v.float64(),

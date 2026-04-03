@@ -5,36 +5,40 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
-import { cn, isToday } from "@/utils";
-import type { Transaction } from "@/utils/types";
+import { cn, isToday, type Transaction } from "@/utils";
 
 type Props = {
 	transaction: Transaction;
+	isAuthorized?: boolean;
 	technicianId?: string;
+	userName?: string;
 };
 
-export const TransactionCard = ({ transaction, technicianId }: Props) => {
+export const TransactionCard = ({
+	transaction,
+	technicianId,
+	isAuthorized,
+	userName,
+}: Props) => {
 	const { isLight } = useAppTheme();
+	const { endOfDay } = useAppDate();
 	const className = cn("text-lg text-muted", !isLight && "text-gray-300");
 
-	const { endOfDay } = useAppDate();
 	const isSelectedDateToday = isToday(endOfDay.getTime());
-
 	const showClient =
 		transaction.client && transaction.client !== transaction.technician;
-
-	const isLocalTransaction = transaction._id.startsWith("local_");
-
+	const isDisabled = !isAuthorized && transaction.technician !== userName;
 	return (
 		<Pressable
 			onPress={() => {
-				Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-				// Don't allow editing local transactions that haven't been synced yet
-				if (!isLocalTransaction) {
-					router.navigate(`/transaction/${transaction._id}/edit`);
+				if (!isAuthorized && transaction.technician !== userName) {
+					Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+					return;
 				}
+				Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+				router.navigate(`/transaction/${transaction._id}/edit`);
 			}}
-			disabled={isLocalTransaction}
+			disabled={isDisabled}
 		>
 			<Animated.View
 				key={transaction._id}
@@ -42,7 +46,6 @@ export const TransactionCard = ({ transaction, technicianId }: Props) => {
 				exiting={FadeOut}
 				className={cn(
 					"gap-3 rounded-lg border-r-accent bg-gray-300 p-3 shadow-md dark:bg-gray-700",
-					isLocalTransaction && "opacity-60",
 				)}
 			>
 				{/* Render transaction details here */}
@@ -64,11 +67,6 @@ export const TransactionCard = ({ transaction, technicianId }: Props) => {
 				{transaction.serviceDate ? (
 					<Text className={className}>
 						{getServiceDateString(transaction.serviceDate, isSelectedDateToday)}
-					</Text>
-				) : null}
-				{isLocalTransaction ? (
-					<Text className={cn(className, "text-xs italic")}>
-						Not synced - Tap checkout to sync
 					</Text>
 				) : null}
 			</Animated.View>

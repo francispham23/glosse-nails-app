@@ -10,20 +10,22 @@ import {
 	TransactionForm,
 } from "@/components/transaction-form";
 import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useAuthorization } from "@/hooks/use-authorization";
 import {
 	type EarningFormState,
 	getErrorMessage,
 	type PaymentMethod,
+	type Transaction,
 	type User,
 } from "@/utils";
 
 export default function EditTransactionScreen() {
 	const { transactionId } = useLocalSearchParams<{ transactionId: string }>();
+	const { isAuthorized } = useAuthorization();
 
 	const transaction = useQuery(
 		api.transactions.getById,
-		transactionId ? { id: transactionId as Id<"transactions"> } : "skip",
+		transactionId ? { id: transactionId as Transaction["_id"] } : "skip",
 	);
 	const updateTransaction = useMutation(api.transactions.updateTransaction);
 	const giftCards = useQuery(api.giftCards.list);
@@ -98,7 +100,7 @@ export default function EditTransactionScreen() {
 			setIsUpdating(true);
 			const tip = earning.tip.length > 0 ? earning.tip : "0";
 			await updateTransaction({
-				id: transactionId as Id<"transactions">,
+				id: transactionId as Transaction["_id"],
 				body: { ...earning, tip },
 			});
 
@@ -145,9 +147,10 @@ export default function EditTransactionScreen() {
 			setGiftError={setGiftError}
 			title={"Edit Transaction"}
 			description="Update transaction details"
-			transactionId={transactionId as Id<"transactions">}
+			transactionId={transactionId as Transaction["_id"]}
 			selectedInputs={selectedInputs}
 			setSelectedInputs={setSelectedInputs}
+			isAuthorized={isAuthorized}
 		/>
 	);
 }

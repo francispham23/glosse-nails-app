@@ -2,7 +2,7 @@ import { createContext, type ReactNode, useCallback, useMemo } from "react";
 import { MD3DarkTheme, MD3LightTheme } from "react-native-paper";
 import { Uniwind, useUniwind } from "uniwind";
 
-import { useReturnContext } from "@/hooks/use-return-context";
+import { useReturnContext } from "@/hooks";
 
 type ThemeName = "light" | "dark";
 

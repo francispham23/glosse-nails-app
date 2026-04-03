@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
+import { requireAnyRole, requireSelfOrRole } from "./authz";
 
 // Helper function to transform a transaction with related data
 async function transformTransaction(
@@ -136,6 +137,7 @@ export const listByTechnicianAndDateRange = query({
 		endDate: v.number(),
 	},
 	handler: async (ctx, { technicianId, startDate, endDate }) => {
+		await requireSelfOrRole(ctx, technicianId, ["owner", "manager"]);
 		const transactions = await ctx.db
 			.query("transactions")
 			.withIndex("by_technician_and_date", (q) =>
@@ -177,6 +179,7 @@ export const addTransaction = mutation({
 		}),
 	},
 	handler: async (ctx, { body }) => {
+		await requireSelfOrRole(ctx, body.technicianId, ["owner", "manager"]);
 		const giftCode = body.giftCode;
 		let giftCardId: Id<"giftCards"> | undefined;
 		// If a gift code is provided, find giftCard id from giftCards table
@@ -212,68 +215,6 @@ export const addTransaction = mutation({
 	},
 });
 
-export const bulkInsertTransactions = mutation({
-	args: {
-		transactions: v.array(
-			v.object({
-				compensation: v.string(),
-				compInCash: v.optional(v.string()),
-				compInGift: v.optional(v.string()),
-				compensationMethods: v.array(v.string()),
-				tip: v.string(),
-				tipInCash: v.optional(v.string()),
-				tipInGift: v.optional(v.string()),
-				tipMethods: v.array(v.string()),
-				discount: v.optional(v.string()),
-				isCashDiscount: v.optional(v.boolean()),
-				supply: v.optional(v.string()),
-				isCashSupply: v.optional(v.boolean()),
-				giftCode: v.optional(v.string()),
-				technicianId: v.id("users"),
-				services: v.optional(v.array(v.id("categories"))),
-				clientId: v.optional(v.id("users")),
-				serviceDate: v.number(),
-			}),
-		),
-	},
-	handler: async (ctx, args) => {
-		await Promise.all(
-			args.transactions.map(async (transaction) => {
-				let giftCardId: Id<"giftCards"> | undefined;
-				if (transaction.giftCode) {
-					const giftCard = await ctx.db
-						.query("giftCards")
-						.filter((q) => q.eq(q.field("code"), transaction.giftCode))
-						.first();
-					if (giftCard) {
-						giftCardId = giftCard._id;
-					}
-				}
-
-				await insertTransaction(ctx, { ...transaction, giftCode: giftCardId });
-
-				// Add transaction ID to gift card's transactionIds array
-				if (giftCardId && (transaction.tipInGift || transaction.compInGift)) {
-					const giftCard = await ctx.db.get(giftCardId);
-					if (giftCard) {
-						const transactions = giftCard.transactionIds || [];
-						const allTransactions = await ctx.db
-							.query("transactions")
-							.withIndex("by_gift_card", (q) => q.eq("giftCode", giftCardId))
-							.collect();
-						const newTransactionIds = allTransactions.map((t) => t._id);
-						await ctx.db.patch(giftCardId, {
-							transactionIds: Array.from(
-								new Set([...transactions, ...newTransactionIds]),
-							),
-						});
-					}
-				}
-			}),
-		);
-	},
-});
-
 // Get a single transaction by ID
 export const getById = query({
 	args: {
@@ -284,6 +225,7 @@ export const getById = query({
 		if (!transaction) {
 			return null;
 		}
+
 		return transaction;
 	},
 });
@@ -331,6 +273,7 @@ export const updateTransaction = mutation({
 		}),
 	},
 	handler: async (ctx, { id, body }) => {
+		await requireSelfOrRole(ctx, body.technicianId, ["owner", "manager"]);
 		const giftCode = body.giftCode;
 		let giftCardId: Id<"giftCards"> | undefined;
 		// If a gift code is provided, find giftCard id from giftCards table
@@ -396,6 +339,7 @@ export const deleteTransaction = mutation({
 		id: v.id("transactions"),
 	},
 	handler: async (ctx, { id }) => {
+		await requireAnyRole(ctx, ["owner", "manager"]);
 		const transaction = await ctx.db.get(id);
 		if (!transaction) {
 			throw new Error("Transaction not found");

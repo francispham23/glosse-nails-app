@@ -17,7 +17,6 @@ import { NumericInput } from "@/components/Form/numeric-input";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
 import { useFormValidation } from "@/hooks";
 import {
 	type Category,
@@ -25,6 +24,7 @@ import {
 	type EarningFormState,
 	getErrorMessage,
 	type PaymentMethod,
+	type Transaction,
 	useThemeColor,
 } from "@/utils";
 
@@ -44,9 +44,10 @@ interface TransactionFormProps {
 	setOpen: (open: boolean) => void;
 	giftError: string;
 	setGiftError: React.Dispatch<React.SetStateAction<string>>;
-	transactionId?: Id<"transactions">;
 	selectedInputs: SelectedInput[];
 	setSelectedInputs: React.Dispatch<React.SetStateAction<SelectedInput[]>>;
+	isAuthorized?: boolean;
+	transactionId?: Transaction["_id"];
 }
 
 /* ------------------------------- Main Component ------------------------------ */
@@ -66,6 +67,7 @@ export function TransactionForm({
 	transactionId,
 	selectedInputs,
 	setSelectedInputs,
+	isAuthorized,
 }: TransactionFormProps) {
 	const mutedColor = useThemeColor("muted");
 	const { endOfDay } = useAppDate();
@@ -480,7 +482,7 @@ export function TransactionForm({
 			</Button>
 
 			{/* Delete Button (Edit mode only) */}
-			{type === "edit" && (
+			{type === "edit" && isAuthorized && (
 				<Button
 					onPress={handleDelete}
 					disabled={isDisabled}

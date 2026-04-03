@@ -13,11 +13,13 @@ import { TechnicianCard } from "@/components/technician-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
+import { useAuthorization } from "@/hooks/use-authorization";
 import { cn, getErrorMessage, type User } from "@/utils";
 
 export default function HomeRoute() {
 	const { isLight } = useAppTheme();
 	const { startOfDay, endOfDay } = useAppDate();
+	const { isAuthorized: isAuthUser, user } = useAuthorization();
 
 	// Query Convex only when not showing today's data
 	const technicians = useQuery(api.users.usersByDateRange, {
@@ -86,6 +88,7 @@ export default function HomeRoute() {
 							item={item}
 							isSelecting={isSelecting}
 							isSelected={isSelected}
+							isAuthorized={isAuthUser || user?._id === item._id}
 							onToggleSelect={(user) => {
 								if (isSelected) {
 									setSelectedTechnicians((prev) =>
@@ -101,29 +104,31 @@ export default function HomeRoute() {
 				itemLayoutAnimation={LinearTransition}
 				ListEmptyComponent={<ListEmptyComponent item="technician" />}
 			/>
-			<View className="absolute bottom-25 self-center">
-				<AddButton
-					isAdding={isSelecting}
-					setIsAdding={async (adding) => {
-						// When exiting selection mode, save the shift
-						if (isSelecting && !adding && selectedTechnicians.length > 0) {
-							try {
-								await saveShift({
-									technicians: selectedTechnicians.map((u) => u._id),
-									shiftDate: startOfDay.getTime(),
-								});
-							} catch (error) {
-								Alert.alert(
-									"Error",
-									getErrorMessage(error, "Failed to save shift"),
-								);
-								console.error("Failed to save shift:", error);
+			{isAuthUser ? (
+				<View className="absolute bottom-25 self-center">
+					<AddButton
+						isAdding={isSelecting}
+						setIsAdding={async (adding) => {
+							// When exiting selection mode, save the shift
+							if (isSelecting && !adding && selectedTechnicians.length > 0) {
+								try {
+									await saveShift({
+										technicians: selectedTechnicians.map((u) => u._id),
+										shiftDate: startOfDay.getTime(),
+									});
+								} catch (error) {
+									Alert.alert(
+										"Error",
+										getErrorMessage(error, "Failed to save shift"),
+									);
+									console.error("Failed to save shift:", error);
+								}
 							}
-						}
-						setIsSelecting(adding);
-					}}
-				/>
-			</View>
+							setIsSelecting(adding);
+						}}
+					/>
+				</View>
+			) : null}
 		</Animated.View>
 	);
 }

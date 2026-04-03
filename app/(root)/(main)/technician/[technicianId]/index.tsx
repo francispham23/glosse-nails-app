@@ -13,13 +13,15 @@ import { TransactionCard } from "@/components/transaction-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
-import { cn } from "@/utils";
-import type { Transaction, User } from "@/utils/types";
+import { useAuthorization } from "@/hooks/use-authorization";
+import { cn, type Transaction, type User } from "@/utils";
 
 export default function TechnicianId() {
 	const { isLight } = useAppTheme();
 	const { startOfDay, endOfDay } = useAppDate();
+	const { isAuthorized, user } = useAuthorization();
 	const params = useLocalSearchParams();
+
 	const technicianId = params.technicianId as User["_id"];
 	const technician = useQuery(api.users.getUserById, { userId: technicianId });
 	const transactions = useQuery(api.transactions.listByTechnicianAndDateRange, {
@@ -51,6 +53,8 @@ export default function TechnicianId() {
 						<TransactionCard
 							key={item._id}
 							transaction={item}
+							userName={user?.name}
+							isAuthorized={isAuthorized}
 							technicianId={technicianId}
 						/>
 					);

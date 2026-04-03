@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireAnyRole } from "./authz";
 
 export const list = query({
 	args: {},
@@ -78,6 +79,7 @@ export const create = mutation({
 		sellDate: v.number(),
 	},
 	handler: async (ctx, args) => {
+		await requireAnyRole(ctx, ["owner", "manager"]);
 		// Check if code already exists
 		const existing = await ctx.db
 			.query("giftCards")
@@ -147,6 +149,7 @@ export const deleteGiftCard = mutation({
 		id: v.id("giftCards"),
 	},
 	handler: async (ctx, args) => {
+		await requireAnyRole(ctx, ["owner", "manager"]);
 		const giftCard = await ctx.db.get(args.id);
 		if (!giftCard) {
 			throw new Error("Gift card not found");

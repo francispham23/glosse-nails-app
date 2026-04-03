@@ -10,12 +10,14 @@ import { GiftCard } from "@/components/gift-card";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
-import { cn } from "@/utils";
-import type { Gift as GiftType } from "@/utils/types";
+import { useAuthorization } from "@/hooks";
+import { cn, type Gift as GiftType } from "@/utils";
 
 export default function GiftCardRoute() {
 	const router = useRouter();
 	const { isLight } = useAppTheme();
+	const { isAuthorized } = useAuthorization();
+
 	const giftCards = useQuery(api.giftCards.list);
 
 	const createSpeakerTapGesture = () =>
@@ -58,16 +60,19 @@ export default function GiftCardRoute() {
 				exiting={FadeOut}
 				data={sortedGiftCards}
 				renderItem={({ item }: { item: GiftType }) => (
-					<GiftCard giftCard={item} />
+					<GiftCard giftCard={item} isAuthorized={isAuthorized} />
 				)}
 				keyExtractor={(item) => item._id.toString()}
 				ListEmptyComponent={<ListEmptyComponent item="gift card" />}
 			/>
-			<GestureDetector gesture={createSpeakerTapGesture()}>
-				<View className="absolute bottom-25 self-center">
-					<AddButton />
-				</View>
-			</GestureDetector>
+
+			{isAuthorized ? (
+				<GestureDetector gesture={createSpeakerTapGesture()}>
+					<View className="absolute bottom-25 self-center">
+						<AddButton />
+					</View>
+				</GestureDetector>
+			) : null}
 		</Animated.View>
 	);
 }
