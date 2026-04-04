@@ -1,7 +1,7 @@
 {
 	"expo": {
 		"name": "Glossé App",
-		"slug": "glosse-app",
+		"slug": "glosse-nail-app",
 		"version": "1.0.0",
 		"orientation": "portrait",
 		"icon": "./assets/icon.png",
