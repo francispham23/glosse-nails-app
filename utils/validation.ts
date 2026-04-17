@@ -64,21 +64,28 @@ export const EarningFormSchema = z
 	})
 	.superRefine((data, ctx) => {
 		const compensation = parseNum(data.compensation);
+		const discount = parseNum(data.discount);
+		const netCompensation = Math.max(0, compensation - discount);
 		const compInCash = parseNum(data.compInCash);
 		const compInGift = parseNum(data.compInGift);
 
 		// Check compInCash first
-		if (data.compInCash && compInCash >= compensation) {
+		if (
+			data.compInCash &&
+			compInCash >= netCompensation &&
+			netCompensation > 0
+		) {
 			ctx.addIssue({
 				code: "custom",
-				message: "Cash amount must be smaller than compensation",
+				message: "Cash amount must be smaller than compensation after discount",
 				path: ["compInCash"],
 			});
-		} else if (compInCash + compInGift > compensation) {
+		} else if (compInCash + compInGift > netCompensation) {
 			// Only check total if compInCash is valid
 			ctx.addIssue({
 				code: "custom",
-				message: "Total cash and gift card amount must not exceed compensation",
+				message:
+					"Total cash and gift card amount must not exceed compensation after discount",
 				path: ["compInGift"],
 			});
 		}

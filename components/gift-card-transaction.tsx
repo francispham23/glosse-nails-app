@@ -2,8 +2,8 @@ import { Text, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { useAppTheme } from "@/contexts/app-theme-context";
-import { cn } from "@/utils";
-import type { Transaction } from "@/utils/types";
+import { cn, type Transaction } from "@/utils";
+import { TAX_RATE } from "./Form/constants";
 
 type Props = {
 	transaction: Transaction;
@@ -29,7 +29,9 @@ export const GiftCardTransaction = ({ transaction }: Props) => {
 				>
 					$
 					{(
-						(transaction.compInGift || 0) + (transaction.tipInGift || 0)
+						(transaction.compInGift ?? 0) * TAX_RATE +
+						(transaction.supply ?? 0) * TAX_RATE +
+						(transaction.tipInGift ?? 0)
 					).toFixed(2) || "0.00"}{" "}
 					Used
 				</Text>

@@ -3,8 +3,7 @@ import { Text } from "react-native";
 import { TextInput } from "react-native-paper";
 
 import { useAppTheme } from "@/contexts/app-theme-context";
-import { cn } from "@/utils";
-import type { EarningFormState, Gift } from "@/utils/types";
+import { cn, type EarningFormState, type Gift } from "@/utils";
 import { TAX_RATE } from "./constants";
 import { ErrorText } from "./form";
 import { formatCurrency, roundCurrency, toCents } from "./helpers";
@@ -32,21 +31,46 @@ export const GiftCardInputs = ({
 	type,
 }: GiftCardInputsProps) => {
 	const { isLight } = useAppTheme();
-	const { giftCode, tipInGift, compInGift, supply } = earning;
+	const { giftCode, tipInGift, compInGift, supply, discount, compensation } =
+		earning;
 
+	const maxCompGiftAmount = calculateMaxCompGiftAmount(compensation, discount);
 	const availableBalance = giftCard?.balance
 		? calculateAvailableBalance(giftCard.balance, compInGift, tipInGift, supply)
 		: 0;
 
 	useEffect(() => {
-		if (giftCard && availableBalance < 0) {
+		if (!giftCard) {
+			setGiftError("");
+			return;
+		}
+
+		if (
+			type === "compInGift" &&
+			parseCurrencyValue(compInGift) > maxCompGiftAmount
+		) {
+			setGiftError(
+				`Gift card amount cannot exceed $${maxCompGiftAmount.toFixed(2)} after discount`,
+			);
+			return;
+		}
+
+		if (availableBalance < 0) {
 			setGiftError(
 				`Gift card balance insufficient. Available: $${availableBalance.toFixed(2)}`,
 			);
-		} else {
-			setGiftError("");
+			return;
 		}
-	}, [availableBalance, giftCard, setGiftError]);
+
+		setGiftError("");
+	}, [
+		availableBalance,
+		compInGift,
+		giftCard,
+		maxCompGiftAmount,
+		setGiftError,
+		type,
+	]);
 
 	if (!type) return null;
 
@@ -58,6 +82,16 @@ export const GiftCardInputs = ({
 	const handleAmountChange = (value: string) => {
 		updateEarning(type, value);
 		if (!giftCard) return;
+
+		if (
+			type === "compInGift" &&
+			parseCurrencyValue(value) > maxCompGiftAmount
+		) {
+			setGiftError(
+				`Gift card amount cannot exceed $${maxCompGiftAmount.toFixed(2)} after discount`,
+			);
+			return;
+		}
 
 		const totalCents = calculateTotalUsage(
 			type,
@@ -106,7 +140,11 @@ export const GiftCardInputs = ({
 					</Text>
 					<TextInput
 						mode="outlined"
-						placeholder="Enter amount from Gift Card"
+						placeholder={
+							type === "compInGift"
+								? `Enter amount from Gift Card. Max $${maxCompGiftAmount.toFixed(2)}`
+								: "Enter amount from Gift Card"
+						}
 						keyboardType="numeric"
 						autoCapitalize="none"
 						value={earning[type]?.toString()}
@@ -123,6 +161,22 @@ export const GiftCardInputs = ({
 };
 
 /* ----------------------------- Utility Functions ----------------------------- */
+
+const parseCurrencyValue = (value?: string): number => {
+	const parsed = Number.parseFloat(value ?? "0");
+	return Number.isNaN(parsed) ? 0 : parsed;
+};
+
+const calculateMaxCompGiftAmount = (
+	compensation: string,
+	discount?: string,
+): number =>
+	roundCurrency(
+		Math.max(
+			0,
+			parseCurrencyValue(compensation) - parseCurrencyValue(discount),
+		),
+	);
 
 const calculateAmountWithTax = (value: string, applyTax: boolean): number => {
 	const cents = toCents(value);

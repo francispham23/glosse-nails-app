@@ -4,6 +4,7 @@ import { Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
+import { TAX_RATE } from "@/components/Form/constants";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
@@ -35,7 +36,10 @@ export default function GiftRoute() {
 				return {
 					_id: tx._id,
 					code: gifts?.find((gift) => gift._id === tx.giftCode)?.code as string,
-					balance: (tx.compInGift || 0) + (tx.tipInGift || 0),
+					balance:
+						(tx.compInGift ?? 0) * TAX_RATE +
+						(tx.supply ?? 0) * TAX_RATE +
+						(tx.tipInGift ?? 0),
 					redeemedDate: tx.serviceDate as number,
 					client: tx.client as string | undefined,
 					technician: tx.technician as string | undefined,

@@ -10,6 +10,7 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { cn, type Gift, getErrorMessage, type Transaction } from "@/utils";
+import { TAX_RATE } from "./Form/constants";
 import { GiftCardTransaction } from "./gift-card-transaction";
 
 type Props = {
@@ -52,7 +53,11 @@ export const GiftCard = ({ giftCard, isAuthorized }: Props) => {
 
 	const totalUsed =
 		transactions?.reduce(
-			(sum, tx) => sum + (tx.compInGift || 0) + (tx.tipInGift || 0),
+			(sum, tx) =>
+				sum +
+				(tx.compInGift ?? 0) * TAX_RATE +
+				(tx.supply ?? 0) * TAX_RATE +
+				(tx.tipInGift ?? 0),
 			0,
 		) || 0;
 
