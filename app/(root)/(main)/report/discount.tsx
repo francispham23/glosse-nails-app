@@ -17,6 +17,7 @@ export default function DiscountRoute() {
 	const transactions = useQuery(api.transactions.listByDateRange, {
 		startDate,
 		endDate,
+		report: true,
 	});
 
 	const discount =

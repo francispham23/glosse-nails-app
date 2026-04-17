@@ -17,6 +17,7 @@ export default function SupplyRoute() {
 	const transactions = useQuery(api.transactions.listByDateRange, {
 		startDate,
 		endDate,
+		report: true,
 	});
 
 	const supply =

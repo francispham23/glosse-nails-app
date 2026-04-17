@@ -85,23 +85,34 @@ export const usersByDateRange = query({
 		report: v.optional(v.boolean()),
 	},
 	handler: async (ctx, { startDate, endDate, report }) => {
+		const actor = report ? await requireActor(ctx) : null;
+		const canViewAllReportUsers = actor
+			? hasAnyRole(actor.role, ["owner", "manager"])
+			: true;
+
 		const technicians = await ctx.db
 			.query("users")
 			.filter((q) => q.eq(q.field("isAnonymous"), undefined))
 			.collect();
 
-		// Return all technicians with total tips and compensation
+		const visibleTechnicians =
+			report && actor && !canViewAllReportUsers
+				? technicians.filter((tech) => tech._id === actor.userId)
+				: technicians;
+
+		const datedTransactions = await ctx.db
+			.query("transactions")
+			.withIndex("by_service_date", (q) =>
+				q.gte("serviceDate", startDate).lte("serviceDate", endDate),
+			)
+			.collect();
+
+		// Return all visible technicians with total tips and compensation
 		const result = await Promise.all(
-			technicians.map(async (tech) => {
-				// Fetch transactions for this technician (fall back to in-memory filtering to avoid relying on a missing typed index)
-				const transactions = (
-					await ctx.db
-						.query("transactions")
-						.withIndex("by_service_date", (q) =>
-							q.gte("serviceDate", startDate).lte("serviceDate", endDate),
-						)
-						.collect()
-				).filter((t) => t.technician === tech._id);
+			visibleTechnicians.map(async (tech) => {
+				const transactions = datedTransactions.filter(
+					(t) => t.technician === tech._id,
+				);
 
 				const compensation = Number.parseFloat(
 					transactions

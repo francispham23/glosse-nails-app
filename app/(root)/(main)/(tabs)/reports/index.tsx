@@ -29,6 +29,7 @@ export default function ReportsRoute() {
 	const transactions = useQuery(api.transactions.listByDateRange, {
 		startDate: startDate.setHours(0, 0, 0, 0),
 		endDate: endDate.setHours(23, 59, 59, 999),
+		report: true,
 	});
 
 	const giftCards = useQuery(api.giftCards.listByDateRange, {

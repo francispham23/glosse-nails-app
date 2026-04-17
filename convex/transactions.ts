@@ -2,7 +2,12 @@ import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
-import { requireAnyRole, requireSelfOrRole } from "./authz";
+import {
+	hasAnyRole,
+	requireActor,
+	requireAnyRole,
+	requireSelfOrRole,
+} from "./authz";
 
 // Helper function to transform a transaction with related data
 async function transformTransaction(
@@ -114,8 +119,14 @@ export const listByDateRange = query({
 	args: {
 		startDate: v.number(),
 		endDate: v.number(),
+		report: v.optional(v.boolean()),
 	},
-	handler: async (ctx, { startDate, endDate }) => {
+	handler: async (ctx, { startDate, endDate, report }) => {
+		const actor = report ? await requireActor(ctx) : null;
+		const canViewAllReportTransactions = actor
+			? hasAnyRole(actor.role, ["owner", "manager"])
+			: true;
+
 		const transactions = await ctx.db
 			.query("transactions")
 			.withIndex("by_service_date", (q) =>
@@ -124,8 +135,17 @@ export const listByDateRange = query({
 			.order("desc")
 			.collect();
 
+		const filteredTransactions =
+			report && actor && !canViewAllReportTransactions
+				? transactions.filter(
+						(transaction) => transaction.technician === actor.userId,
+					)
+				: transactions;
+
 		return Promise.all(
-			transactions.map((transaction) => transformTransaction(ctx, transaction)),
+			filteredTransactions.map((transaction) =>
+				transformTransaction(ctx, transaction),
+			),
 		);
 	},
 });

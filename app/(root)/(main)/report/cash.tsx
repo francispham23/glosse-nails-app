@@ -146,6 +146,7 @@ export default function CashReportRoute() {
 	const transactions = useQuery(api.transactions.listByDateRange, {
 		startDate,
 		endDate,
+		report: true,
 	});
 
 	// Derived data — only recomputed when `transactions` changes
