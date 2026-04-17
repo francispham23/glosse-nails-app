@@ -39,15 +39,24 @@ export const list = query({
 export const getByCode = query({
 	args: { code: v.string(), transactionId: v.optional(v.id("transactions")) },
 	handler: async (ctx, args) => {
+		const code = args.code.trim();
+		if (!code) {
+			return null;
+		}
+
 		const giftCard = await ctx.db
 			.query("giftCards")
-			.withIndex("by_code", (q) => q.eq("code", args.code))
+			.withIndex("by_code", (q) => q.eq("code", code))
 			.first();
 
-		// Calculate balance with gift card's transaction IDs
+		if (!giftCard) {
+			return null;
+		}
+
+		// Calculate balance only for the matching gift card.
 		const transactions = await ctx.db
 			.query("transactions")
-			.withIndex("by_gift_card", (q) => q.eq("giftCode", giftCard?._id))
+			.withIndex("by_gift_card", (q) => q.eq("giftCode", giftCard._id))
 			.collect();
 
 		const totalRedeemed = transactions
@@ -60,13 +69,9 @@ export const getByCode = query({
 				);
 			}, 0);
 
-		const balance = giftCard
-			? Number.parseFloat((giftCard.value - totalRedeemed).toFixed(2))
-			: 0;
-
-		if (!giftCard) {
-			return null;
-		}
+		const balance = Number.parseFloat(
+			(giftCard.value - totalRedeemed).toFixed(2),
+		);
 
 		return { ...giftCard, balance };
 	},

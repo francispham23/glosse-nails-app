@@ -91,10 +91,13 @@ export function TransactionForm({
 
 	const deleteTransaction = useMutation(api.transactions.deleteTransaction);
 	const categories = useQuery(api.categories.getFormCategories);
-	const giftCard = useQuery(api.giftCards.getByCode, {
-		code: giftCode ? giftCode : "skip",
-		transactionId,
-	});
+
+	// Fetch gift card details and calculate balance if gift code is entered
+	const normalizedGiftCode = giftCode?.trim() ?? "";
+	const giftCard = useQuery(
+		api.giftCards.getByCode,
+		normalizedGiftCode ? { code: normalizedGiftCode, transactionId } : "skip",
+	);
 
 	/* ---------------------------------- State --------------------------------- */
 	const { errors, validate, getFieldError } =
@@ -125,14 +128,14 @@ export function TransactionForm({
 			isLoading ||
 			Object.keys(errors).length > 0 ||
 			!!giftError ||
-			(!!giftCode && !giftCard) ||
+			(!!normalizedGiftCode && !giftCard) ||
 			isDeleting ||
 			!compensationPlaceholder,
 		[
 			isLoading,
 			errors,
 			giftError,
-			giftCode,
+			normalizedGiftCode,
 			giftCard,
 			isDeleting,
 			compensationPlaceholder,
