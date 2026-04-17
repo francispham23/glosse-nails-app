@@ -6,7 +6,7 @@ import { Alert } from "react-native";
 import { Button, TextInput } from "react-native-paper";
 
 import FormHeader, { FormContainer } from "@/components/Form/form";
-import { useThemeColor } from "@/utils";
+import { isProduction, useThemeColor } from "@/utils";
 
 export default function SignInRoute() {
 	const { signIn } = useAuthActions();
@@ -93,21 +93,26 @@ export default function SignInRoute() {
 				{isLoading ? "Signing In..." : "Sign In"}
 			</Button>
 			{/* forgot password route */}
-			<Link href="/(root)/(auth)/email/(reset)/request-password-reset" asChild>
-				<Button mode="text" className="self-center rounded-3xl">
-					<Ionicons
-						name="lock-closed-outline"
-						size={14}
-						color={accentForegroundColor}
-					/>
-					{"  "}Forgot Password?{"  "}
-					<Ionicons
-						name="chevron-forward"
-						size={16}
-						color={accentForegroundColor}
-					/>
-				</Button>
-			</Link>
+			{!isProduction && (
+				<Link
+					href="/(root)/(auth)/email/(reset)/request-password-reset"
+					asChild
+				>
+					<Button mode="text" className="self-center rounded-3xl">
+						<Ionicons
+							name="lock-closed-outline"
+							size={14}
+							color={accentForegroundColor}
+						/>
+						{"  "}Forgot Password?{"  "}
+						<Ionicons
+							name="chevron-forward"
+							size={16}
+							color={accentForegroundColor}
+						/>
+					</Button>
+				</Link>
+			)}
 		</FormContainer>
 	);
 }
