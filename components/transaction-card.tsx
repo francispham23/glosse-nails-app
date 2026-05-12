@@ -30,7 +30,7 @@ export const TransactionCard = ({
 
 	// Disable the card if the user is not authorized and is not the technician and date is not today
 	const isDisabled =
-		transaction.technician !== userName ||
+		(!isAuthorized && transaction.technician !== userName) ||
 		(transaction.technician === userName && !isSelectedDateToday);
 
 	return (
