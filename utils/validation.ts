@@ -4,17 +4,6 @@ import { z } from "zod";
 const parseNum = (val: string | undefined): number =>
 	val ? Number.parseFloat(val) : 0;
 
-/** Required numeric string field (must be > 0) */
-const requiredPositiveNumericString = (fieldName: string) =>
-	z
-		.string()
-		.min(1, `${fieldName} is required`)
-		.refine(
-			(val) => !Number.isNaN(parseNum(val)),
-			`${fieldName} must be a number`,
-		)
-		.refine((val) => parseNum(val) > 0, `${fieldName} must be greater than 0`);
-
 /** Required numeric string field (must be >= 0) */
 const requiredNonNegativeNumericString = (fieldName: string) =>
 	z
@@ -24,10 +13,10 @@ const requiredNonNegativeNumericString = (fieldName: string) =>
 			(val) => !Number.isNaN(parseNum(val)),
 			`${fieldName} must be a number`,
 		)
-		.refine((val) => parseNum(val) >= 0, `${fieldName} must be non-negative`);
+		.refine((val) => parseNum(val) >= 0, `${fieldName} must be filled`);
 
 /** Optional numeric string field (must be >= 0 if provided) */
-const optionalPositiveNumericString = (fieldName: string) =>
+const optionalNonNegativeNumericString = (fieldName: string) =>
 	z
 		.string()
 		.optional()
@@ -35,27 +24,24 @@ const optionalPositiveNumericString = (fieldName: string) =>
 			(val) => !val || !Number.isNaN(parseNum(val)),
 			`${fieldName} must be a number`,
 		)
-		.refine(
-			(val) => !val || parseNum(val) >= 0,
-			`${fieldName} must be positive`,
-		);
+		.refine((val) => !val || parseNum(val) >= 0, `${fieldName} must be filled`);
 
 /* --------------------------------- Schema --------------------------------- */
 export const EarningFormSchema = z
 	.object({
-		compensation: requiredPositiveNumericString("Compensation"),
+		compensation: requiredNonNegativeNumericString("Compensation"),
 		compensationMethods: z.array(z.enum(["Cash", "Card", "Gift Card"])),
-		compInCash: optionalPositiveNumericString("Cash amount"),
-		compInGift: optionalPositiveNumericString("Gift amount"),
+		compInCash: optionalNonNegativeNumericString("Cash amount"),
+		compInGift: optionalNonNegativeNumericString("Gift amount"),
 		giftCode: z.string().optional(),
 
 		tip: requiredNonNegativeNumericString("Tip"),
 		tipMethods: z.array(z.enum(["Cash", "Card", "Gift Card"])),
-		tipInCash: optionalPositiveNumericString("Tip cash amount"),
-		tipInGift: optionalPositiveNumericString("Tip gift amount"),
+		tipInCash: optionalNonNegativeNumericString("Tip cash amount"),
+		tipInGift: optionalNonNegativeNumericString("Tip gift amount"),
 
-		discount: optionalPositiveNumericString("Discount"),
-		supply: optionalPositiveNumericString("Supply cost"),
+		discount: optionalNonNegativeNumericString("Discount"),
+		supply: optionalNonNegativeNumericString("Supply cost"),
 
 		services: z.array(z.string()).optional(),
 		serviceDate: z.number().positive("Service date is required"),

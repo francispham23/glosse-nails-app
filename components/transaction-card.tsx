@@ -27,7 +27,12 @@ export const TransactionCard = ({
 	const isSelectedDateToday = isToday(endOfDay.getTime());
 	const showClient =
 		transaction.client && transaction.client !== transaction.technician;
-	const isDisabled = !isAuthorized && transaction.technician !== userName;
+
+	// Disable the card if the user is not authorized and is not the technician and date is not today
+	const isDisabled =
+		transaction.technician !== userName ||
+		(transaction.technician === userName && !isSelectedDateToday);
+
 	return (
 		<Pressable
 			onPress={() => {

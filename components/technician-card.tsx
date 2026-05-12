@@ -43,11 +43,13 @@ export const TechnicianCard = ({
 		!isLight && "text-gray-300",
 	);
 
+	const disabled = report || !isAuthorized;
+
 	return (
 		<Pressable
-			disabled={report || !isAuthorized}
+			disabled={disabled}
 			onPress={() => {
-				if (report || !isAuthorized) return;
+				if (disabled) return;
 				Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 				if (isSelecting && onToggleSelect) {
 					onToggleSelect(item);

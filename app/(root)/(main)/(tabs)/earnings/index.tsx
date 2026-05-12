@@ -14,7 +14,7 @@ import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { useAuthorization } from "@/hooks/use-authorization";
-import { cn, getErrorMessage, type User } from "@/utils";
+import { cn, getErrorMessage, isToday, type User } from "@/utils";
 
 export default function HomeRoute() {
 	const { isLight } = useAppTheme();
@@ -39,8 +39,9 @@ export default function HomeRoute() {
 	const [isSelecting, setIsSelecting] = useState(false);
 
 	useEffect(() => {
+		if (onShiftTechs === null) return setSelectedTechnicians([]);
 		// Filter technicians based on onShiftTechs
-		if (onShiftTechs && onShiftTechs.length > 0 && technicians) {
+		if (onShiftTechs && technicians) {
 			const shiftUserIds = new Set(onShiftTechs.map((user) => user._id));
 			const filteredUsers = technicians.filter((user) =>
 				shiftUserIds.has(user._id),
@@ -88,7 +89,10 @@ export default function HomeRoute() {
 							item={item}
 							isSelecting={isSelecting}
 							isSelected={isSelected}
-							isAuthorized={isAuthUser || user?._id === item._id}
+							isAuthorized={
+								isAuthUser ||
+								(user?._id === item._id && isToday(endOfDay.getTime()))
+							}
 							onToggleSelect={(user) => {
 								if (isSelected) {
 									setSelectedTechnicians((prev) =>
