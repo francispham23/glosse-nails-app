@@ -8,8 +8,8 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { AddButton } from "@/components/Buttons/add-button";
+import { TechnicianCard } from "@/components/Cards/technician-card";
 import { ListEmptyComponent } from "@/components/list-empty";
-import { TechnicianCard } from "@/components/technician-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";

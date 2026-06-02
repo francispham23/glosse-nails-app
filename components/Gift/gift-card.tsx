@@ -10,7 +10,7 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { cn, type Gift, getErrorMessage, type Transaction } from "@/utils";
-import { TAX_RATE } from "./Form/constants";
+import { TAX_RATE } from "../Form/constants";
 import { GiftCardTransaction } from "./gift-card-transaction";
 
 type Props = {

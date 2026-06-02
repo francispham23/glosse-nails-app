@@ -4,8 +4,8 @@ import { Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
+import { TechnicianCard } from "@/components/Cards/technician-card";
 import { ListEmptyComponent } from "@/components/list-empty";
-import { TechnicianCard } from "@/components/technician-card";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/utils";

@@ -9,7 +9,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { ListEmptyComponent } from "@/components/list-empty";
-import { TransactionCard } from "@/components/transaction-card";
+import { TransactionCard } from "@/components/Transaction/transaction-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";

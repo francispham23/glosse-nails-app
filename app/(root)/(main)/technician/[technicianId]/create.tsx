@@ -7,7 +7,7 @@ import { initialEarningState } from "@/components/Form/constants";
 import {
 	type SelectedInput,
 	TransactionForm,
-} from "@/components/transaction-form";
+} from "@/components/Transaction/transaction-form";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import { type EarningFormState, getErrorMessage, type User } from "@/utils";
