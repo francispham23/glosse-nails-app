@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { View } from "react-native";
 import { Chip } from "react-native-paper";
 
-import type { Category, PaymentMethod } from "@/utils/types";
+import type { Category, EarningFormState, PaymentMethod } from "@/utils/types";
+import { otherInputs } from "../Form/constants";
+import type { SelectedInput } from "./transaction-form";
 
 const HIDDEN_SERVICE_KEYWORDS = [
 	"Dual",
@@ -98,6 +100,50 @@ export const ServiceCategoryChips = ({
 					More Services...
 				</Chip>
 			) : null}
+		</View>
+	);
+};
+
+type OtherInputs = (typeof otherInputs)[number];
+type OtherInputChipsProps = {
+	selectedInputs: OtherInputs[];
+	setSelectedInputs: React.Dispatch<React.SetStateAction<OtherInputs[]>>;
+	earning: EarningFormState;
+};
+
+export const OtherInputChips = ({
+	selectedInputs,
+	setSelectedInputs,
+	earning,
+}: OtherInputChipsProps) => {
+	const toggleInput = useCallback(
+		(input: SelectedInput) => {
+			setSelectedInputs((prev) =>
+				prev.includes(input)
+					? prev.filter((i) => i !== input)
+					: [...prev, input],
+			);
+		},
+		[setSelectedInputs],
+	);
+	return (
+		<View className="flex-row flex-wrap gap-2">
+			{otherInputs.map((input) => (
+				<Chip
+					key={input}
+					selected={selectedInputs.includes(input)}
+					disabled={
+						selectedInputs.includes(input) &&
+						earning[input.toLocaleLowerCase() as keyof EarningFormState] !== ""
+					}
+					className={
+						selectedInputs.includes(input) ? "opacity-60" : "opacity-100"
+					}
+					onPress={() => toggleInput(input)}
+				>
+					{input}
+				</Chip>
+			))}
 		</View>
 	);
 };

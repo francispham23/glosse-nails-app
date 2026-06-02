@@ -1,20 +1,20 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useMutation, useQuery } from "convex/react";
-import { router } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
-import { Alert, Keyboard, Text, View } from "react-native";
-import { Button, Chip, TextInput } from "react-native-paper";
+import { useQuery } from "convex/react";
+import { useCallback, useMemo } from "react";
+import { Keyboard, Text, View } from "react-native";
+import { Button, TextInput } from "react-native-paper";
 
-import { otherInputs, paymentMethods } from "@/components/Form/constants";
+import { type otherInputs, paymentMethods } from "@/components/Form/constants";
 import FormHeader, { ErrorText } from "@/components/Form/form";
-import {
-	PaymentMethodChips,
-	ServiceCategoryChips,
-} from "@/components/Form/form-chips";
 import { GiftCardInputs } from "@/components/Form/gift-card-inputs";
 import { getPaymentPlaceholder } from "@/components/Form/helpers";
 import { NumericInput } from "@/components/Form/numeric-input";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
+import {
+	OtherInputChips,
+	PaymentMethodChips,
+	ServiceCategoryChips,
+} from "@/components/TransactionForm/form-chips";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import { useFormValidation } from "@/hooks";
@@ -22,11 +22,11 @@ import {
 	type Category,
 	EarningFormSchema,
 	type EarningFormState,
-	getErrorMessage,
 	type PaymentMethod,
 	type Transaction,
 	useThemeColor,
 } from "@/utils";
+import { DeleteButton } from "../Buttons/delete-button";
 
 /* ---------------------------------- Types --------------------------------- */
 export type SelectedInput = (typeof otherInputs)[number];
@@ -89,7 +89,6 @@ export function TransactionForm({
 		tipInGift,
 	} = earning;
 
-	const deleteTransaction = useMutation(api.transactions.deleteTransaction);
 	const categories = useQuery(api.categories.getFormCategories);
 
 	// Fetch gift card details and calculate balance if gift code is entered
@@ -102,7 +101,6 @@ export function TransactionForm({
 	/* ---------------------------------- State --------------------------------- */
 	const { errors, validate, getFieldError } =
 		useFormValidation(EarningFormSchema);
-	const [isDeleting, setIsDeleting] = useState(false);
 
 	/* ----------------------------- Derived State ------------------------------ */
 	const { cash, card, gift, tipCash, tipCard, tipGift } = useMemo(
@@ -129,7 +127,6 @@ export function TransactionForm({
 			Object.keys(errors).length > 0 ||
 			!!giftError ||
 			(!!normalizedGiftCode && !giftCard) ||
-			isDeleting ||
 			!compensationPlaceholder,
 		[
 			isLoading,
@@ -137,7 +134,6 @@ export function TransactionForm({
 			giftError,
 			normalizedGiftCode,
 			giftCard,
-			isDeleting,
 			compensationPlaceholder,
 		],
 	);
@@ -229,50 +225,6 @@ export function TransactionForm({
 		},
 		[tipMethods, validate, setEarning],
 	);
-
-	const toggleInput = useCallback(
-		(input: SelectedInput) => {
-			setSelectedInputs((prev) =>
-				prev.includes(input)
-					? prev.filter((i) => i !== input)
-					: [...prev, input],
-			);
-		},
-		[setSelectedInputs],
-	);
-
-	const handleDelete = useCallback(async () => {
-		if (!transactionId) return;
-
-		Alert.alert(
-			"Delete Transaction",
-			"Are you sure you want to delete this transaction? This action cannot be undone.",
-			[
-				{ text: "Cancel", style: "cancel" },
-				{
-					text: "Delete",
-					style: "destructive",
-					onPress: async () => {
-						try {
-							setIsDeleting(true);
-							await deleteTransaction({ id: transactionId });
-							Alert.alert("Success", "Transaction deleted successfully", [
-								{ text: "OK", onPress: () => router.back() },
-							]);
-						} catch (error) {
-							Alert.alert(
-								"Error",
-								getErrorMessage(error, "Failed to delete transaction"),
-							);
-							console.error("Failed to delete transaction:", error);
-						} finally {
-							setIsDeleting(false);
-						}
-					},
-				},
-			],
-		);
-	}, [transactionId, deleteTransaction]);
 
 	const handleValidateAndSubmit = useCallback(() => {
 		if (validate(earning)) {
@@ -419,25 +371,11 @@ export function TransactionForm({
 					</>
 				) : null}
 				{/* Other Input Toggles */}
-				<View className="flex-row flex-wrap gap-2">
-					{otherInputs.map((input) => (
-						<Chip
-							key={input}
-							selected={selectedInputs.includes(input)}
-							disabled={
-								selectedInputs.includes(input) &&
-								earning[input.toLocaleLowerCase() as keyof EarningFormState] !==
-									""
-							}
-							className={
-								selectedInputs.includes(input) ? "opacity-60" : "opacity-100"
-							}
-							onPress={() => toggleInput(input)}
-						>
-							{input}
-						</Chip>
-					))}
-				</View>
+				<OtherInputChips
+					selectedInputs={selectedInputs}
+					setSelectedInputs={setSelectedInputs}
+					earning={earning}
+				/>
 			</View>
 
 			{/* Service Time Picker */}
@@ -486,16 +424,11 @@ export function TransactionForm({
 
 			{/* Delete Button (Edit mode only) */}
 			{type === "edit" && isAuthorized ? (
-				<Button
-					onPress={handleDelete}
-					disabled={isDisabled}
-					loading={isDeleting}
-					mode="contained"
-					className="rounded-3xl"
-					buttonColor="red"
-				>
-					Delete Transaction
-				</Button>
+				<DeleteButton
+					type="transactions"
+					id={transactionId}
+					isDisabled={isDisabled}
+				/>
 			) : null}
 		</ScreenScrollView>
 	);
