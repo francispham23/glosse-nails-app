@@ -128,7 +128,7 @@ export const GiftCardInputs = ({
 
 			{showNotFoundError && <ErrorText error="Gift card code not found" />}
 
-			{giftCard && (
+			{giftCard ? (
 				<>
 					<Text
 						className={cn(
@@ -153,7 +153,7 @@ export const GiftCardInputs = ({
 						className="h-16 rounded-3xl"
 					/>
 				</>
-			)}
+			) : null}
 
 			{giftError && <ErrorText error={giftError} />}
 		</>

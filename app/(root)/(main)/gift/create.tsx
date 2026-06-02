@@ -24,7 +24,7 @@ export default function CreateRoute() {
 	const [open, setOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
-	/* ----------------------------- handle sign in ----------------------------- */
+	/* ----------------------------- handle submit ----------------------------- */
 	const handleSubmit = async () => {
 		if (!code.trim()) {
 			Alert.alert("Error", "Please enter gift card code");
@@ -98,7 +98,7 @@ export default function CreateRoute() {
 				onPressIn={() => setOpen(!open)}
 				left={<TextInput.Icon icon="calendar-outline" color={mutedColor} />}
 			/>
-			{open && (
+			{open ? (
 				<DateTimePicker
 					mode="date"
 					value={date}
@@ -109,7 +109,7 @@ export default function CreateRoute() {
 						setOpen(false);
 					}}
 				/>
-			)}
+			) : null}
 
 			{/* Submit Button */}
 			<Button

@@ -1,16 +1,15 @@
 import { Text, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
-import { useAppTheme } from "@/contexts/app-theme-context";
 import { cn, type Transaction } from "@/utils";
 import { TAX_RATE } from "../Form/constants";
 
 type Props = {
 	transaction: Transaction;
+	isLight: boolean;
 };
 
-export const GiftCardTransaction = ({ transaction }: Props) => {
-	const { isLight } = useAppTheme();
+export const GiftCardTransaction = ({ transaction, isLight }: Props) => {
 	const textClassName = cn("text-base text-muted", !isLight && "text-gray-300");
 
 	return (
@@ -18,7 +17,10 @@ export const GiftCardTransaction = ({ transaction }: Props) => {
 			key={transaction._id}
 			entering={FadeIn}
 			exiting={FadeOut}
-			className="gap-2 rounded-lg bg-gray-300 p-3 shadow-md dark:bg-gray-700"
+			className={cn(
+				"gap-2 rounded-lg bg-gray-300 p-3 shadow-md",
+				!isLight && "dark:bg-gray-700",
+			)}
 		>
 			<View className="flex-row items-center justify-between">
 				<Text

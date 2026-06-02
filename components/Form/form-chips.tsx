@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View } from "react-native";
 import { Chip } from "react-native-paper";
+
 import type { Category, PaymentMethod } from "@/utils/types";
 
 const HIDDEN_SERVICE_KEYWORDS = [
@@ -92,11 +93,11 @@ export const ServiceCategoryChips = ({
 					{category.name}
 				</Chip>
 			))}
-			{!show && hasHiddenCategories && (
+			{!show && hasHiddenCategories ? (
 				<Chip key="more" onPress={() => setShow(true)}>
 					More Services...
 				</Chip>
-			)}
+			) : null}
 		</View>
 	);
 };

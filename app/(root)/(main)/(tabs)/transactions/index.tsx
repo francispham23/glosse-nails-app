@@ -1,8 +1,8 @@
 import { useQuery } from "convex/react";
 import Animated from "react-native-reanimated";
 
+import { TransactionCard } from "@/components/Cards/transaction-card";
 import { ListEmptyComponent } from "@/components/list-empty";
-import { TransactionCard } from "@/components/Transaction/transaction-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import { useAuthorization } from "@/hooks/use-authorization";

@@ -307,13 +307,13 @@ export function TransactionForm({
 					iconColor={mutedColor}
 				/>
 				<ErrorText error={getFieldError("compensation")} />
-				{!compensationPlaceholder && (
+				{!compensationPlaceholder ? (
 					<Text className="px-4 text-red-500 text-sm">
 						Please select at least one compensation method
 					</Text>
-				)}
+				) : null}
 				{/* Cash Amount (when both Cash and Card selected) */}
-				{cash && card && (
+				{cash && card ? (
 					<>
 						<NumericInput
 							placeholder="Enter Cash Amount"
@@ -324,7 +324,7 @@ export function TransactionForm({
 						/>
 						<ErrorText error={getFieldError("compInCash")} />
 					</>
-				)}
+				) : null}
 				{/* Gift Card Inputs for Compensation */}
 				<GiftCardInputs
 					earning={earning}
@@ -346,7 +346,7 @@ export function TransactionForm({
 
 			{/* Tip */}
 			<View className="flex gap-2">
-				{tipMethods.length > 0 && (
+				{tipMethods.length > 0 ? (
 					<>
 						{/* Tip Input */}
 						<NumericInput
@@ -357,7 +357,7 @@ export function TransactionForm({
 							iconColor={mutedColor}
 						/>
 						<ErrorText error={getFieldError("tip")} />
-						{tipCash && tipCard && (
+						{tipCash && tipCard ? (
 							<>
 								<NumericInput
 									placeholder="Enter Tip in Cash Amount"
@@ -368,7 +368,7 @@ export function TransactionForm({
 								/>
 								<ErrorText error={getFieldError("tipInCash")} />
 							</>
-						)}
+						) : null}
 						{/* Gift Card Inputs for Tip */}
 						<GiftCardInputs
 							earning={earning}
@@ -380,7 +380,7 @@ export function TransactionForm({
 						/>
 						<ErrorText error={getFieldError("tipInGift")} />
 					</>
-				)}
+				) : null}
 				{/* Tip Methods */}
 				<PaymentMethodChips
 					methods={paymentMethods}
@@ -393,7 +393,7 @@ export function TransactionForm({
 			{/* Others */}
 			<View className="flex gap-2">
 				{/* Supply Input */}
-				{showSupply && (
+				{showSupply ? (
 					<>
 						<NumericInput
 							placeholder={`Enter ${isCashSupply ? "Cash" : ""} Supply Cost`}
@@ -404,9 +404,9 @@ export function TransactionForm({
 						/>
 						<ErrorText error={getFieldError("supply")} />
 					</>
-				)}
+				) : null}
 				{/* Discount Input */}
-				{showDiscount && (
+				{showDiscount ? (
 					<>
 						<NumericInput
 							placeholder={`Enter ${isCashDiscount ? "Cash" : ""} Discount Amount`}
@@ -417,7 +417,7 @@ export function TransactionForm({
 						/>
 						<ErrorText error={getFieldError("discount")} />
 					</>
-				)}
+				) : null}
 				{/* Other Input Toggles */}
 				<View className="flex-row flex-wrap gap-2">
 					{otherInputs.map((input) => (
@@ -456,7 +456,7 @@ export function TransactionForm({
 				}
 			/>
 
-			{open && (
+			{open ? (
 				<DateTimePicker
 					mode="time"
 					value={new Date(serviceDate)}
@@ -464,7 +464,7 @@ export function TransactionForm({
 					display="spinner"
 					onChange={handleDateChange}
 				/>
-			)}
+			) : null}
 
 			{/* Service Categories */}
 			<ServiceCategoryChips
@@ -485,7 +485,7 @@ export function TransactionForm({
 			</Button>
 
 			{/* Delete Button (Edit mode only) */}
-			{type === "edit" && isAuthorized && (
+			{type === "edit" && isAuthorized ? (
 				<Button
 					onPress={handleDelete}
 					disabled={isDisabled}
@@ -496,7 +496,7 @@ export function TransactionForm({
 				>
 					Delete Transaction
 				</Button>
-			)}
+			) : null}
 		</ScreenScrollView>
 	);
 }

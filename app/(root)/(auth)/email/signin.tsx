@@ -93,7 +93,7 @@ export default function SignInRoute() {
 				{isLoading ? "Signing In..." : "Sign In"}
 			</Button>
 			{/* forgot password route */}
-			{!isProduction && (
+			{!isProduction ? (
 				<Link
 					href="/(root)/(auth)/email/(reset)/request-password-reset"
 					asChild
@@ -112,7 +112,7 @@ export default function SignInRoute() {
 						/>
 					</Button>
 				</Link>
-			)}
+			) : null}
 		</FormContainer>
 	);
 }

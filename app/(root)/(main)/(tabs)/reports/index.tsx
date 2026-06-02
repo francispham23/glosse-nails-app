@@ -229,7 +229,7 @@ export default function ReportsRoute() {
 			</View>
 			<View className={openPicker ? "h-56" : ""}>
 				{/* Date pickers */}
-				{openPicker === "start" && (
+				{openPicker === "start" ? (
 					<DateTimePicker
 						value={startDate}
 						mode="date"
@@ -242,8 +242,8 @@ export default function ReportsRoute() {
 							}
 						}}
 					/>
-				)}
-				{openPicker === "end" && (
+				) : null}
+				{openPicker === "end" ? (
 					<DateTimePicker
 						value={endDate}
 						mode="date"
@@ -257,7 +257,7 @@ export default function ReportsRoute() {
 							}
 						}}
 					/>
-				)}
+				) : null}
 			</View>
 
 			{/* Report cards list */}

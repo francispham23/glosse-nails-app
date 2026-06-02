@@ -6,7 +6,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { AddButton } from "@/components/Buttons/add-button";
-import { GiftCard } from "@/components/Gift/gift-card";
+import { GiftCard } from "@/components/Cards/gift-card";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
