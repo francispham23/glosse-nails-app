@@ -1,22 +1,18 @@
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useQuery } from "convex/react";
 import { useCallback, useMemo } from "react";
-import { Keyboard, Text, View } from "react-native";
-import { Button, TextInput } from "react-native-paper";
+import { Keyboard } from "react-native";
+import { Button } from "react-native-paper";
 
-import { type otherInputs, paymentMethods } from "@/components/Form/constants";
-import FormHeader, { ErrorText } from "@/components/Form/form";
-import { GiftCardInputs } from "@/components/Form/gift-card-inputs";
+import { DeleteButton } from "@/components/Buttons/delete-button";
+import type { otherInputs } from "@/components/Form/constants";
+import FormHeader from "@/components/Form/form";
 import { getPaymentPlaceholder } from "@/components/Form/helpers";
-import { NumericInput } from "@/components/Form/numeric-input";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
-import {
-	OtherInputChips,
-	PaymentMethodChips,
-	ServiceCategoryChips,
-} from "@/components/TransactionForm/form-chips";
+import { ServiceCategoryChips } from "@/components/TransactionForm/form-chips";
+
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
+
 import { useFormValidation } from "@/hooks";
 import {
 	type Category,
@@ -26,7 +22,11 @@ import {
 	type Transaction,
 	useThemeColor,
 } from "@/utils";
-import { DeleteButton } from "../Buttons/delete-button";
+
+import { CompensationSection } from "./compensation-section";
+import { OthersSection } from "./others-section";
+import { ServiceTimePicker } from "./service-time-picker";
+import { TipSection } from "./tip-section";
 
 /* ---------------------------------- Types --------------------------------- */
 export type SelectedInput = (typeof otherInputs)[number];
@@ -249,160 +249,71 @@ export function TransactionForm({
 			<FormHeader title={title} description={description} />
 
 			{/* Compensation */}
-			<View className="flex gap-2">
-				{/* Compensation Input */}
-				<NumericInput
-					placeholder={compensationPlaceholder || "Select Compensation Methods"}
-					value={compensation.toString()}
-					onChangeText={(value) => updateEarning("compensation", value)}
-					icon="credit-card-outline"
-					iconColor={mutedColor}
-				/>
-				<ErrorText error={getFieldError("compensation")} />
-				{!compensationPlaceholder ? (
-					<Text className="px-4 text-red-500 text-sm">
-						Please select at least one compensation method
-					</Text>
-				) : null}
-				{/* Cash Amount (when both Cash and Card selected) */}
-				{cash && card ? (
-					<>
-						<NumericInput
-							placeholder="Enter Cash Amount"
-							value={compInCash?.toString()}
-							onChangeText={(value) => updateEarning("compInCash", value)}
-							icon="cash-multiple"
-							iconColor={mutedColor}
-						/>
-						<ErrorText error={getFieldError("compInCash")} />
-					</>
-				) : null}
-				{/* Gift Card Inputs for Compensation */}
-				<GiftCardInputs
-					earning={earning}
-					updateEarning={updateEarning}
-					giftCard={giftCard}
-					giftError={giftError}
-					setGiftError={setGiftError}
-					type={gift ? "compInGift" : undefined}
-				/>
-				<ErrorText error={getFieldError("compInGift")} />
-				{/* Compensation Methods */}
-				<PaymentMethodChips
-					methods={paymentMethods}
-					selectedMethods={compensationMethods}
-					onSelect={handleSelectCompensationMethod}
-					disableGift={!!compInGift} // Disable selecting Gift Card for compensation if gift card usage for compensation already has a value
-				/>
-			</View>
-
-			{/* Tip */}
-			<View className="flex gap-2">
-				{tipMethods.length > 0 ? (
-					<>
-						{/* Tip Input */}
-						<NumericInput
-							placeholder={tipPlaceholder || "Select Tip Methods"}
-							value={tip === "0" ? "" : tip.toString()}
-							onChangeText={(value) => updateEarning("tip", value)}
-							icon="credit-card-outline"
-							iconColor={mutedColor}
-						/>
-						<ErrorText error={getFieldError("tip")} />
-						{tipCash && tipCard ? (
-							<>
-								<NumericInput
-									placeholder="Enter Tip in Cash Amount"
-									value={tipInCash?.toString()}
-									onChangeText={(value) => updateEarning("tipInCash", value)}
-									icon="cash-multiple"
-									iconColor={mutedColor}
-								/>
-								<ErrorText error={getFieldError("tipInCash")} />
-							</>
-						) : null}
-						{/* Gift Card Inputs for Tip */}
-						<GiftCardInputs
-							earning={earning}
-							updateEarning={updateEarning}
-							giftCard={giftCard}
-							giftError={giftError}
-							setGiftError={setGiftError}
-							type={tipGift ? "tipInGift" : undefined}
-						/>
-						<ErrorText error={getFieldError("tipInGift")} />
-					</>
-				) : null}
-				{/* Tip Methods */}
-				<PaymentMethodChips
-					methods={paymentMethods}
-					selectedMethods={tipMethods}
-					onSelect={handleSelectTipMethod}
-					disableGift={compInGift === "" || !!tipInGift} // Disable selecting Gift Card for tip if no gift card usage for compensation
-				/>
-			</View>
-
-			{/* Others */}
-			<View className="flex gap-2">
-				{/* Supply Input */}
-				{showSupply ? (
-					<>
-						<NumericInput
-							placeholder={`Enter ${isCashSupply ? "Cash" : ""} Supply Cost`}
-							value={supply?.toString()}
-							onChangeText={(value) => updateEarning("supply", value)}
-							icon="package-variant"
-							iconColor={mutedColor}
-						/>
-						<ErrorText error={getFieldError("supply")} />
-					</>
-				) : null}
-				{/* Discount Input */}
-				{showDiscount ? (
-					<>
-						<NumericInput
-							placeholder={`Enter ${isCashDiscount ? "Cash" : ""} Discount Amount`}
-							value={discount?.toString()}
-							onChangeText={(value) => updateEarning("discount", value)}
-							icon="cash-minus"
-							iconColor={mutedColor}
-						/>
-						<ErrorText error={getFieldError("discount")} />
-					</>
-				) : null}
-				{/* Other Input Toggles */}
-				<OtherInputChips
-					selectedInputs={selectedInputs}
-					setSelectedInputs={setSelectedInputs}
-					earning={earning}
-				/>
-			</View>
-
-			{/* Service Time Picker */}
-			<TextInput
-				mode="outlined"
-				className="h-16 rounded-3xl"
-				placeholder="Select service time"
-				value={new Date(serviceDate).toLocaleTimeString([], {
-					hour: "2-digit",
-					minute: "2-digit",
-				})}
-				editable={false}
-				onPressIn={() => setOpen(!open)}
-				left={
-					<TextInput.Icon icon="clock-outline" size={22} color={mutedColor} />
-				}
+			<CompensationSection
+				compensation={compensation}
+				compInCash={compInCash}
+				compInGift={compInGift}
+				cash={cash}
+				card={card}
+				gift={gift}
+				compensationMethods={compensationMethods}
+				compensationPlaceholder={compensationPlaceholder}
+				mutedColor={mutedColor}
+				earning={earning}
+				updateEarning={updateEarning}
+				giftCard={giftCard}
+				giftError={giftError}
+				setGiftError={setGiftError}
+				getFieldError={getFieldError}
+				onSelectCompensationMethod={handleSelectCompensationMethod}
 			/>
 
-			{open ? (
-				<DateTimePicker
-					mode="time"
-					value={new Date(serviceDate)}
-					maximumDate={endOfDay}
-					display="spinner"
-					onChange={handleDateChange}
-				/>
-			) : null}
+			{/* Tip */}
+			<TipSection
+				tip={tip}
+				tipInCash={tipInCash}
+				tipInGift={tipInGift}
+				compInGift={compInGift}
+				tipCash={tipCash}
+				tipCard={tipCard}
+				tipGift={tipGift}
+				tipMethods={tipMethods}
+				tipPlaceholder={tipPlaceholder}
+				mutedColor={mutedColor}
+				earning={earning}
+				updateEarning={updateEarning}
+				giftCard={giftCard}
+				giftError={giftError}
+				setGiftError={setGiftError}
+				getFieldError={getFieldError}
+				onSelectTipMethod={handleSelectTipMethod}
+			/>
+
+			{/* Others */}
+			<OthersSection
+				showSupply={showSupply}
+				showDiscount={showDiscount}
+				isCashSupply={isCashSupply}
+				isCashDiscount={isCashDiscount}
+				supply={supply}
+				discount={discount}
+				updateEarning={updateEarning}
+				mutedColor={mutedColor}
+				getFieldError={getFieldError}
+				selectedInputs={selectedInputs}
+				setSelectedInputs={setSelectedInputs}
+				earning={earning}
+			/>
+
+			{/* Service Time Picker */}
+			<ServiceTimePicker
+				serviceDate={serviceDate}
+				open={open}
+				setOpen={setOpen}
+				endOfDay={endOfDay}
+				mutedColor={mutedColor}
+				onDateChange={handleDateChange}
+			/>
 
 			{/* Service Categories */}
 			<ServiceCategoryChips
