@@ -39,6 +39,7 @@ export type EarningFormState = {
 	supply?: string;
 	isCashSupply?: boolean;
 	clientId?: Id<"users">;
+	hasTaxOnCash?: boolean;
 };
 
 export type Gift = ReplaceType<

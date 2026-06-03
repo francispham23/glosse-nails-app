@@ -1,4 +1,5 @@
 import { Text, View } from "react-native";
+import { Chip } from "react-native-paper";
 
 import { paymentMethods } from "@/components/Form/constants";
 import { ErrorText } from "@/components/Form/form";
@@ -27,7 +28,11 @@ interface CompensationSectionProps {
 	giftError: string;
 	setGiftError: React.Dispatch<React.SetStateAction<string>>;
 	getFieldError: (field: string) => string | undefined;
-	onSelectCompensationMethod: (method: PaymentMethod) => void;
+	onSelectCompensationMethod: (
+		method: PaymentMethod,
+		hasTaxOnCash?: boolean,
+	) => void;
+	hasTaxOnCash?: boolean;
 }
 
 export function CompensationSection({
@@ -47,6 +52,7 @@ export function CompensationSection({
 	setGiftError,
 	getFieldError,
 	onSelectCompensationMethod,
+	hasTaxOnCash,
 }: CompensationSectionProps) {
 	return (
 		<View className="flex gap-2">
@@ -64,6 +70,7 @@ export function CompensationSection({
 					Please select at least one compensation method
 				</Text>
 			) : null}
+
 			{/* Cash Amount (when both Cash and Card selected) */}
 			{cash && card ? (
 				<>
@@ -77,6 +84,7 @@ export function CompensationSection({
 					<ErrorText error={getFieldError("compInCash")} />
 				</>
 			) : null}
+
 			{/* Gift Card Inputs for Compensation */}
 			<GiftCardInputs
 				earning={earning}
@@ -87,13 +95,27 @@ export function CompensationSection({
 				type={gift ? "compInGift" : undefined}
 			/>
 			<ErrorText error={getFieldError("compInGift")} />
+
 			{/* Compensation Methods */}
-			<PaymentMethodChips
-				methods={paymentMethods}
-				selectedMethods={compensationMethods}
-				onSelect={onSelectCompensationMethod}
-				disableGift={!!compInGift}
-			/>
+			<View className="flex-row flex-wrap gap-2">
+				<PaymentMethodChips
+					methods={paymentMethods}
+					selectedMethods={compensationMethods}
+					onSelect={onSelectCompensationMethod}
+					disableGift={!!compInGift}
+				/>
+				{compensationMethods.length === 1 &&
+				compensationMethods[0] === "Cash" ? (
+					<Chip
+						key="tax"
+						selected={hasTaxOnCash}
+						className={hasTaxOnCash ? "opacity-60" : "opacity-100"}
+						onPress={() => onSelectCompensationMethod("Cash", !hasTaxOnCash)}
+					>
+						Tax
+					</Chip>
+				) : null}
+			</View>
 		</View>
 	);
 }

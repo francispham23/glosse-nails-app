@@ -5,7 +5,7 @@ import { NumericInput } from "@/components/Form/numeric-input";
 import { OtherInputChips } from "@/components/TransactionForm/form-chips";
 
 import type { EarningFormState } from "@/utils";
-import type { SelectedInput } from "./transaction-form";
+import type { SelectedInput } from ".";
 
 interface OthersSectionProps {
 	showSupply: boolean;

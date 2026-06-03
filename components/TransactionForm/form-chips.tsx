@@ -3,8 +3,9 @@ import { View } from "react-native";
 import { Chip } from "react-native-paper";
 
 import type { Category, EarningFormState, PaymentMethod } from "@/utils/types";
+
 import { otherInputs } from "../Form/constants";
-import type { SelectedInput } from "./transaction-form";
+import type { SelectedInput } from ".";
 
 const HIDDEN_SERVICE_KEYWORDS = [
 	"Dual",

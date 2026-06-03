@@ -45,6 +45,7 @@ function prepareTransactionData(transaction: {
 	compInCash?: string;
 	tipInCash?: string;
 	compInGift?: string;
+	hasTaxOnCash?: boolean;
 	tipInGift?: string;
 	clientId?: Id<"users">;
 	services?: Id<"categories">[];
@@ -86,6 +87,7 @@ function prepareTransactionData(transaction: {
 			: undefined,
 		isCashSupply: transaction.isCashSupply,
 		giftCode: transaction.giftCode,
+		hasTaxOnCash: transaction.hasTaxOnCash,
 	};
 }
 
@@ -110,6 +112,7 @@ async function insertTransaction(
 		supply?: string;
 		isCashSupply?: boolean;
 		giftCode?: Id<"giftCards">;
+		hasTaxOnCash?: boolean;
 	},
 ) {
 	await ctx.db.insert("transactions", prepareTransactionData(transaction));
@@ -196,6 +199,7 @@ export const addTransaction = mutation({
 			services: v.optional(v.array(v.id("categories"))),
 			clientId: v.optional(v.id("users")),
 			serviceDate: v.number(),
+			hasTaxOnCash: v.optional(v.boolean()),
 		}),
 	},
 	handler: async (ctx, { body }) => {
@@ -290,6 +294,7 @@ export const updateTransaction = mutation({
 			services: v.optional(v.array(v.id("categories"))),
 			clientId: v.optional(v.id("users")),
 			serviceDate: v.number(),
+			hasTaxOnCash: v.optional(v.boolean()),
 		}),
 	},
 	handler: async (ctx, { id, body }) => {

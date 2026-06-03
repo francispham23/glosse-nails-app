@@ -2,6 +2,8 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireAnyRole } from "./authz";
 
+const TAX_RATE = 1.05; // 5% tax on gift card redemptions
+
 export const list = query({
 	args: {},
 	handler: async (ctx) => {
@@ -18,7 +20,7 @@ export const list = query({
 				const totalRedeemed = transactions.reduce((sum, tx) => {
 					return (
 						sum +
-						((tx.compInGift || 0) + (tx.supply || 0)) * 1.05 +
+						((tx.compInGift || 0) + (tx.supply || 0)) * TAX_RATE +
 						(tx.tipInGift || 0)
 					);
 				}, 0);
@@ -64,7 +66,7 @@ export const getByCode = query({
 			.reduce((sum, tx) => {
 				return (
 					sum +
-					((tx.compInGift || 0) + (tx.supply || 0)) * 1.05 +
+					((tx.compInGift || 0) + (tx.supply || 0)) * TAX_RATE +
 					(tx.tipInGift || 0)
 				);
 			}, 0);
@@ -131,7 +133,7 @@ export const listByDateRange = query({
 				const totalRedeemed = transactions.reduce((sum, tx) => {
 					return (
 						sum +
-						((tx.compInGift || 0) + (tx.supply || 0)) * 1.05 +
+						((tx.compInGift || 0) + (tx.supply || 0)) * TAX_RATE +
 						(tx.tipInGift || 0)
 					);
 				}, 0);

@@ -87,6 +87,7 @@ export function TransactionForm({
 		giftCode,
 		compInGift,
 		tipInGift,
+		hasTaxOnCash,
 	} = earning;
 
 	const categories = useQuery(api.categories.getFormCategories);
@@ -164,9 +165,15 @@ export function TransactionForm({
 	);
 
 	const handleSelectCompensationMethod = useCallback(
-		(method: PaymentMethod) => {
+		(method: PaymentMethod, hasTaxOnCash?: boolean) => {
 			if (compensationMethods.length === 1) {
-				if (compensationMethods[0] === method) return; // Prevent deselecting the last method
+				if (compensationMethods[0] === method) {
+					setEarning((prev) => ({
+						...prev,
+						hasTaxOnCash: hasTaxOnCash ?? prev.hasTaxOnCash,
+					}));
+					return; // Prevent deselecting the last method
+				}
 				if (compensationMethods[0] === "Card" && method === "Cash") {
 					setEarning((prev) => ({
 						...prev,
@@ -174,6 +181,7 @@ export function TransactionForm({
 						tipMethods: ["Cash"],
 						isCashDiscount: true,
 						isCashSupply: true,
+						hasTaxOnCash: hasTaxOnCash ?? true,
 					}));
 					return;
 				}
@@ -185,14 +193,19 @@ export function TransactionForm({
 				const newEarning = {
 					...prev,
 					compensationMethods: newMethods,
-					isCashDiscount: newMethods.includes("Cash"),
-					isCashSupply: newMethods.includes("Cash"),
+					tipMethods:
+						method === "Cash" && !newMethods.includes("Cash")
+							? prev.tipMethods.filter((m) => m !== "Cash").concat(["Card"])
+							: prev.tipMethods,
+					isCashDiscount: undefined,
+					isCashSupply: undefined,
+					hasTaxOnCash: undefined, // Reset tax on cash when methods change; user must explicitly set it again if Cash is selected
 				};
 				validate(newEarning);
 				return newEarning;
 			});
 		},
-		[validate, setEarning, compensationMethods],
+		[compensationMethods, validate, setEarning],
 	);
 
 	const handleSelectTipMethod = useCallback(
@@ -216,8 +229,6 @@ export function TransactionForm({
 				const newEarning = {
 					...prev,
 					tipMethods: newMethods,
-					isCashDiscount: newMethods.includes("Cash"),
-					isCashSupply: newMethods.includes("Cash"),
 				};
 				validate(newEarning);
 				return newEarning;
@@ -266,6 +277,7 @@ export function TransactionForm({
 				setGiftError={setGiftError}
 				getFieldError={getFieldError}
 				onSelectCompensationMethod={handleSelectCompensationMethod}
+				hasTaxOnCash={hasTaxOnCash}
 			/>
 
 			{/* Tip */}

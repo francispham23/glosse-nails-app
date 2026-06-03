@@ -5,6 +5,7 @@ import { Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
+import { TAX_RATE } from "@/components/Form/constants";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
@@ -157,7 +158,8 @@ export default function CashReportRoute() {
 			const tip = getCashTip(tx);
 			const supply = tx.isCashSupply ? tx.supply || 0 : 0;
 			const discount = tx.isCashDiscount ? tx.discount || 0 : 0;
-			const realCash = (compensation + supply) * 1.05;
+			const realCash = (compensation + supply) * TAX_RATE;
+
 			return {
 				...tx,
 				tip,

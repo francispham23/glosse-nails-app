@@ -8,7 +8,7 @@ import { initialEarningState } from "@/components/Form/constants";
 import {
 	type SelectedInput,
 	TransactionForm,
-} from "@/components/TransactionForm/transaction-form";
+} from "@/components/TransactionForm";
 import { api } from "@/convex/_generated/api";
 import { useAuthorization } from "@/hooks/use-authorization";
 import {
