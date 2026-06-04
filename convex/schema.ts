@@ -22,7 +22,6 @@ const schema = defineSchema({
 		compensation: v.float64(),
 		compInCash: v.optional(v.float64()),
 		compInGift: v.optional(v.float64()),
-		hasTaxOnCash: v.optional(v.boolean()),
 		compensationMethods: v.array(v.string()),
 		tip: v.float64(),
 		tipInCash: v.optional(v.float64()),

@@ -1,5 +1,4 @@
 import { Text, View } from "react-native";
-import { Chip } from "react-native-paper";
 
 import { paymentMethods } from "@/components/Form/constants";
 import { ErrorText } from "@/components/Form/form";
@@ -28,11 +27,7 @@ interface CompensationSectionProps {
 	giftError: string;
 	setGiftError: React.Dispatch<React.SetStateAction<string>>;
 	getFieldError: (field: string) => string | undefined;
-	onSelectCompensationMethod: (
-		method: PaymentMethod,
-		hasTaxOnCash?: boolean,
-	) => void;
-	hasTaxOnCash?: boolean;
+	onSelectCompensationMethod: (method: PaymentMethod) => void;
 }
 
 export function CompensationSection({
@@ -52,7 +47,6 @@ export function CompensationSection({
 	setGiftError,
 	getFieldError,
 	onSelectCompensationMethod,
-	hasTaxOnCash,
 }: CompensationSectionProps) {
 	return (
 		<View className="flex gap-2">
@@ -104,17 +98,6 @@ export function CompensationSection({
 					onSelect={onSelectCompensationMethod}
 					disableGift={!!compInGift}
 				/>
-				{compensationMethods.length === 1 &&
-				compensationMethods[0] === "Cash" ? (
-					<Chip
-						key="tax"
-						selected={hasTaxOnCash}
-						className={hasTaxOnCash ? "opacity-60" : "opacity-100"}
-						onPress={() => onSelectCompensationMethod("Cash", !hasTaxOnCash)}
-					>
-						Tax
-					</Chip>
-				) : null}
 			</View>
 		</View>
 	);

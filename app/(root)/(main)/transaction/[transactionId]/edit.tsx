@@ -70,7 +70,6 @@ export default function EditTransactionScreen() {
 				technicianId: transaction.technician,
 				clientId: transaction.client,
 				serviceDate: transaction.serviceDate || Date.now(),
-				hasTaxOnCash: transaction.hasTaxOnCash || undefined,
 			});
 
 			if (transaction.discount && !selectedInputs.includes("Discount")) {

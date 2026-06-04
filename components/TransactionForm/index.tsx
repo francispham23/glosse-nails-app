@@ -87,7 +87,6 @@ export function TransactionForm({
 		giftCode,
 		compInGift,
 		tipInGift,
-		hasTaxOnCash,
 	} = earning;
 
 	const categories = useQuery(api.categories.getFormCategories);
@@ -165,13 +164,9 @@ export function TransactionForm({
 	);
 
 	const handleSelectCompensationMethod = useCallback(
-		(method: PaymentMethod, hasTaxOnCash?: boolean) => {
+		(method: PaymentMethod) => {
 			if (compensationMethods.length === 1) {
 				if (compensationMethods[0] === method) {
-					setEarning((prev) => ({
-						...prev,
-						hasTaxOnCash: hasTaxOnCash ?? prev.hasTaxOnCash,
-					}));
 					return; // Prevent deselecting the last method
 				}
 				if (compensationMethods[0] === "Card" && method === "Cash") {
@@ -181,7 +176,6 @@ export function TransactionForm({
 						tipMethods: ["Cash"],
 						isCashDiscount: true,
 						isCashSupply: true,
-						hasTaxOnCash: hasTaxOnCash ?? true,
 					}));
 					return;
 				}
@@ -199,7 +193,6 @@ export function TransactionForm({
 							: prev.tipMethods,
 					isCashDiscount: undefined,
 					isCashSupply: undefined,
-					hasTaxOnCash: undefined, // Reset tax on cash when methods change; user must explicitly set it again if Cash is selected
 				};
 				validate(newEarning);
 				return newEarning;
@@ -277,7 +270,6 @@ export function TransactionForm({
 				setGiftError={setGiftError}
 				getFieldError={getFieldError}
 				onSelectCompensationMethod={handleSelectCompensationMethod}
-				hasTaxOnCash={hasTaxOnCash}
 			/>
 
 			{/* Tip */}
