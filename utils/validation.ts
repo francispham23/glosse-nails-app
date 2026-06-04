@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TAX_RATE } from "@/components/Form/constants";
 
 /* --------------------------------- Helpers -------------------------------- */
 const parseNum = (val: string | undefined): number =>
@@ -51,7 +52,11 @@ export const EarningFormSchema = z
 	.superRefine((data, ctx) => {
 		const compensation = parseNum(data.compensation);
 		const discount = parseNum(data.discount);
-		const netCompensation = Math.max(0, compensation - discount);
+		const supply = parseNum(data.supply);
+		const netCompensation = Math.max(
+			0,
+			(compensation + supply) * TAX_RATE - discount,
+		);
 		const compInCash = parseNum(data.compInCash);
 		const compInGift = parseNum(data.compInGift);
 

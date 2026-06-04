@@ -8,7 +8,6 @@ import { Button } from "react-native-paper";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { type Report, ReportCard } from "@/components/Cards/report-card";
-import { TAX_RATE } from "@/components/Form/constants";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 
@@ -65,8 +64,7 @@ export default function ReportsRoute() {
 		(sum, tx) => sum + (tx.compInCash || 0),
 		0,
 	);
-	const totalCompCash =
-		(totalCashCharges + (totalPartialCashCharges || 0)) * TAX_RATE;
+	const totalCompCash = totalCashCharges + (totalPartialCashCharges || 0);
 
 	const tipCashTransactions =
 		transactions?.filter(
@@ -82,22 +80,20 @@ export default function ReportsRoute() {
 		0,
 	);
 	const totalTipCash = totalTipCashOnly + (totalPartialTipCash || 0);
-	const totalCash = totalCompCash + totalTipCash;
 
 	const totalSupplyCash =
 		transactions?.reduce((sum, tx) => {
 			return sum + (tx.isCashSupply ? tx.supply || 0 : 0);
 		}, 0) ?? 0;
 
+	const totalCash = totalCompCash + totalTipCash + totalSupplyCash;
+
 	const totalDiscountCash =
 		transactions?.reduce((sum, tx) => {
 			return sum + (tx.isCashDiscount ? tx.discount || 0 : 0);
 		}, 0) ?? 0;
 
-	const totalRealCash =
-		(totalCompCash || 0) +
-		(totalSupplyCash || 0) * TAX_RATE -
-		(totalDiscountCash || 0);
+	const totalRealCash = totalCash - totalDiscountCash;
 
 	// Build report cards data
 	const reportCards: Report[] = [
@@ -132,14 +128,14 @@ export default function ReportsRoute() {
 					value: `$${totalSupplyCash.toFixed(2)}`,
 				},
 				{
-					label: "Total Discount Cash:",
-					value: `$${totalDiscountCash.toFixed(2)}`,
-				},
-				{
 					label: "Grand Total Cash:",
 					value: `$${totalCash.toFixed(2)}`,
 					isBold: true,
 					isLarge: true,
+				},
+				{
+					label: "Total Discount Cash:",
+					value: `- $${totalDiscountCash.toFixed(2)}`,
 				},
 				{
 					label: "Grand Total Real Cash:",

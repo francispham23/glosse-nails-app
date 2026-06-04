@@ -62,14 +62,15 @@ export default function EditTransactionScreen() {
 				tipInGift: transaction.tipInGift?.toString() || "",
 				tipMethods: transaction.tipMethods as PaymentMethod[],
 				discount: transaction.discount?.toString() || "",
-				isCashDiscount: transaction.isCashDiscount || false,
+				isCashDiscount: transaction.isCashDiscount || undefined,
 				supply: transaction.supply?.toString() || "",
-				isCashSupply: transaction.isCashSupply || false,
+				isCashSupply: transaction.isCashSupply || undefined,
 				giftCode: giftCode,
 				services: transaction.services || [],
 				technicianId: transaction.technician,
 				clientId: transaction.client,
 				serviceDate: transaction.serviceDate || Date.now(),
+				hasTaxOnCash: transaction.hasTaxOnCash || undefined,
 			});
 
 			if (transaction.discount && !selectedInputs.includes("Discount")) {

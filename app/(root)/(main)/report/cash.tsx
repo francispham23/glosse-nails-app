@@ -5,7 +5,6 @@ import { Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
-import { TAX_RATE } from "@/components/Form/constants";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
@@ -24,6 +23,8 @@ type CashTransaction = {
 	tipMethods?: string[];
 	supply?: number;
 	discount?: number;
+	isCashSupply?: boolean;
+	isCashDiscount?: boolean;
 };
 
 type TechnicianSummary = {
@@ -158,7 +159,8 @@ export default function CashReportRoute() {
 			const tip = getCashTip(tx);
 			const supply = tx.isCashSupply ? tx.supply || 0 : 0;
 			const discount = tx.isCashDiscount ? tx.discount || 0 : 0;
-			const realCash = (compensation + supply) * TAX_RATE;
+
+			const realCash = compensation + supply + tip - discount;
 
 			return {
 				...tx,
@@ -180,8 +182,8 @@ export default function CashReportRoute() {
 				map[key] = { _id: key, cashTips: 0, supply: 0, discount: 0 };
 			}
 			map[key].cashTips += getCashTip(tx);
-			map[key].supply += tx.supply || 0;
-			map[key].discount += tx.discount || 0;
+			map[key].supply += tx.isCashSupply ? tx.supply || 0 : 0;
+			map[key].discount += tx.isCashDiscount ? tx.discount || 0 : 0;
 		}
 		return Object.values(map);
 	}, [cashTransactions]);
@@ -193,7 +195,6 @@ export default function CashReportRoute() {
 		),
 		[],
 	);
-
 	const renderCashCard = useCallback(
 		({ item }: { item: CashTransaction }) => <CashCard item={item} />,
 		[],
