@@ -1,4 +1,4 @@
-import { useHeaderHeight } from "@react-navigation/elements";
+import { useHeaderHeight } from "expo-router/react-navigation";
 import type { FC, PropsWithChildren } from "react";
 import { Platform, ScrollView, type ScrollViewProps } from "react-native";
 import Animated, { type AnimatedProps } from "react-native-reanimated";

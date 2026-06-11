@@ -104,7 +104,7 @@ export default function CreateRoute() {
 					value={date}
 					maximumDate={endOfDay}
 					display="spinner"
-					onChange={(_, selectedDate) => {
+					onValueChange={(_, selectedDate) => {
 						setDate(selectedDate || date);
 						setOpen(false);
 					}}

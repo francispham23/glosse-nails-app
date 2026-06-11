@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, View } from "react-native";
+import { Alert } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 
 import { initialEarningState } from "@/components/Form/constants";
@@ -126,11 +126,7 @@ export default function EditTransactionScreen() {
 	};
 
 	if (!transaction) {
-		return (
-			<View className="flex-1 items-center justify-center">
-				<ActivityIndicator size="large" />
-			</View>
-		);
+		return <ActivityIndicator className="flex-1 items-center justify-center" />;
 	}
 
 	return (

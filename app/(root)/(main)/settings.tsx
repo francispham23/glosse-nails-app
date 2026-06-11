@@ -137,11 +137,6 @@ export default function SettingsRoute() {
 					</FormContainer>
 				) : (
 					<View className="gap-1">
-						<Text
-							className={cn("font-bold text-2xl", !isLight && "text-white")}
-						>
-							User Info Section
-						</Text>
 						<View className="flex">
 							<Text className={className}>{user.name}</Text>
 							<Text className={className}>{user.email}</Text>

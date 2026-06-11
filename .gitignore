@@ -29,3 +29,7 @@ android
 
 # Github Copilot
 .github
+.agents
+.claude
+.vscode
+skills-lock.json

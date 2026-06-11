@@ -1,13 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { Link, type Route, useRouter } from "expo-router";
+import { type Href, Link, useRouter } from "expo-router";
 import { Pressable } from "react-native";
 
 import { useThemeColor } from "@/utils";
 
 type HeaderButtonProps = {
 	iconName: React.ComponentProps<typeof Ionicons>["name"];
-	route?: Route;
+	route?: Href;
 };
 
 export const HeaderButton = ({ iconName, route }: HeaderButtonProps) => {

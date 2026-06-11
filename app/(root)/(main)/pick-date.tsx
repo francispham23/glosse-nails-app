@@ -47,7 +47,7 @@ export default function PickDateRoute() {
 						maximumDate={new Date()}
 						mode="date"
 						display="spinner"
-						onChange={(_, selectedDate) => {
+						onValueChange={(_, selectedDate) => {
 							if (selectedDate) {
 								setDate(selectedDate);
 							}

@@ -231,7 +231,7 @@ export default function ReportsRoute() {
 						mode="date"
 						display="spinner"
 						maximumDate={endDate}
-						onChange={(_, selectedDate) => {
+						onValueChange={(_, selectedDate) => {
 							setOpenPicker(null);
 							if (selectedDate) {
 								setStartDate(selectedDate);
@@ -246,7 +246,7 @@ export default function ReportsRoute() {
 						display="spinner"
 						minimumDate={startDate}
 						maximumDate={endOfToday}
-						onChange={(_, selectedDate) => {
+						onValueChange={(_, selectedDate) => {
 							setOpenPicker(null);
 							if (selectedDate) {
 								setEndDate(selectedDate);
