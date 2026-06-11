@@ -1,8 +1,13 @@
 // hooks/useNavigationOptions.ts
 /** biome-ignore-all lint/correctness/useExhaustiveDependencies: intentional theme color dependency */
-import type { NativeStackNavigationOptions } from "@react-navigation/native-stack";
-import { useMemo } from "react";
+import type { Stack } from "expo-router";
+import { type ComponentProps, useMemo } from "react";
+
 import { Platform } from "react-native";
+
+type StackScreenOptions = NonNullable<
+	ComponentProps<typeof Stack.Screen>["options"]
+>;
 
 import { useThemeColor } from "@/utils";
 
@@ -18,7 +23,7 @@ export function useNavigationOptions() {
 		 * will be shown when navigating between screens
 		 * when in dark mode
 		 */
-		const root: NativeStackNavigationOptions = {
+		const root: StackScreenOptions = {
 			contentStyle: {
 				backgroundColor: themeColorBackground,
 			},
@@ -31,7 +36,7 @@ export function useNavigationOptions() {
 		 *
 		 * i love this setup!
 		 */
-		const base: NativeStackNavigationOptions = {
+		const base: StackScreenOptions = {
 			headerTintColor: themeColorForeground,
 			headerTitleAlign: "center",
 			headerLargeTitleShadowVisible: false,

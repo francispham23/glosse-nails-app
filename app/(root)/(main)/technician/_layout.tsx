@@ -1,4 +1,4 @@
-import type { Route } from "expo-router";
+import type { Href } from "expo-router";
 import { Stack, useLocalSearchParams } from "expo-router";
 
 import { HeaderButton } from "@/components/Buttons/header-button";
@@ -9,7 +9,7 @@ export default function TechnicianLayout() {
 	const { modal } = useNavigationOptions();
 	const params = useLocalSearchParams();
 	const technicianId = params.technicianId as User["_id"];
-	const technicianRoute = `/(root)/(main)/technician/${technicianId}` as Route;
+	const technicianRoute = `/(root)/(main)/technician/${technicianId}` as Href;
 
 	return (
 		<Stack

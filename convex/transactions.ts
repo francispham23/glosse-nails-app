@@ -1,4 +1,6 @@
 import { v } from "convex/values";
+
+import { isToday } from "../utils";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
@@ -122,7 +124,10 @@ export const listByDateRange = query({
 		report: v.optional(v.boolean()),
 	},
 	handler: async (ctx, { startDate, endDate, report }) => {
-		const actor = report ? await requireActor(ctx) : null;
+		const isEndDateToday = isToday(endDate);
+
+		const actor = !isEndDateToday || report ? await requireActor(ctx) : null;
+
 		const canViewAllReportTransactions = actor
 			? hasAnyRole(actor.role, ["owner", "manager"])
 			: true;
@@ -136,7 +141,7 @@ export const listByDateRange = query({
 			.collect();
 
 		const filteredTransactions =
-			report && actor && !canViewAllReportTransactions
+			actor && !canViewAllReportTransactions
 				? transactions.filter(
 						(transaction) => transaction.technician === actor.userId,
 					)

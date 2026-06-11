@@ -42,7 +42,7 @@ export function ServiceTimePicker({
 					value={new Date(serviceDate)}
 					maximumDate={endOfDay}
 					display="spinner"
-					onChange={onDateChange}
+					onValueChange={onDateChange}
 				/>
 			) : null}
 		</>

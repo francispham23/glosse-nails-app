@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "convex/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Text, View } from "react-native";
 import Animated, {
 	FadeIn,
@@ -15,6 +15,8 @@ import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { useAuthorization } from "@/hooks/use-authorization";
 import { cn, getErrorMessage, isToday, type User } from "@/utils";
+
+const EMPTY_COMPONENT = <ListEmptyComponent item="technician" />;
 
 export default function HomeRoute() {
 	const { isLight } = useAppTheme();
@@ -59,9 +61,77 @@ export default function HomeRoute() {
 		}
 	}, [technicians, isSelecting, onShiftTechs]);
 
-	const className = cn(
-		"min-w-[50] text-right font-bold text-lg",
-		!isLight && "text-gray-300",
+	const isEndDateToday = useMemo(() => isToday(endOfDay.getTime()), [endOfDay]);
+
+	const renderItem = useCallback(
+		({ item }: { item: User }) => {
+			const isSelected = selectedTechnicians.some((u) => u._id === item._id);
+			return (
+				<TechnicianCard
+					key={item._id}
+					item={item}
+					isSelecting={isSelecting}
+					isSelected={isSelected}
+					isAuthorized={
+						isAuthUser || (user?._id === item._id && isEndDateToday)
+					}
+					onToggleSelect={(user) => {
+						if (isSelected) {
+							setSelectedTechnicians((prev) =>
+								prev.filter((u) => u._id !== user._id),
+							);
+						} else {
+							setSelectedTechnicians((prev) => [...prev, user]);
+						}
+					}}
+				/>
+			);
+		},
+		[selectedTechnicians, isSelecting, isAuthUser, user?._id, isEndDateToday],
+	);
+
+	const filteredSelectedTechnicians = useMemo(
+		() =>
+			selectedTechnicians.filter((tech) =>
+				(!isAuthUser && isEndDateToday) || isAuthUser
+					? true
+					: tech._id === user?._id,
+			),
+		[selectedTechnicians, isAuthUser, isEndDateToday, user?._id],
+	);
+
+	const data = useMemo(
+		() => (isSelecting ? technicians : filteredSelectedTechnicians),
+		[isSelecting, technicians, filteredSelectedTechnicians],
+	);
+
+	const className = useMemo(
+		() =>
+			cn(
+				"min-w-[50] text-right font-bold text-lg",
+				!isLight && "text-gray-300",
+			),
+		[isLight],
+	);
+
+	const keyExtractor = useCallback((item: User) => item._id.toString(), []);
+
+	const handleSetIsAdding = useCallback(
+		async (adding: boolean) => {
+			if (isSelecting && !adding && selectedTechnicians.length > 0) {
+				try {
+					await saveShift({
+						technicians: selectedTechnicians.map((u) => u._id),
+						shiftDate: startOfDay.getTime(),
+					});
+				} catch (error) {
+					Alert.alert("Error", getErrorMessage(error, "Failed to save shift"));
+					console.error("Failed to save shift:", error);
+				}
+			}
+			setIsSelecting(adding);
+		},
+		[isSelecting, selectedTechnicians, saveShift, startOfDay],
 	);
 
 	return (
@@ -77,60 +147,15 @@ export default function HomeRoute() {
 			<Animated.FlatList
 				contentInsetAdjustmentBehavior="automatic"
 				contentContainerClassName="gap-4 p-2 pb-24"
-				keyExtractor={(item) => item._id.toString()}
-				data={isSelecting ? technicians : selectedTechnicians}
-				renderItem={({ item }: { item: User }) => {
-					const isSelected = selectedTechnicians.some(
-						(u) => u._id === item._id,
-					);
-					return (
-						<TechnicianCard
-							key={item._id}
-							item={item}
-							isSelecting={isSelecting}
-							isSelected={isSelected}
-							isAuthorized={
-								isAuthUser ||
-								(user?._id === item._id && isToday(endOfDay.getTime()))
-							}
-							onToggleSelect={(user) => {
-								if (isSelected) {
-									setSelectedTechnicians((prev) =>
-										prev.filter((u) => u._id !== user._id),
-									);
-								} else {
-									setSelectedTechnicians((prev) => [...prev, user]);
-								}
-							}}
-						/>
-					);
-				}}
+				keyExtractor={keyExtractor}
+				data={data}
+				renderItem={renderItem}
 				itemLayoutAnimation={LinearTransition}
-				ListEmptyComponent={<ListEmptyComponent item="technician" />}
+				ListEmptyComponent={EMPTY_COMPONENT}
 			/>
 			{isAuthUser ? (
 				<View className="absolute bottom-25 self-center">
-					<AddButton
-						isAdding={isSelecting}
-						setIsAdding={async (adding) => {
-							// When exiting selection mode, save the shift
-							if (isSelecting && !adding && selectedTechnicians.length > 0) {
-								try {
-									await saveShift({
-										technicians: selectedTechnicians.map((u) => u._id),
-										shiftDate: startOfDay.getTime(),
-									});
-								} catch (error) {
-									Alert.alert(
-										"Error",
-										getErrorMessage(error, "Failed to save shift"),
-									);
-									console.error("Failed to save shift:", error);
-								}
-							}
-							setIsSelecting(adding);
-						}}
-					/>
+					<AddButton isAdding={isSelecting} setIsAdding={handleSetIsAdding} />
 				</View>
 			) : null}
 		</Animated.View>

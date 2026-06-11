@@ -1,8 +1,8 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useAction, useQuery } from "convex/react";
 import { useState } from "react";
-import { Alert, ScrollView, Text, View } from "react-native";
-import { ActivityIndicator, Button, TextInput } from "react-native-paper";
+import { Alert, ScrollView, View } from "react-native";
+import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
 import Animated from "react-native-reanimated";
 
 import FormHeader, { FormContainer } from "@/components/Form/form";
@@ -137,11 +137,6 @@ export default function SettingsRoute() {
 					</FormContainer>
 				) : (
 					<View className="gap-1">
-						<Text
-							className={cn("font-bold text-2xl", !isLight && "text-white")}
-						>
-							User Info Section
-						</Text>
 						<View className="flex">
 							<Text className={className}>{user.name}</Text>
 							<Text className={className}>{user.email}</Text>
