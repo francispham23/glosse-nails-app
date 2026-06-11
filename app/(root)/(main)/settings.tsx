@@ -1,8 +1,8 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useAction, useQuery } from "convex/react";
 import { useState } from "react";
-import { Alert, ScrollView, View } from "react-native";
-import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
+import { Alert, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Button, TextInput } from "react-native-paper";
 import Animated from "react-native-reanimated";
 
 import FormHeader, { FormContainer } from "@/components/Form/form";
