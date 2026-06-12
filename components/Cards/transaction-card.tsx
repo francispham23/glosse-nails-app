@@ -31,12 +31,14 @@ export const TransactionCard = ({
 	// Disable the card if the user is not authorized and is not the technician and date is not today
 	const isDisabled =
 		(!isAuthorized && transaction.technician !== userName) ||
-		(transaction.technician === userName && !isSelectedDateToday);
+		(!isAuthorized &&
+			transaction.technician === userName &&
+			!isSelectedDateToday);
 
 	return (
 		<Pressable
 			onPress={() => {
-				if (!isAuthorized && transaction.technician !== userName) {
+				if (isDisabled) {
 					Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
 					return;
 				}

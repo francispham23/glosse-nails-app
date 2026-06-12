@@ -44,74 +44,80 @@ export default function HomeRoute() {
 		if (onShiftTechs === null) return setSelectedTechnicians([]);
 		// Filter technicians based on onShiftTechs
 		if (onShiftTechs && technicians) {
-			const shiftUserIds = new Set(onShiftTechs.map((user) => user._id));
-			const filteredUsers = technicians.filter((user) =>
-				shiftUserIds.has(user._id),
-			);
+			const shiftUserIds = new Set(onShiftTechs.map((u) => u._id));
+			const filteredUsers = technicians.filter((u) => shiftUserIds.has(u._id));
 			setSelectedTechnicians(filteredUsers);
 		} else if (!isSelecting && technicians) {
 			// Update selected users when Convex data changes and not selecting
 			setSelectedTechnicians((prev) =>
 				prev.map((u) => {
 					// Update selected users info with new Convex data
-					const updated = technicians.find((cu) => cu._id === u._id);
+					const updated = technicians.find((t) => t._id === u._id);
 					return updated || u;
 				}),
 			);
 		}
 	}, [technicians, isSelecting, onShiftTechs]);
 
-	const isEndDateToday = useMemo(() => isToday(endOfDay.getTime()), [endOfDay]);
-
-	const renderItem = useCallback(
-		({ item }: { item: User }) => {
-			const isSelected = selectedTechnicians.some((u) => u._id === item._id);
-			return (
-				<TechnicianCard
-					key={item._id}
-					item={item}
-					isSelecting={isSelecting}
-					isSelected={isSelected}
-					isAuthorized={
-						isAuthUser || (user?._id === item._id && isEndDateToday)
-					}
-					onToggleSelect={(user) => {
-						if (isSelected) {
-							setSelectedTechnicians((prev) =>
-								prev.filter((u) => u._id !== user._id),
-							);
-						} else {
-							setSelectedTechnicians((prev) => [...prev, user]);
-						}
-					}}
-				/>
-			);
-		},
-		[selectedTechnicians, isSelecting, isAuthUser, user?._id, isEndDateToday],
+	const isSelectedDateToday = useMemo(
+		() => isToday(endOfDay.getTime()),
+		[endOfDay],
 	);
 
-	const filteredSelectedTechnicians = useMemo(
-		() =>
-			selectedTechnicians.filter((tech) =>
-				(!isAuthUser && isEndDateToday) || isAuthUser
-					? true
-					: tech._id === user?._id,
-			),
-		[selectedTechnicians, isAuthUser, isEndDateToday, user?._id],
-	);
+	const filteredSelectedTechnicians = useMemo(() => {
+		const isOnShift = onShiftTechs?.some((tech) => tech._id === user?._id);
+		return selectedTechnicians.filter((tech) =>
+			(isOnShift && isSelectedDateToday) || isAuthUser
+				? true
+				: tech._id === user?._id,
+		);
+	}, [
+		selectedTechnicians,
+		isAuthUser,
+		isSelectedDateToday,
+		user?._id,
+		onShiftTechs,
+	]);
 
 	const data = useMemo(
 		() => (isSelecting ? technicians : filteredSelectedTechnicians),
 		[isSelecting, technicians, filteredSelectedTechnicians],
 	);
 
-	const className = useMemo(
-		() =>
-			cn(
-				"min-w-[50] text-right font-bold text-lg",
-				!isLight && "text-gray-300",
-			),
-		[isLight],
+	const renderItem = useCallback(
+		({ item }: { item: User }) => {
+			const isSelected = selectedTechnicians.some((u) => u._id === item._id);
+			const isAuthorized =
+				isAuthUser || (user?._id === item._id && isSelectedDateToday);
+
+			const onToggleSelect = (user: User) => {
+				if (isSelected) {
+					setSelectedTechnicians((prev) =>
+						prev.filter((u) => u._id !== user._id),
+					);
+				} else {
+					setSelectedTechnicians((prev) => [...prev, user]);
+				}
+			};
+
+			return (
+				<TechnicianCard
+					key={item._id}
+					item={item}
+					isSelecting={isSelecting}
+					isSelected={isSelected}
+					isAuthorized={isAuthorized}
+					onToggleSelect={onToggleSelect}
+				/>
+			);
+		},
+		[
+			selectedTechnicians,
+			isSelecting,
+			isAuthUser,
+			user?._id,
+			isSelectedDateToday,
+		],
 	);
 
 	const keyExtractor = useCallback((item: User) => item._id.toString(), []);
@@ -132,6 +138,11 @@ export default function HomeRoute() {
 			setIsSelecting(adding);
 		},
 		[isSelecting, selectedTechnicians, saveShift, startOfDay],
+	);
+
+	const className = cn(
+		"min-w-[50] text-right font-bold text-lg",
+		!isLight && "text-gray-300",
 	);
 
 	return (
