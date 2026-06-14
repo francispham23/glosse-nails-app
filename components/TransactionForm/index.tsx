@@ -22,13 +22,17 @@ import {
 	type Transaction,
 	useThemeColor,
 } from "@/utils";
-
 import { CompensationSection } from "./compensation-section";
 import { OthersSection } from "./others-section";
 import { ServiceTimePicker } from "./service-time-picker";
 import { TipSection } from "./tip-section";
 
 /* ---------------------------------- Types --------------------------------- */
+export type UpdateEarning = <K extends keyof EarningFormState>(
+	key: K,
+	value: EarningFormState[K],
+) => void;
+
 export type SelectedInput = (typeof otherInputs)[number];
 
 interface TransactionFormProps {
@@ -71,23 +75,8 @@ export function TransactionForm({
 }: TransactionFormProps) {
 	const mutedColor = useThemeColor("muted");
 	const { endOfDay } = useAppDate();
-	const {
-		discount,
-		supply,
-		compensationMethods,
-		tipMethods,
-		serviceDate,
-		compensation,
-		tip,
-		compInCash,
-		tipInCash,
-		services,
-		isCashSupply,
-		isCashDiscount,
-		giftCode,
-		compInGift,
-		tipInGift,
-	} = earning;
+	const { compensationMethods, tipMethods, serviceDate, services, giftCode } =
+		earning;
 
 	const categories = useQuery(api.categories.getFormCategories);
 
@@ -115,11 +104,7 @@ export function TransactionForm({
 		[compensationMethods, tipMethods],
 	);
 
-	const showSupply = selectedInputs.includes("Supply");
-	const showDiscount = selectedInputs.includes("Discount");
-
 	const compensationPlaceholder = getPaymentPlaceholder(card, cash, gift);
-	const tipPlaceholder = getPaymentPlaceholder(tipCard, tipCash, tipGift, true);
 
 	const isDisabled = useMemo(
 		() =>
@@ -254,13 +239,9 @@ export function TransactionForm({
 
 			{/* Compensation */}
 			<CompensationSection
-				compensation={compensation}
-				compInCash={compInCash}
-				compInGift={compInGift}
 				cash={cash}
 				card={card}
 				gift={gift}
-				compensationMethods={compensationMethods}
 				compensationPlaceholder={compensationPlaceholder}
 				mutedColor={mutedColor}
 				earning={earning}
@@ -274,15 +255,9 @@ export function TransactionForm({
 
 			{/* Tip */}
 			<TipSection
-				tip={tip}
-				tipInCash={tipInCash}
-				tipInGift={tipInGift}
-				compInGift={compInGift}
 				tipCash={tipCash}
 				tipCard={tipCard}
 				tipGift={tipGift}
-				tipMethods={tipMethods}
-				tipPlaceholder={tipPlaceholder}
 				mutedColor={mutedColor}
 				earning={earning}
 				updateEarning={updateEarning}
@@ -295,18 +270,13 @@ export function TransactionForm({
 
 			{/* Others */}
 			<OthersSection
-				showSupply={showSupply}
-				showDiscount={showDiscount}
-				isCashSupply={isCashSupply}
-				isCashDiscount={isCashDiscount}
-				supply={supply}
-				discount={discount}
-				updateEarning={updateEarning}
 				mutedColor={mutedColor}
 				getFieldError={getFieldError}
 				selectedInputs={selectedInputs}
 				setSelectedInputs={setSelectedInputs}
 				earning={earning}
+				setEarning={setEarning}
+				updateEarning={updateEarning}
 			/>
 
 			{/* Service Time Picker */}

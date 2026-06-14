@@ -7,22 +7,16 @@ import { NumericInput } from "@/components/Form/numeric-input";
 import { PaymentMethodChips } from "@/components/TransactionForm/form-chips";
 
 import type { EarningFormState, Gift, PaymentMethod } from "@/utils";
+import type { UpdateEarning } from ".";
 
 interface CompensationSectionProps {
-	compensation: EarningFormState["compensation"];
-	compInCash: EarningFormState["compInCash"];
-	compInGift: EarningFormState["compInGift"];
 	cash: boolean;
 	card: boolean;
 	gift: boolean;
-	compensationMethods: EarningFormState["compensationMethods"];
 	compensationPlaceholder: string;
 	mutedColor: string;
 	earning: EarningFormState;
-	updateEarning: <K extends keyof EarningFormState>(
-		key: K,
-		value: EarningFormState[K],
-	) => void;
+	updateEarning: UpdateEarning;
 	giftCard: Gift | null | undefined;
 	giftError: string;
 	setGiftError: React.Dispatch<React.SetStateAction<string>>;
@@ -31,13 +25,9 @@ interface CompensationSectionProps {
 }
 
 export function CompensationSection({
-	compensation,
-	compInCash,
-	compInGift,
 	cash,
 	card,
 	gift,
-	compensationMethods,
 	compensationPlaceholder,
 	mutedColor,
 	earning,
@@ -48,6 +38,8 @@ export function CompensationSection({
 	getFieldError,
 	onSelectCompensationMethod,
 }: CompensationSectionProps) {
+	const { compensation, compInCash, compInGift, compensationMethods } = earning;
+
 	return (
 		<View className="flex gap-2">
 			{/* Compensation Input */}

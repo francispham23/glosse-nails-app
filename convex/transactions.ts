@@ -51,6 +51,7 @@ function prepareTransactionData(transaction: {
 	clientId?: Id<"users">;
 	services?: Id<"categories">[];
 	discount?: string;
+	discountType?: "Amount" | "Percent";
 	isCashDiscount?: boolean;
 	supply?: string;
 	isCashSupply?: boolean;
@@ -82,6 +83,7 @@ function prepareTransactionData(transaction: {
 		discount: transaction.discount
 			? Number.parseFloat(transaction.discount)
 			: undefined,
+		discountType: transaction.discount ? transaction.discountType : undefined,
 		isCashDiscount: transaction.isCashDiscount,
 		supply: transaction.supply
 			? Number.parseFloat(transaction.supply)
@@ -108,6 +110,7 @@ async function insertTransaction(
 		services?: Id<"categories">[];
 		clientId?: Id<"users">;
 		discount?: string;
+		discountType?: "Amount" | "Percent";
 		isCashDiscount?: boolean;
 		supply?: string;
 		isCashSupply?: boolean;
@@ -193,6 +196,9 @@ export const addTransaction = mutation({
 			tipInGift: v.optional(v.string()),
 			tipMethods: v.array(v.string()),
 			discount: v.optional(v.string()),
+			discountType: v.optional(
+				v.union(v.literal("Amount"), v.literal("Percent")),
+			),
 			isCashDiscount: v.optional(v.boolean()),
 			supply: v.optional(v.string()),
 			isCashSupply: v.optional(v.boolean()),
@@ -287,6 +293,9 @@ export const updateTransaction = mutation({
 			tipInGift: v.optional(v.string()),
 			tipMethods: v.array(v.string()),
 			discount: v.optional(v.string()),
+			discountType: v.optional(
+				v.union(v.literal("Amount"), v.literal("Percent")),
+			),
 			isCashDiscount: v.optional(v.boolean()),
 			supply: v.optional(v.string()),
 			isCashSupply: v.optional(v.boolean()),

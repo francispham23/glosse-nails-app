@@ -44,11 +44,6 @@ export default function CreateRoute() {
 
 	/* ----------------------------- handle create transaction ----------------------------- */
 	const handleSubmit = async () => {
-		if (!earning.compensation) {
-			Alert.alert("Error", "Please enter your earning");
-			return;
-		}
-
 		if (giftError) {
 			Alert.alert("Error", giftError);
 			return;
@@ -60,7 +55,6 @@ export default function CreateRoute() {
 			const tip = earning.tip.length > 0 ? earning.tip : "0";
 			await addTransaction({ body: { ...earning, tip } });
 
-			setEarning({ ...initialEarning });
 			Alert.alert("Success", "Earning saved successfully");
 			router.push(`/technician/${technicianId}`);
 		} catch (error) {

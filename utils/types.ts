@@ -35,6 +35,7 @@ export type EarningFormState = {
 	tipInGift?: string;
 	giftCode?: string;
 	discount?: string;
+	discountType?: "Amount" | "Percent";
 	isCashDiscount?: boolean;
 	supply?: string;
 	isCashSupply?: boolean;

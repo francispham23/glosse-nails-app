@@ -7,23 +7,16 @@ import { NumericInput } from "@/components/Form/numeric-input";
 import { PaymentMethodChips } from "@/components/TransactionForm/form-chips";
 
 import type { EarningFormState, Gift, PaymentMethod } from "@/utils";
+import { getPaymentPlaceholder } from "../Form/helpers";
+import type { UpdateEarning } from ".";
 
 interface TipSectionProps {
-	tip: EarningFormState["tip"];
-	tipInCash: EarningFormState["tipInCash"];
-	tipInGift: EarningFormState["tipInGift"];
-	compInGift: EarningFormState["compInGift"];
 	tipCash: boolean;
 	tipCard: boolean;
 	tipGift: boolean;
-	tipMethods: EarningFormState["tipMethods"];
-	tipPlaceholder: string;
 	mutedColor: string;
 	earning: EarningFormState;
-	updateEarning: <K extends keyof EarningFormState>(
-		key: K,
-		value: EarningFormState[K],
-	) => void;
+	updateEarning: UpdateEarning;
 	giftCard: Gift | null | undefined;
 	giftError: string;
 	setGiftError: React.Dispatch<React.SetStateAction<string>>;
@@ -32,15 +25,9 @@ interface TipSectionProps {
 }
 
 export function TipSection({
-	tip,
-	tipInCash,
-	tipInGift,
-	compInGift,
 	tipCash,
 	tipCard,
 	tipGift,
-	tipMethods,
-	tipPlaceholder,
 	mutedColor,
 	earning,
 	updateEarning,
@@ -50,6 +37,9 @@ export function TipSection({
 	getFieldError,
 	onSelectTipMethod,
 }: TipSectionProps) {
+	const { tipMethods, tip, tipInCash, compInGift, tipInGift } = earning;
+	const tipPlaceholder = getPaymentPlaceholder(tipCard, tipCash, tipGift, true);
+
 	return (
 		<View className="flex gap-2">
 			{tipMethods.length > 0 ? (

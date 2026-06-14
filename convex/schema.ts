@@ -28,6 +28,9 @@ const schema = defineSchema({
 		tipInGift: v.optional(v.float64()),
 		tipMethods: v.array(v.string()),
 		discount: v.optional(v.float64()),
+		discountType: v.optional(
+			v.union(v.literal("Amount"), v.literal("Percent")),
+		),
 		isCashDiscount: v.optional(v.boolean()),
 		supply: v.optional(v.float64()),
 		isCashSupply: v.optional(v.boolean()),

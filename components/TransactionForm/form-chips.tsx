@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { View } from "react-native";
-import { Chip } from "react-native-paper";
+import { Chip, Icon } from "react-native-paper";
 
 import type { Category, EarningFormState, PaymentMethod } from "@/utils/types";
 
@@ -110,14 +110,19 @@ type OtherInputChipsProps = {
 	selectedInputs: OtherInputs[];
 	setSelectedInputs: React.Dispatch<React.SetStateAction<OtherInputs[]>>;
 	earning: EarningFormState;
+	updateEarning: <K extends keyof EarningFormState>(
+		key: K,
+		value: EarningFormState[K],
+	) => void;
 };
 
 export const OtherInputChips = ({
 	selectedInputs,
 	setSelectedInputs,
 	earning,
+	updateEarning,
 }: OtherInputChipsProps) => {
-	const toggleInput = useCallback(
+	const handleOnPress = useCallback(
 		(input: SelectedInput) => {
 			setSelectedInputs((prev) =>
 				prev.includes(input)
@@ -127,24 +132,41 @@ export const OtherInputChips = ({
 		},
 		[setSelectedInputs],
 	);
+
 	return (
 		<View className="flex-row flex-wrap gap-2">
 			{otherInputs.map((input) => (
 				<Chip
+					className={
+						selectedInputs.includes(input) ? "opacity-60" : "opacity-100"
+					}
 					key={input}
 					selected={selectedInputs.includes(input)}
 					disabled={
 						selectedInputs.includes(input) &&
 						earning[input.toLocaleLowerCase() as keyof EarningFormState] !== ""
 					}
-					className={
-						selectedInputs.includes(input) ? "opacity-60" : "opacity-100"
-					}
-					onPress={() => toggleInput(input)}
+					onPress={() => handleOnPress(input)}
 				>
 					{input}
 				</Chip>
 			))}
+			{selectedInputs.includes("Discount") ? (
+				<Chip
+					className="opacity-60"
+					onPress={() =>
+						updateEarning(
+							"discountType",
+							earning.discountType === "Amount" ? "Percent" : "Amount",
+						)
+					}
+				>
+					<Icon
+						source={earning.discountType === "Amount" ? "percent" : "cash"}
+						size={18}
+					/>
+				</Chip>
+			) : null}
 		</View>
 	);
 };

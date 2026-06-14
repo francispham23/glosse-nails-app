@@ -62,6 +62,7 @@ export default function EditTransactionScreen() {
 				tipInGift: transaction.tipInGift?.toString() || "",
 				tipMethods: transaction.tipMethods as PaymentMethod[],
 				discount: transaction.discount?.toString() || "",
+				discountType: transaction.discountType || undefined,
 				isCashDiscount: transaction.isCashDiscount || undefined,
 				supply: transaction.supply?.toString() || "",
 				isCashSupply: transaction.isCashSupply || undefined,
@@ -88,11 +89,6 @@ export default function EditTransactionScreen() {
 
 	/* ----------------------------- handle edit transaction ----------------------------- */
 	const handleSubmit = async () => {
-		if (!earning.compensation) {
-			Alert.alert("Error", "Please enter compensation");
-			return;
-		}
-
 		if (giftError) {
 			Alert.alert("Error", giftError);
 			return;
@@ -125,7 +121,7 @@ export default function EditTransactionScreen() {
 			setOpen(false);
 			setGiftError("");
 			setEarning({ ...initialEarning });
-			setSelectedInputs([]);
+			setSelectedInputs(["Supply"]);
 		}
 	};
 
