@@ -72,15 +72,19 @@ export default function EditTransactionScreen() {
 				serviceDate: transaction.serviceDate || Date.now(),
 			});
 
-			if (transaction.discount && !selectedInputs.includes("Discount")) {
-				setSelectedInputs((prev) => [...prev, "Discount"]);
+			if (transaction.discount) {
+				setSelectedInputs((prev) =>
+					prev.includes("Discount") ? prev : [...prev, "Discount"],
+				);
 			}
 
-			if (transaction.supply && !selectedInputs.includes("Supply")) {
-				setSelectedInputs((prev) => [...prev, "Supply"]);
+			if (transaction.supply) {
+				setSelectedInputs((prev) =>
+					prev.includes("Supply") ? prev : [...prev, "Supply"],
+				);
 			}
 		}
-	}, [transaction, giftCode, selectedInputs]);
+	}, [transaction, giftCode]);
 
 	/* ----------------------------- handle edit transaction ----------------------------- */
 	const handleSubmit = async () => {
