@@ -1,6 +1,8 @@
 import { useTheme } from "react-native-paper";
 import { twMerge } from "tailwind-merge";
 
+import type { Transaction } from "@/utils/types";
+
 const APP_ENV =
 	process.env.EXPO_PUBLIC_APP_ENV ?? (__DEV__ ? "development" : "production");
 
@@ -52,3 +54,8 @@ export * from "./types";
 
 // Export Validation Schemas
 export * from "./validation";
+
+export const getDiscount = (tx: Transaction) =>
+	tx.discountType === "Amount"
+		? tx.discount || 0
+		: ((tx.discount || 0) / 100) * (tx.compensation || 0);

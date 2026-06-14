@@ -62,7 +62,7 @@ export function OthersSection({
 						placeholder={`Enter ${isCashDiscount ? "Cash" : ""} Discount${discountType ? ` ${discountType}` : ""}`}
 						value={discount?.toString()}
 						onChangeText={(value) => updateEarning("discount", value)}
-						icon="cash-minus"
+						icon={discountType === "Amount" ? "cash-minus" : "percent"}
 						iconColor={mutedColor}
 					/>
 					<ErrorText error={getFieldError("discount")} />

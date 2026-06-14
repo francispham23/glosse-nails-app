@@ -8,7 +8,7 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
-import { cn } from "@/utils";
+import { cn, getDiscount } from "@/utils";
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -158,7 +158,7 @@ export default function CashReportRoute() {
 			const compensation = getCashCompensation(tx);
 			const tip = getCashTip(tx);
 			const supply = tx.isCashSupply ? tx.supply || 0 : 0;
-			const discount = tx.isCashDiscount ? tx.discount || 0 : 0;
+			const discount = tx.isCashDiscount ? getDiscount(tx) : 0;
 
 			const realCash = compensation + supply + tip - discount;
 

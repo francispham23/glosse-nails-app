@@ -7,7 +7,7 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
-import { cn } from "@/utils";
+import { cn, getDiscount } from "@/utils";
 
 export default function DiscountRoute() {
 	const { isLight } = useAppTheme();
@@ -31,7 +31,7 @@ export default function DiscountRoute() {
 					_id: tx._id,
 					serviceDate: tx.serviceDate as number,
 					technician: tx.technician as string,
-					discount: tx.discount || 0,
+					discount: getDiscount(tx),
 				};
 			}) || [];
 

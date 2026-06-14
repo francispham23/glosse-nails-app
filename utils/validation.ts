@@ -42,6 +42,7 @@ export const EarningFormSchema = z
 		tipInGift: optionalNonNegativeNumericString("Tip gift amount"),
 
 		discount: optionalNonNegativeNumericString("Discount"),
+		discountType: z.enum(["Amount", "Percent"]).optional(),
 		supply: optionalNonNegativeNumericString("Supply cost"),
 
 		services: z.array(z.string()).optional(),
@@ -55,7 +56,10 @@ export const EarningFormSchema = z
 		const supply = parseNum(data.supply);
 		const netCompensation = Math.max(
 			0,
-			(compensation + supply) * TAX_RATE - discount,
+			(compensation + supply) * TAX_RATE -
+				(data.discountType === "Amount"
+					? discount
+					: (discount / 100) * compensation),
 		);
 		const compInCash = parseNum(data.compInCash);
 		const compInGift = parseNum(data.compInGift);

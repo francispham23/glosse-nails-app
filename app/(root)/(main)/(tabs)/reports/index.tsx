@@ -10,6 +10,7 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { type Report, ReportCard } from "@/components/Cards/report-card";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
+import { getDiscount } from "@/utils";
 
 export default function ReportsRoute() {
 	const { startOfDay, endOfDay } = useAppDate();
@@ -45,7 +46,7 @@ export default function ReportsRoute() {
 	const grandTotal = totalCompensation + totalTip;
 
 	const totalDiscount =
-		transactions?.reduce((sum, tx) => sum + (tx.discount || 0), 0) ?? 0;
+		transactions?.reduce((sum, tx) => sum + getDiscount(tx), 0) ?? 0;
 
 	const totalSupply =
 		transactions?.reduce((sum, tx) => sum + (tx.supply || 0), 0) ?? 0;
@@ -90,7 +91,7 @@ export default function ReportsRoute() {
 
 	const totalDiscountCash =
 		transactions?.reduce((sum, tx) => {
-			return sum + (tx.isCashDiscount ? tx.discount || 0 : 0);
+			return sum + (tx.isCashDiscount ? getDiscount(tx) : 0);
 		}, 0) ?? 0;
 
 	const totalRealCash = totalCash - totalDiscountCash;

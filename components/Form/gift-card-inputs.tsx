@@ -31,10 +31,26 @@ export const GiftCardInputs = ({
 	type,
 }: GiftCardInputsProps) => {
 	const { isLight } = useAppTheme();
-	const { giftCode, tipInGift, compInGift, supply, discount, compensation } =
-		earning;
+	const {
+		giftCode,
+		tipInGift,
+		compInGift,
+		supply,
+		discount,
+		compensation,
+		discountType,
+	} = earning;
 
-	const maxCompGiftAmount = calculateMaxCompGiftAmount(compensation, discount);
+	const maxCompGiftAmount = roundCurrency(
+		Math.max(
+			0,
+			parseCurrencyValue(compensation) -
+				(discountType === "Amount"
+					? parseCurrencyValue(discount)
+					: (parseCurrencyValue(discount) / 100) *
+						parseCurrencyValue(compensation)),
+		),
+	);
 	const availableBalance = giftCard?.balance
 		? calculateAvailableBalance(giftCard.balance, compInGift, tipInGift, supply)
 		: 0;
@@ -166,17 +182,6 @@ const parseCurrencyValue = (value?: string): number => {
 	const parsed = Number.parseFloat(value ?? "0");
 	return Number.isNaN(parsed) ? 0 : parsed;
 };
-
-const calculateMaxCompGiftAmount = (
-	compensation: string,
-	discount?: string,
-): number =>
-	roundCurrency(
-		Math.max(
-			0,
-			parseCurrencyValue(compensation) - parseCurrencyValue(discount),
-		),
-	);
 
 const calculateAmountWithTax = (value: string, applyTax: boolean): number => {
 	const cents = toCents(value);
