@@ -3,6 +3,8 @@ import { twMerge } from "tailwind-merge";
 
 import type { Transaction } from "@/utils/types";
 
+export const DEFAULT_PAY_RATE = 0.5;
+
 const APP_ENV =
 	process.env.EXPO_PUBLIC_APP_ENV ?? (__DEV__ ? "development" : "production");
 
@@ -47,15 +49,13 @@ export function useThemeColor(colorName: string): string {
 	return colorMap[colorName] || theme.colors.onSurface;
 }
 
-export { isBeforeToday, isToday } from "./date-utils";
-
-// Export Types
-export * from "./types";
-
-// Export Validation Schemas
-export * from "./validation";
-
 export const getDiscount = (tx: Transaction) =>
 	tx.discountType === "Amount"
 		? tx.discount || 0
 		: ((tx.discount || 0) / 100) * (tx.compensation || 0);
+
+export { isBeforeToday, isToday } from "./date-utils";
+// Export Types
+export * from "./types";
+// Export Validation Schemas
+export * from "./validation";

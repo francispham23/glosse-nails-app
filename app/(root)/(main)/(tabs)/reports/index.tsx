@@ -94,7 +94,7 @@ export default function ReportsRoute() {
 			return sum + (tx.isCashDiscount ? getDiscount(tx) : 0);
 		}, 0) ?? 0;
 
-	const totalRealCash = totalCash - totalDiscountCash;
+	const totalRealCash = totalCash - totalDiscountCash - totalTipCash;
 
 	// Build report cards data
 	const reportCards: Report[] = [
@@ -120,7 +120,7 @@ export default function ReportsRoute() {
 			title: "Cash",
 			rows: [
 				{
-					label: "Total Compensation Cash:",
+					label: "Total Service Cash:",
 					value: `$${totalCompCash.toFixed(2)}`,
 				},
 				{ label: "Total Tip Cash:", value: `$${totalTipCash.toFixed(2)}` },
@@ -129,17 +129,21 @@ export default function ReportsRoute() {
 					value: `$${totalSupplyCash.toFixed(2)}`,
 				},
 				{
-					label: "Grand Total Cash:",
+					label: "Total Cash Collected:",
 					value: `$${totalCash.toFixed(2)}`,
 					isBold: true,
 					isLarge: true,
 				},
 				{
-					label: "Total Discount Cash:",
+					label: "(Total Discount Cash):",
 					value: `- $${totalDiscountCash.toFixed(2)}`,
 				},
 				{
-					label: "Grand Total Real Cash:",
+					label: "(Total Tip Cash):",
+					value: `- $${totalTipCash.toFixed(2)}`,
+				},
+				{
+					label: "Total Real Cash:",
 					value: `$${totalRealCash.toFixed(2)}`,
 					isBold: true,
 					isLarge: true,

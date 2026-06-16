@@ -11,6 +11,18 @@ import {
 	requireSelfOrRole,
 } from "./authz";
 
+async function resolveTechnicianPayRate(
+	ctx: MutationCtx,
+	technicianId: Id<"users">,
+) {
+	const roleRecord = (await ctx.db
+		.query("staffRoles")
+		.withIndex("by_userId", (q) => q.eq("userId", technicianId))
+		.first()) as (Doc<"staffRoles"> & { payRate?: number }) | null;
+
+	return roleRecord?.payRate ?? 0.5;
+}
+
 // Helper function to transform a transaction with related data
 async function transformTransaction(
 	ctx: QueryCtx,
@@ -55,6 +67,7 @@ function prepareTransactionData(transaction: {
 	isCashDiscount?: boolean;
 	supply?: string;
 	isCashSupply?: boolean;
+	payRateSnapshot?: number;
 	giftCode?: Id<"giftCards">;
 }) {
 	return {
@@ -89,6 +102,7 @@ function prepareTransactionData(transaction: {
 			? Number.parseFloat(transaction.supply)
 			: undefined,
 		isCashSupply: transaction.isCashSupply,
+		payRateSnapshot: transaction.payRateSnapshot,
 		giftCode: transaction.giftCode,
 	};
 }
@@ -114,6 +128,7 @@ async function insertTransaction(
 		isCashDiscount?: boolean;
 		supply?: string;
 		isCashSupply?: boolean;
+		payRateSnapshot?: number;
 		giftCode?: Id<"giftCards">;
 	},
 ) {
@@ -224,7 +239,16 @@ export const addTransaction = mutation({
 			}
 		}
 
-		await insertTransaction(ctx, { ...body, giftCode: giftCardId });
+		const payRateSnapshot = await resolveTechnicianPayRate(
+			ctx,
+			body.technicianId,
+		);
+
+		await insertTransaction(ctx, {
+			...body,
+			giftCode: giftCardId,
+			payRateSnapshot,
+		});
 
 		// Add transaction ID to gift card's transactionIds array
 		if (giftCardId && (body.tipInGift || body.compInGift)) {
@@ -308,6 +332,14 @@ export const updateTransaction = mutation({
 	},
 	handler: async (ctx, { id, body }) => {
 		await requireSelfOrRole(ctx, body.technicianId, ["owner", "manager"]);
+		const existingTransaction = (await ctx.db.get(id)) as
+			| (Doc<"transactions"> & { payRateSnapshot?: number })
+			| null;
+
+		if (!existingTransaction) {
+			throw new Error("Transaction not found");
+		}
+
 		const giftCode = body.giftCode;
 		let giftCardId: Id<"giftCards"> | undefined;
 		// If a gift code is provided, find giftCard id from giftCards table
@@ -321,46 +353,49 @@ export const updateTransaction = mutation({
 			}
 		}
 
+		const payRateSnapshot =
+			existingTransaction.technician === body.technicianId
+				? (existingTransaction.payRateSnapshot ??
+					(await resolveTechnicianPayRate(ctx, body.technicianId)))
+				: await resolveTechnicianPayRate(ctx, body.technicianId);
+
 		const preparedData = prepareTransactionData({
 			...body,
+			payRateSnapshot,
 			giftCode: giftCardId,
 		});
 
 		await ctx.db.patch(id, preparedData);
 
 		// If gift card was remove or changed, update transactionIds arrays accordingly
-		const existingTransaction = await ctx.db.get(id);
-		if (existingTransaction) {
-			// If gift card was changed
-			if (existingTransaction.giftCode !== giftCardId) {
-				// Remove transaction ID from old gift card's transactionIds array
-				if (existingTransaction.giftCode) {
-					const oldGiftCard = await ctx.db.get(existingTransaction.giftCode);
-					if (oldGiftCard) {
-						const updatedTransactionIds = (
-							oldGiftCard.transactionIds || []
-						).filter((txId) => txId !== id);
-						await ctx.db.patch(existingTransaction.giftCode, {
-							transactionIds: updatedTransactionIds,
-						});
-					}
+		if (existingTransaction.giftCode !== giftCardId) {
+			// Remove transaction ID from old gift card's transactionIds array
+			if (existingTransaction.giftCode) {
+				const oldGiftCard = await ctx.db.get(existingTransaction.giftCode);
+				if (oldGiftCard) {
+					const updatedTransactionIds = (
+						oldGiftCard.transactionIds || []
+					).filter((txId) => txId !== id);
+					await ctx.db.patch(existingTransaction.giftCode, {
+						transactionIds: updatedTransactionIds,
+					});
 				}
-				// Add transaction ID to new gift card's transactionIds array
-				if (giftCardId) {
-					const newGiftCard = await ctx.db.get(giftCardId);
-					if (newGiftCard) {
-						const transactions = newGiftCard.transactionIds || [];
-						const allTransactions = await ctx.db
-							.query("transactions")
-							.withIndex("by_gift_card", (q) => q.eq("giftCode", giftCardId))
-							.collect();
-						const newTransactionIds = allTransactions.map((t) => t._id);
-						await ctx.db.patch(giftCardId, {
-							transactionIds: Array.from(
-								new Set([...transactions, ...newTransactionIds]),
-							),
-						});
-					}
+			}
+			// Add transaction ID to new gift card's transactionIds array
+			if (giftCardId) {
+				const newGiftCard = await ctx.db.get(giftCardId);
+				if (newGiftCard) {
+					const transactions = newGiftCard.transactionIds || [];
+					const allTransactions = await ctx.db
+						.query("transactions")
+						.withIndex("by_gift_card", (q) => q.eq("giftCode", giftCardId))
+						.collect();
+					const newTransactionIds = allTransactions.map((t) => t._id);
+					await ctx.db.patch(giftCardId, {
+						transactionIds: Array.from(
+							new Set([...transactions, ...newTransactionIds]),
+						),
+					});
 				}
 			}
 		}

@@ -6,6 +6,7 @@ import {
 	retrieveAccount,
 } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
+
 import { action, query } from "./_generated/server";
 import { getStaffRoleRecord, hasAnyRole, requireActor } from "./authz";
 
@@ -90,6 +91,14 @@ export const usersByDateRange = query({
 			? hasAnyRole(actor.role, ["owner", "manager"])
 			: true;
 
+		const roleRecords = (await ctx.db.query("staffRoles").collect()) as Array<{
+			userId: string;
+			payRate?: number;
+		}>;
+		const payRateByUserId = new Map(
+			roleRecords.map((record) => [record.userId, record.payRate]),
+		);
+
 		const technicians = await ctx.db
 			.query("users")
 			.filter((q) => q.eq(q.field("isAnonymous"), undefined))
@@ -112,14 +121,22 @@ export const usersByDateRange = query({
 			visibleTechnicians.map(async (tech) => {
 				const transactions = datedTransactions.filter(
 					(t) => t.technician === tech._id,
-				);
+				) as Array<
+					(typeof datedTransactions)[number] & { payRateSnapshot?: number }
+				>;
 
 				const compensation = Number.parseFloat(
 					transactions
-						.reduce(
-							(sum, t) => sum + (report ? t.compensation / 2 : t.compensation),
-							0,
-						)
+						.reduce((sum, t) => {
+							if (!report) {
+								return sum + t.compensation;
+							}
+
+							const effectivePayRate =
+								t.payRateSnapshot ?? payRateByUserId.get(tech._id) ?? 0.5;
+
+							return sum + t.compensation * effectivePayRate;
+						}, 0)
 						.toFixed(2),
 				);
 				let tip: number;
