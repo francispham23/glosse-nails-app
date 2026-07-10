@@ -16,13 +16,16 @@ export function isBeforeToday(timestamp: number): boolean {
 	return txDate < today;
 }
 
-export function formatDate(time: number | undefined | Date): string {
+export function formatDate(
+	time: number | undefined | Date,
+	hasYear: boolean | undefined = true,
+): string {
 	if (!time) return "Unknown";
 	const date = typeof time === "number" ? new Date(time) : time;
 
 	return date.toLocaleDateString("en-US", {
 		month: "short",
 		day: "numeric",
-		year: "numeric",
+		year: hasYear ? "numeric" : undefined,
 	});
 }

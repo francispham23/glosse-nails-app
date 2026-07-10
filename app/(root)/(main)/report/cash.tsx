@@ -92,7 +92,7 @@ const CashCard = memo(({ item }: { item: CashTransaction }) => {
 	return (
 		<View className="flex-row items-center rounded-lg border-r-accent bg-gray-300 p-2 shadow-md dark:bg-gray-700">
 			<Text className={cn(base, "min-w-[50]")}>
-				{formatDate(item.serviceDate)}
+				{formatDate(item.serviceDate, false)}
 			</Text>
 			<Text className={cn(base, "min-w-[40] flex-1 text-left")}>
 				{item.technician?.split(" ")[0] || "Unknown"}

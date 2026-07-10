@@ -98,6 +98,10 @@ const getServiceDateString = (
 	if (isCurrent) {
 		return `At: ${time}.`;
 	}
-	const fullDate = date.toLocaleDateString("en-US");
+	const fullDate = date.toLocaleDateString("en-US", {
+		month: "2-digit",
+		day: "2-digit",
+		year: "numeric",
+	});
 	return `Date: ${dayInWeek}, ${fullDate} ${time}.`;
 };

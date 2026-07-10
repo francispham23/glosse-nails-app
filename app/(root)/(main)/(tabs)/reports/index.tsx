@@ -11,10 +11,12 @@ import { type Report, ReportCard } from "@/components/Cards/report-card";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
+import { useAuthorization } from "@/hooks/use-authorization";
 import { formatDate, getDiscount } from "@/utils";
 
 export default function ReportsRoute() {
 	const { startOfDay, endOfDay } = useAppDate();
+	const { isAuthorized } = useAuthorization();
 
 	const [startDate, setStartDate] = useState<Date>(startOfDay);
 	const [endDate, setEndDate] = useState<Date>(endOfDay);
@@ -215,14 +217,17 @@ export default function ReportsRoute() {
 			],
 		},
 	];
+	const filteredReportCards = reportCards.filter((card) =>
+		isAuthorized ? true : card.id !== "income" && card.id !== "gift",
+	);
+	// If all row values are 0, don't show the card
+	const noValues = filteredReportCards.every((item) =>
+		item.rows.every((row) => row.value === "$0.00" || row.value === "- $0.00"),
+	);
+	const data = noValues ? [] : filteredReportCards;
 
 	const endOfToday = new Date();
 	endOfToday.setHours(23, 59, 59, 999);
-
-	// If all row values are 0, don't show the card
-	const noValues = reportCards.every((item) =>
-		item.rows.every((row) => row.value === "$0.00" || row.value === "- $0.00"),
-	);
 
 	return (
 		<Animated.View
@@ -298,7 +303,7 @@ export default function ReportsRoute() {
 			<Animated.FlatList
 				contentInsetAdjustmentBehavior="automatic"
 				contentContainerClassName="gap-2 pt-2 px-4 pb-24"
-				data={noValues ? [] : reportCards}
+				data={data}
 				renderItem={({ item }) => (
 					<ReportCard item={item} startDate={startDate} endDate={endDate} />
 				)}
