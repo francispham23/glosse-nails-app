@@ -10,7 +10,7 @@ import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/utils";
 
-export default function ReportRoute() {
+export default function PayrollRoute() {
 	const { isLight } = useAppTheme();
 	const params = useLocalSearchParams();
 	const startDate = params.startDate ? Number(params.startDate) : Date.now();

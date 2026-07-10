@@ -8,9 +8,10 @@ import { Button } from "react-native-paper";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { type Report, ReportCard } from "@/components/Cards/report-card";
+import { ListEmptyComponent } from "@/components/list-empty";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
-import { getDiscount } from "@/utils";
+import { formatDate, getDiscount } from "@/utils";
 
 export default function ReportsRoute() {
 	const { startOfDay, endOfDay } = useAppDate();
@@ -96,6 +97,11 @@ export default function ReportsRoute() {
 
 	const totalRealCash = totalCash - totalDiscountCash - totalTipCash;
 
+	const totalIncome =
+		transactions?.reduce((sum, tx) => sum + (tx.compensation || 0), 0) ?? 0;
+
+	const netIncome = totalIncome - totalCompensation;
+
 	// Build report cards data
 	const reportCards: Report[] = [
 		{
@@ -150,7 +156,6 @@ export default function ReportsRoute() {
 				},
 			],
 		},
-
 		{
 			id: "discount",
 			title: "Discounts",
@@ -176,6 +181,28 @@ export default function ReportsRoute() {
 			],
 		},
 		{
+			id: "income",
+			title: "Income",
+			rows: [
+				{
+					label: "Total Income:",
+					value: `$${totalIncome.toFixed(2)}`,
+					isBold: true,
+					isLarge: true,
+				},
+				{
+					label: "Total Compensation:",
+					value: `- $${totalCompensation.toFixed(2)}`,
+				},
+				{
+					label: "Net Income:",
+					value: `$${netIncome.toFixed(2)}`,
+					isBold: true,
+					isLarge: true,
+				},
+			],
+		},
+		{
 			id: "gift",
 			title: "Gift Cards",
 			rows: [
@@ -191,6 +218,11 @@ export default function ReportsRoute() {
 
 	const endOfToday = new Date();
 	endOfToday.setHours(23, 59, 59, 999);
+
+	// If all row values are 0, don't show the card
+	const noValues = reportCards.every((item) =>
+		item.rows.every((row) => row.value === "$0.00" || row.value === "- $0.00"),
+	);
 
 	return (
 		<Animated.View
@@ -262,24 +294,18 @@ export default function ReportsRoute() {
 			</View>
 
 			{/* Report cards list */}
+
 			<Animated.FlatList
 				contentInsetAdjustmentBehavior="automatic"
 				contentContainerClassName="gap-2 pt-2 px-4 pb-24"
-				data={reportCards}
+				data={noValues ? [] : reportCards}
 				renderItem={({ item }) => (
 					<ReportCard item={item} startDate={startDate} endDate={endDate} />
 				)}
 				keyExtractor={(item) => item.id}
 				scrollEnabled={true}
+				ListEmptyComponent={<ListEmptyComponent item="report" />}
 			/>
 		</Animated.View>
 	);
 }
-
-const formatDate = (date: Date) => {
-	return date.toLocaleDateString("en-US", {
-		month: "short",
-		day: "numeric",
-		year: "numeric",
-	});
-};

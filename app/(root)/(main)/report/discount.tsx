@@ -7,7 +7,7 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
-import { cn, getDiscount } from "@/utils";
+import { cn, formatDate, getDiscount } from "@/utils";
 
 export default function DiscountRoute() {
 	const { isLight } = useAppTheme();
@@ -89,11 +89,7 @@ const DiscountCard = ({ item }: Props) => {
 	return (
 		<View className="flex-row items-center gap-4 rounded-lg border-r-accent bg-gray-300 p-2 shadow-md dark:bg-gray-700">
 			<Text className={cn(classname, "min-w-[105]")}>
-				{new Date(item.serviceDate).toLocaleDateString("en-US", {
-					month: "short",
-					day: "numeric",
-					year: "numeric",
-				})}
+				{formatDate(item.serviceDate)}
 			</Text>
 			<Text className={cn(classname, "flex-1 text-left")}>
 				{item.technician.split(" ")[0]}

@@ -15,3 +15,14 @@ export function isBeforeToday(timestamp: number): boolean {
 	txDate.setHours(0, 0, 0, 0);
 	return txDate < today;
 }
+
+export function formatDate(time: number | undefined | Date): string {
+	if (!time) return "Unknown";
+	const date = typeof time === "number" ? new Date(time) : time;
+
+	return date.toLocaleDateString("en-US", {
+		month: "short",
+		day: "numeric",
+		year: "numeric",
+	});
+}

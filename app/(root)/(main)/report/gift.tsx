@@ -8,7 +8,7 @@ import { TAX_RATE } from "@/components/Form/constants";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
-import { cn } from "@/utils";
+import { cn, formatDate } from "@/utils";
 
 export default function GiftRoute() {
 	const { isLight } = useAppTheme();
@@ -125,14 +125,7 @@ const GiftCard = ({ item }: Props) => {
 	return (
 		<View className="flex-row items-center gap-4 rounded-lg border-r-accent bg-gray-300 p-2 shadow-md dark:bg-gray-700">
 			<Text className={cn(classname, "min-w-[105]")}>
-				{new Date(item.redeemedDate ?? item.sellDate ?? 0).toLocaleDateString(
-					"en-US",
-					{
-						month: "short",
-						day: "numeric",
-						year: "numeric",
-					},
-				)}
+				{formatDate(item.redeemedDate ?? item.sellDate)}
 			</Text>
 			{item.redeemedDate ? (
 				<Text className={cn(classname, "flex-1")}>{item.technician}</Text>

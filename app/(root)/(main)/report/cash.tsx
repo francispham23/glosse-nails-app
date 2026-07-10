@@ -8,7 +8,7 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
-import { cn, getDiscount } from "@/utils";
+import { cn, formatDate, getDiscount } from "@/utils";
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -92,12 +92,7 @@ const CashCard = memo(({ item }: { item: CashTransaction }) => {
 	return (
 		<View className="flex-row items-center rounded-lg border-r-accent bg-gray-300 p-2 shadow-md dark:bg-gray-700">
 			<Text className={cn(base, "min-w-[50]")}>
-				{item.serviceDate
-					? new Date(item.serviceDate).toLocaleDateString("en-US", {
-							month: "short",
-							day: "numeric",
-						})
-					: "N/A"}
+				{formatDate(item.serviceDate)}
 			</Text>
 			<Text className={cn(base, "min-w-[40] flex-1 text-left")}>
 				{item.technician?.split(" ")[0] || "Unknown"}

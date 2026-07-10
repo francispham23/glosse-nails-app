@@ -5,7 +5,13 @@ import { Pressable, Text, View } from "react-native";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { cn } from "@/utils";
 
-type ReportType = "payroll" | "discount" | "cash" | "gift" | "supply";
+type ReportType =
+	| "payroll"
+	| "discount"
+	| "cash"
+	| "gift"
+	| "supply"
+	| "income";
 
 export type Report = {
 	id: ReportType;
@@ -39,9 +45,22 @@ export const ReportCard = ({ item, startDate, endDate }: Props) => {
 		});
 	};
 
+	// If first row value is 0, don't show the card
+	if (item.rows[0].value === "$0.00") {
+		return null;
+	}
+
 	return (
 		<Pressable onPress={() => onPress(item.id)}>
 			<View className="rounded-lg bg-gray-300 p-4 shadow-md dark:bg-gray-700">
+				<Text
+					className={cn(
+						"mb-2 font-semibold text-lg",
+						!isLight && "text-gray-300",
+					)}
+				>
+					{item.title}
+				</Text>
 				{item.rows.map((row, index) => (
 					<View
 						key={row.label}

@@ -52,6 +52,15 @@ export default function ReportLayout() {
 				}}
 			/>
 			<Stack.Screen
+				name="income"
+				options={{
+					headerBackButtonDisplayMode: "generic",
+					headerLeft: () => <HeaderButton iconName="close" />,
+					headerShown: true,
+					title: "",
+				}}
+			/>
+			<Stack.Screen
 				name="supply"
 				options={{
 					headerBackButtonDisplayMode: "generic",

@@ -54,8 +54,11 @@ export const getDiscount = (tx: Transaction) =>
 		? tx.discount || 0
 		: ((tx.discount || 0) / 100) * (tx.compensation || 0);
 
-export { isBeforeToday, isToday } from "./date-utils";
+// Export utility functions from date-utils
+export { formatDate, isBeforeToday, isToday } from "./date-utils";
+
 // Export Types
 export * from "./types";
+
 // Export Validation Schemas
 export * from "./validation";

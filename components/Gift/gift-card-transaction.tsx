@@ -1,7 +1,7 @@
 import { Text, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
-import { cn, type Transaction } from "@/utils";
+import { cn, formatDate, type Transaction } from "@/utils";
 import { TAX_RATE } from "../Form/constants";
 
 type Props = {
@@ -49,17 +49,4 @@ export const GiftCardTransaction = ({ transaction, isLight }: Props) => {
 			) : null}
 		</Animated.View>
 	);
-};
-
-const formatDate = (timestamp: number | undefined) => {
-	if (!timestamp) return "Unknown";
-	const date = new Date(timestamp);
-	return date.toLocaleDateString("en-US", {
-		month: "short",
-		day: "numeric",
-		year: "numeric",
-		hour: "numeric",
-		minute: "2-digit",
-		hour12: true,
-	});
 };
