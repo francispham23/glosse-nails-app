@@ -12,6 +12,7 @@ type AppDateContextType = {
 	date: Date;
 	startOfDay: Date;
 	endOfDay: Date;
+	midDay: Date;
 	setDate: (date: Date) => void;
 };
 
@@ -27,15 +28,18 @@ export const AppDateProvider = ({ children }: { children: ReactNode }) => {
 	startOfDay.setHours(0, 0, 0, 0);
 	const endOfDay = new Date(currentDate);
 	endOfDay.setHours(23, 59, 59, 999);
+	const midDay = new Date(currentDate);
+	midDay.setHours(12, 0, 0, 0);
 
 	const value = useMemo(
 		() => ({
 			date: currentDate,
 			startOfDay,
 			endOfDay,
+			midDay,
 			setDate,
 		}),
-		[currentDate, setDate, startOfDay, endOfDay],
+		[currentDate, setDate, startOfDay, endOfDay, midDay],
 	);
 
 	return (

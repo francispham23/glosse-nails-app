@@ -8,11 +8,18 @@ import {
 	type SelectedInput,
 	TransactionForm,
 } from "@/components/TransactionForm";
+import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
-import { type EarningFormState, getErrorMessage, type User } from "@/utils";
+import {
+	type EarningFormState,
+	getErrorMessage,
+	isToday,
+	type User,
+} from "@/utils";
 
 export default function CreateRoute() {
 	const router = useRouter();
+	const { midDay } = useAppDate();
 
 	const params = useLocalSearchParams();
 	const technicianId = params.technicianId as User["_id"];
@@ -34,7 +41,7 @@ export default function CreateRoute() {
 		technicianId,
 		// TODO: allow selecting client ID later
 		clientId: technicianId, // Default client ID
-		serviceDate: Date.now(),
+		serviceDate: isToday(midDay.getTime()) ? Date.now() : midDay.getTime(),
 	};
 	const [earning, setEarning] = useState<EarningFormState>({
 		...initialEarning,
