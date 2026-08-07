@@ -1,0 +1,26 @@
+# Lefthook git hooks for the Glossé Nails app.
+# https://github.com/evilmartians/lefthook
+#
+# Installed automatically via the `prepare` npm script (post-install).
+# To skip a hook in an emergency: `git commit --no-verify` (avoid unless necessary).
+
+min_version: "1.5.0"
+
+# Run on `git commit` before the message is accepted.
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      glob: "*.{js,jsx,ts,tsx}"
+      run: npx eslint .
+      stage_fixed: true
+    typecheck:
+      run: npx tsc --noEmit
+    test:
+      run: npx vitest run
+
+# Run on `git commit-msg` to enforce Conventional Commits.
+commit-msg:
+  commands:
+    commitlint:
+      run: npx commitlint --edit {1}

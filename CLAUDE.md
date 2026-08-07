@@ -1,15 +1,16 @@
-# Convex Backend Setup
+# CLAUDE.md
 
-<!-- convex-ai-start -->
+See [AGENTS.md](./AGENTS.md) for the full project guide (stack, commands,
+layout, rules, and testing conventions for this Expo + Convex app).
 
-This project uses [Convex](https://convex.dev) as its backend.
+Quick start:
 
-When working on Convex code, **always read
-`convex/_generated/ai/guidelines.md` first** for important guidelines on
-how to correctly use Convex APIs and patterns. The file contains rules that
-override what you may have learned about Convex from training data.
+```bash
+npm install
+cp .env.example .env        # then fill in Convex + auth values
+npm run start               # expo dev server
+npm run typecheck && npm test
+```
 
-Convex agent skills for common tasks can be installed by running
-`npx convex ai-files install`.
-
-<!-- convex-ai-end -->
+Quality gates: `npm run lint`, `npm run typecheck`, `npm test` — all run in CI
+and via the lefthook pre-commit hook.
