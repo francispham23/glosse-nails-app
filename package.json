@@ -8,7 +8,10 @@
 		"android": "expo run:android",
 		"ios": "expo run:ios",
 		"web": "expo start --web",
-		"lint": "expo lint"
+		"lint": "expo lint",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"prepare": "lefthook install"
 	},
 	"dependencies": {
 		"@auth/core": "^0.41.2",
@@ -49,13 +52,20 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.2.0",
+		"@commitlint/cli": "^19.6.0",
+		"@commitlint/config-conventional": "^19.6.0",
 		"@types/node": "^24.13.2",
 		"@types/react": "^19.2.17",
 		"eslint": "^9.39.4",
 		"eslint-config-expo": "~56.0.4",
 		"expo-mcp": "~0.2.1",
+		"lefthook": "^1.11.0",
 		"tailwindcss": "~4.1.18",
-		"typescript": "~6.0.3"
+		"typescript": "~6.0.3",
+		"vitest": "^2.1.8"
 	},
-	"private": true
+	"private": true,
+	"engines": {
+		"node": ">=22"
+	}
 }
