@@ -5,7 +5,10 @@ const expoConfig = require("eslint-config-expo/flat");
 module.exports = defineConfig([
   expoConfig,
   {
-    ignores: ["dist/*"],
+    // Convex integration tests (`*.convex.test.ts`) use `convex/test`, a module
+    // injected by the Convex CLI at `convex test` time (not resolvable here).
+    // They are linted/run by the Convex CLI, not eslint/vitest, so exclude them.
+    ignores: ["dist/*", "convex/**/*.convex.test.ts"],
   },
   {
     // The repo was committed without `eslint .` as a hard gate. eslint-config-expo

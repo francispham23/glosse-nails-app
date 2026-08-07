@@ -11,6 +11,8 @@
 		"lint": "expo lint",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
+		"test:convex": "convex test",
+		"convex:codegen": "convex codegen",
 		"prepare": "lefthook install"
 	},
 	"dependencies": {
