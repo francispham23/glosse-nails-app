@@ -1,5 +1,6 @@
 import { useQuery } from "convex/react";
 import { useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 import { Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
@@ -12,8 +13,9 @@ import { cn, formatDate, getDiscount } from "@/utils";
 export default function DiscountRoute() {
 	const { isLight } = useAppTheme();
 	const params = useLocalSearchParams();
-	const startDate = params.startDate ? Number(params.startDate) : Date.now();
-	const endDate = params.endDate ? Number(params.endDate) : Date.now();
+	const [fallbackDate] = useState(() => Date.now());
+	const startDate = params.startDate ? Number(params.startDate) : fallbackDate;
+	const endDate = params.endDate ? Number(params.endDate) : fallbackDate;
 	const transactions = useQuery(api.transactions.listByDateRange, {
 		startDate,
 		endDate,

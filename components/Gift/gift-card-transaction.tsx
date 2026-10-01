@@ -2,7 +2,7 @@ import { Text, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { cn, formatDate, type Transaction } from "@/utils";
-import { TAX_RATE } from "../Form/constants";
+import { giftUsageCents } from "@/utils/money";
 
 type Props = {
 	transaction: Transaction;
@@ -29,13 +29,7 @@ export const GiftCardTransaction = ({ transaction, isLight }: Props) => {
 						!isLight && "text-gray-300",
 					)}
 				>
-					$
-					{(
-						(transaction.compInGift ?? 0) * TAX_RATE +
-						(transaction.supply ?? 0) * TAX_RATE +
-						(transaction.tipInGift ?? 0)
-					).toFixed(2) || "0.00"}{" "}
-					Used
+					${(giftUsageCents(transaction) / 100).toFixed(2)} Used
 				</Text>
 				<Text className={cn(textClassName, "text-xs")}>
 					{formatDate(transaction.serviceDate)}

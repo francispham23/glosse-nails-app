@@ -4,13 +4,13 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, Keyboard } from "react-native";
 import { Button, TextInput } from "react-native-paper";
-
 import FormHeader from "@/components/Form/form";
 import { NumericInput } from "@/components/Form/numeric-input";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import { getErrorMessage, useThemeColor } from "@/utils";
+import { parseAmount } from "@/utils/financial-validation";
 
 export default function CreateRoute() {
 	const mutedColor = useThemeColor("muted");
@@ -31,8 +31,16 @@ export default function CreateRoute() {
 			return;
 		}
 
-		if (!value || Number.parseFloat(value) <= 0) {
-			Alert.alert("Error", "Please enter a valid value");
+		let amount: number;
+		try {
+			amount = parseAmount(value, "Gift value", true) as number;
+			if (amount <= 0)
+				throw new Error("Gift value must be positive after rounding");
+		} catch (error) {
+			Alert.alert(
+				"Error",
+				getErrorMessage(error, "Please enter a valid value"),
+			);
 			return;
 		}
 
@@ -40,7 +48,7 @@ export default function CreateRoute() {
 			setIsLoading(true);
 			await createGiftCard({
 				code: code.trim(),
-				value: Number.parseFloat(value),
+				value: amount,
 				sellDate: date.getTime(),
 			});
 

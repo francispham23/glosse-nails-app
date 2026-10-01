@@ -16,12 +16,12 @@ type ReportType =
 export type Report = {
 	id: ReportType;
 	title: string;
-	rows: Array<{
+	rows: {
 		label: string;
 		value: string;
 		isBold?: boolean;
 		isLarge?: boolean;
-	}>;
+	}[];
 };
 
 type Props = {

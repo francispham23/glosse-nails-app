@@ -29,7 +29,17 @@ android
 
 # Github Copilot
 .github
-.agents
+!.github/
+.github/*
+!.github/workflows/
+!.github/workflows/**
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/grill-with-docs/
+!.agents/skills/grill-with-docs/**
+!.agents/skills/glosse-task/
+!.agents/skills/glosse-task/**
 .claude
 .vscode
 skills-lock.json

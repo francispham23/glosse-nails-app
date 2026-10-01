@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "convex/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Alert, Text, View } from "react-native";
 import Animated, {
 	FadeIn,
@@ -37,27 +37,18 @@ export default function HomeRoute() {
 	// Mutation to save shift
 	const saveShift = useMutation(api.shifts.saveShift);
 
-	const [selectedTechnicians, setSelectedTechnicians] = useState<User[]>([]);
-	const [isSelecting, setIsSelecting] = useState(false);
-
-	useEffect(() => {
-		if (onShiftTechs === null) return setSelectedTechnicians([]);
-		// Filter technicians based on onShiftTechs
-		if (onShiftTechs && technicians) {
-			const shiftUserIds = new Set(onShiftTechs.map((u) => u._id));
-			const filteredUsers = technicians.filter((u) => shiftUserIds.has(u._id));
-			setSelectedTechnicians(filteredUsers);
-		} else if (!isSelecting && technicians) {
-			// Update selected users when Convex data changes and not selecting
-			setSelectedTechnicians((prev) =>
-				prev.map((u) => {
-					// Update selected users info with new Convex data
-					const updated = technicians.find((t) => t._id === u._id);
-					return updated || u;
-				}),
-			);
-		}
-	}, [technicians, isSelecting, onShiftTechs]);
+	const [selection, setSelection] = useState<{
+		shiftDate: number;
+		ids: User["_id"][];
+	} | null>(null);
+	const shiftDate = startOfDay.getTime();
+	const isSelecting = selection?.shiftDate === shiftDate;
+	const selectedTechnicians = useMemo(() => {
+		const ids = new Set(
+			isSelecting ? selection.ids : onShiftTechs?.map((tech) => tech._id),
+		);
+		return technicians?.filter((tech) => ids.has(tech._id)) ?? [];
+	}, [isSelecting, selection, onShiftTechs, technicians]);
 
 	const isSelectedDateToday = useMemo(
 		() => isToday(endOfDay.getTime()),
@@ -91,13 +82,15 @@ export default function HomeRoute() {
 				isAuthUser || (user?._id === item._id && isSelectedDateToday);
 
 			const onToggleSelect = (user: User) => {
-				if (isSelected) {
-					setSelectedTechnicians((prev) =>
-						prev.filter((u) => u._id !== user._id),
-					);
-				} else {
-					setSelectedTechnicians((prev) => [...prev, user]);
-				}
+				setSelection((current) => {
+					if (!current || current.shiftDate !== shiftDate) return current;
+					return {
+						...current,
+						ids: current.ids.includes(user._id)
+							? current.ids.filter((id) => id !== user._id)
+							: [...current.ids, user._id],
+					};
+				});
 			};
 
 			return (
@@ -117,6 +110,7 @@ export default function HomeRoute() {
 			isAuthUser,
 			user?._id,
 			isSelectedDateToday,
+			shiftDate,
 		],
 	);
 
@@ -135,9 +129,13 @@ export default function HomeRoute() {
 					console.error("Failed to save shift:", error);
 				}
 			}
-			setIsSelecting(adding);
+			setSelection(
+				adding
+					? { shiftDate, ids: selectedTechnicians.map((tech) => tech._id) }
+					: null,
+			);
 		},
-		[isSelecting, selectedTechnicians, saveShift, startOfDay],
+		[isSelecting, selectedTechnicians, saveShift, startOfDay, shiftDate],
 	);
 
 	const className = cn(

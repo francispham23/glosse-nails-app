@@ -13,6 +13,7 @@ import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import { useAuthorization } from "@/hooks/use-authorization";
 import { formatDate, getDiscount } from "@/utils";
+import { getCashCompensation, getCashTip } from "@/utils/financial-validation";
 
 export default function ReportsRoute() {
 	const { startOfDay, endOfDay } = useAppDate();
@@ -54,36 +55,10 @@ export default function ReportsRoute() {
 	const totalSupply =
 		transactions?.reduce((sum, tx) => sum + (tx.supply || 0), 0) ?? 0;
 
-	const cashTransactions =
-		transactions?.filter(
-			(tx) =>
-				!tx.compensationMethods?.includes("Card") &&
-				tx.compensationMethods?.includes("Cash"),
-		) || [];
-	const totalCashCharges = cashTransactions.reduce(
-		(sum, tx) => sum + (tx.compensation || 0),
-		0,
-	);
-	const totalPartialCashCharges = transactions?.reduce(
-		(sum, tx) => sum + (tx.compInCash || 0),
-		0,
-	);
-	const totalCompCash = totalCashCharges + (totalPartialCashCharges || 0);
-
-	const tipCashTransactions =
-		transactions?.filter(
-			(tx) =>
-				!tx.tipMethods?.includes("Card") && tx.tipMethods?.includes("Cash"),
-		) || [];
-	const totalTipCashOnly = tipCashTransactions.reduce(
-		(sum, tx) => sum + (tx.tip || 0),
-		0,
-	);
-	const totalPartialTipCash = transactions?.reduce(
-		(sum, tx) => sum + (tx.tipInCash || 0),
-		0,
-	);
-	const totalTipCash = totalTipCashOnly + (totalPartialTipCash || 0);
+	const totalCompCash =
+		transactions?.reduce((sum, tx) => sum + getCashCompensation(tx), 0) ?? 0;
+	const totalTipCash =
+		transactions?.reduce((sum, tx) => sum + getCashTip(tx), 0) ?? 0;
 
 	const totalSupplyCash =
 		transactions?.reduce((sum, tx) => {

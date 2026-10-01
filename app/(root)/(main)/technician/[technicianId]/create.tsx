@@ -36,16 +36,15 @@ export default function CreateRoute() {
 		"Supply",
 	]);
 
-	const initialEarning = {
+	const createInitialEarning = (): EarningFormState => ({
 		...initialEarningState,
 		technicianId,
 		// TODO: allow selecting client ID later
 		clientId: technicianId, // Default client ID
 		serviceDate: isToday(midDay.getTime()) ? Date.now() : midDay.getTime(),
-	};
-	const [earning, setEarning] = useState<EarningFormState>({
-		...initialEarning,
 	});
+	const [earning, setEarning] =
+		useState<EarningFormState>(createInitialEarning);
 
 	/* ----------------------------- handle create transaction ----------------------------- */
 	const handleSubmit = async () => {
@@ -72,7 +71,7 @@ export default function CreateRoute() {
 			setIsLoading(false);
 			setOpen(false);
 			setGiftError("");
-			setEarning({ ...initialEarning });
+			setEarning(createInitialEarning());
 			setSelectedInputs(["Supply"]);
 		}
 	};

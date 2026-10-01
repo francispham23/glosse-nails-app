@@ -1,20 +1,22 @@
 import { useQuery } from "convex/react";
 import { useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 import { Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
-import { TAX_RATE } from "@/components/Form/constants";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { cn, formatDate } from "@/utils";
+import { giftUsageCents } from "@/utils/money";
 
 export default function GiftRoute() {
 	const { isLight } = useAppTheme();
 	const params = useLocalSearchParams();
-	const startDate = params.startDate ? Number(params.startDate) : Date.now();
-	const endDate = params.endDate ? Number(params.endDate) : Date.now();
+	const [fallbackDate] = useState(() => Date.now());
+	const startDate = params.startDate ? Number(params.startDate) : fallbackDate;
+	const endDate = params.endDate ? Number(params.endDate) : fallbackDate;
 	const gifts = useQuery(api.giftCards.listByDateRange, {
 		startDate,
 		endDate,
@@ -36,10 +38,7 @@ export default function GiftRoute() {
 				return {
 					_id: tx._id,
 					code: gifts?.find((gift) => gift._id === tx.giftCode)?.code as string,
-					balance:
-						(tx.compInGift ?? 0) * TAX_RATE +
-						(tx.supply ?? 0) * TAX_RATE +
-						(tx.tipInGift ?? 0),
+					balance: giftUsageCents(tx) / 100,
 					redeemedDate: tx.serviceDate as number,
 					client: tx.client as string | undefined,
 					technician: tx.technician as string | undefined,

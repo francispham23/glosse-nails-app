@@ -1,12 +1,16 @@
 import { useEffect } from "react";
 import { Text } from "react-native";
 import { TextInput } from "react-native-paper";
-
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { cn, type EarningFormState, type Gift } from "@/utils";
-import { TAX_RATE } from "./constants";
+import {
+	FinancialValidationError,
+	giftServiceLimit,
+	parseAmount,
+} from "@/utils/financial-validation";
+import { giftUsageCents, moneyToCents } from "@/utils/money";
 import { ErrorText } from "./form";
-import { formatCurrency, roundCurrency, toCents } from "./helpers";
+import { formatCurrency } from "./helpers";
 
 type GiftType = "tipInGift" | "compInGift";
 
@@ -41,15 +45,10 @@ export const GiftCardInputs = ({
 		discountType,
 	} = earning;
 
-	const maxCompGiftAmount = roundCurrency(
-		Math.max(
-			0,
-			parseCurrencyValue(compensation) -
-				(discountType === "Amount"
-					? parseCurrencyValue(discount)
-					: (parseCurrencyValue(discount) / 100) *
-						parseCurrencyValue(compensation)),
-		),
+	const maxCompGiftAmount = giftServiceLimit(
+		parseCurrencyValue(compensation),
+		parseCurrencyValue(discount),
+		discountType,
 	);
 	const availableBalance = giftCard?.balance
 		? calculateAvailableBalance(giftCard.balance, compInGift, tipInGift, supply)
@@ -63,7 +62,7 @@ export const GiftCardInputs = ({
 
 		if (
 			type === "compInGift" &&
-			parseCurrencyValue(compInGift) > maxCompGiftAmount
+			parseCurrencyValue(compInGift, true) > maxCompGiftAmount
 		) {
 			setGiftError(
 				`Gift card amount cannot exceed $${maxCompGiftAmount.toFixed(2)} after discount`,
@@ -101,7 +100,7 @@ export const GiftCardInputs = ({
 
 		if (
 			type === "compInGift" &&
-			parseCurrencyValue(value) > maxCompGiftAmount
+			parseCurrencyValue(value, true) > maxCompGiftAmount
 		) {
 			setGiftError(
 				`Gift card amount cannot exceed $${maxCompGiftAmount.toFixed(2)} after discount`,
@@ -116,7 +115,7 @@ export const GiftCardInputs = ({
 			compInGift ?? "",
 			supply ?? "",
 		);
-		const balanceCents = toCents((giftCard.balance ?? 0).toString());
+		const balanceCents = moneyToCents(giftCard.balance ?? 0);
 
 		if (totalCents > balanceCents) {
 			setGiftError(
@@ -178,14 +177,14 @@ export const GiftCardInputs = ({
 
 /* ----------------------------- Utility Functions ----------------------------- */
 
-const parseCurrencyValue = (value?: string): number => {
-	const parsed = Number.parseFloat(value ?? "0");
-	return Number.isNaN(parsed) ? 0 : parsed;
-};
-
-const calculateAmountWithTax = (value: string, applyTax: boolean): number => {
-	const cents = toCents(value);
-	return applyTax ? Math.round(cents * TAX_RATE) : cents;
+const parseCurrencyValue = (value?: string, normalize = false): number => {
+	try {
+		// Invalid draft text is handled by the form schema, not currency arithmetic.
+		return parseAmount(value, "gift preview", false, normalize) ?? 0;
+	} catch (error) {
+		if (!(error instanceof FinancialValidationError)) throw error;
+		return 0;
+	}
 };
 
 const calculateTotalUsage = (
@@ -197,14 +196,11 @@ const calculateTotalUsage = (
 ): number => {
 	const isComp = type === "compInGift";
 
-	const currentCents = calculateAmountWithTax(currentValue, isComp);
-	const otherCents = calculateAmountWithTax(
-		isComp ? tipInGift : compInGift,
-		!isComp,
-	);
-	const supplyCents = calculateAmountWithTax(supply, true);
-
-	return currentCents + otherCents + supplyCents;
+	return giftUsageCents({
+		compInGift: parseCurrencyValue(isComp ? currentValue : compInGift),
+		tipInGift: parseCurrencyValue(isComp ? tipInGift : currentValue),
+		supply: parseCurrencyValue(supply),
+	});
 };
 
 const calculateAvailableBalance = (
@@ -213,13 +209,13 @@ const calculateAvailableBalance = (
 	tipInGift?: string,
 	supply?: string,
 ): number => {
-	const compUsage = compInGift
-		? roundCurrency(Number.parseFloat(compInGift) * TAX_RATE)
-		: 0;
-	const tipUsage = tipInGift ? roundCurrency(Number.parseFloat(tipInGift)) : 0;
-	const supplyUsage = supply
-		? roundCurrency(Number.parseFloat(supply) * TAX_RATE)
-		: 0;
-
-	return roundCurrency(balance - compUsage - tipUsage - supplyUsage);
+	return (
+		(moneyToCents(balance) -
+			giftUsageCents({
+				compInGift: parseCurrencyValue(compInGift),
+				tipInGift: parseCurrencyValue(tipInGift),
+				supply: parseCurrencyValue(supply),
+			})) /
+		100
+	);
 };

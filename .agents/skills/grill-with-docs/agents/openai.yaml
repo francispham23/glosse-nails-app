@@ -1,0 +1,4 @@
+interface:
+  display_name: "Grill with Docs"
+  short_description: "Turn a vague change into an approved task contract"
+  default_prompt: "Use $grill-with-docs to investigate this request against the repository docs, resolve material decisions, and prepare one task contract for approval."

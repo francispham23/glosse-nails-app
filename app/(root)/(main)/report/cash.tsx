@@ -1,6 +1,6 @@
 import { useQuery } from "convex/react";
 import { useLocalSearchParams } from "expo-router";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
@@ -9,6 +9,7 @@ import { ListEmptyComponent } from "@/components/list-empty";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { cn, formatDate, getDiscount } from "@/utils";
+import { getCashCompensation, getCashTip } from "@/utils/financial-validation";
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -51,33 +52,6 @@ function isCashTransaction(tx: {
 	);
 }
 
-function getCashCompensation(tx: {
-	compInCash?: number;
-	compensation?: number;
-	compensationMethods?: string[];
-}): number {
-	return (
-		(tx.compInCash || 0) +
-		(tx.compensationMethods?.includes("Cash") &&
-		!tx.compensationMethods?.includes("Card")
-			? tx.compensation || 0
-			: 0)
-	);
-}
-
-function getCashTip(tx: {
-	tipInCash?: number;
-	tip?: number;
-	tipMethods?: string[];
-}): number {
-	return (
-		(tx.tipInCash || 0) +
-		(tx.tipMethods?.includes("Cash") && !tx.tipMethods?.includes("Card")
-			? tx.tip || 0
-			: 0)
-	);
-}
-
 // ── Stable empty-list elements (never re-created) ────────────────────────
 
 const EmptyTechnician = <ListEmptyComponent item="technician" />;
@@ -85,7 +59,7 @@ const EmptyCash = <ListEmptyComponent item="cash" />;
 
 // ── Memoised sub-components ──────────────────────────────────────────────
 
-const CashCard = memo(({ item }: { item: CashTransaction }) => {
+const CashCard = memo(function CashCard({ item }: { item: CashTransaction }) {
 	const { isLight } = useAppTheme();
 	const base = cn("text-muted text-sm", !isLight && "text-gray-300");
 
@@ -110,7 +84,11 @@ const CashCard = memo(({ item }: { item: CashTransaction }) => {
 	);
 });
 
-const TechnicianCashCard = memo(({ item }: { item: TechnicianSummary }) => {
+const TechnicianCashCard = memo(function TechnicianCashCard({
+	item,
+}: {
+	item: TechnicianSummary;
+}) {
 	const { isLight } = useAppTheme();
 	const base = cn("text-muted text-sm", !isLight && "text-gray-300");
 
@@ -137,8 +115,9 @@ const TechnicianCashCard = memo(({ item }: { item: TechnicianSummary }) => {
 export default function CashReportRoute() {
 	const { isLight } = useAppTheme();
 	const params = useLocalSearchParams();
-	const startDate = params.startDate ? Number(params.startDate) : Date.now();
-	const endDate = params.endDate ? Number(params.endDate) : Date.now();
+	const [fallbackDate] = useState(() => Date.now());
+	const startDate = params.startDate ? Number(params.startDate) : fallbackDate;
+	const endDate = params.endDate ? Number(params.endDate) : fallbackDate;
 
 	const transactions = useQuery(api.transactions.listByDateRange, {
 		startDate,
@@ -176,7 +155,7 @@ export default function CashReportRoute() {
 			if (!map[key]) {
 				map[key] = { _id: key, cashTips: 0, supply: 0, discount: 0 };
 			}
-			map[key].cashTips += getCashTip(tx);
+			map[key].cashTips += tx.tip;
 			map[key].supply += tx.isCashSupply ? tx.supply || 0 : 0;
 			map[key].discount += tx.isCashDiscount ? tx.discount || 0 : 0;
 		}

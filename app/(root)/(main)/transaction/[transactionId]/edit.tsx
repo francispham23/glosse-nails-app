@@ -1,22 +1,21 @@
 import { useMutation, useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Alert } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 
-import { initialEarningState } from "@/components/Form/constants";
 import {
 	type SelectedInput,
 	TransactionForm,
 } from "@/components/TransactionForm";
 import { api } from "@/convex/_generated/api";
+import type { Doc } from "@/convex/_generated/dataModel";
 import { useAuthorization } from "@/hooks/use-authorization";
 import {
 	type EarningFormState,
 	getErrorMessage,
 	type PaymentMethod,
 	type Transaction,
-	type User,
 } from "@/utils";
 
 export default function EditTransactionScreen() {
@@ -27,65 +26,62 @@ export default function EditTransactionScreen() {
 		api.transactions.getById,
 		transactionId ? { id: transactionId as Transaction["_id"] } : "skip",
 	);
-	const updateTransaction = useMutation(api.transactions.updateTransaction);
 	const giftCards = useQuery(api.giftCards.list);
 	const giftCode = transaction?.giftCode
 		? giftCards?.find((gc) => gc._id === transaction.giftCode)?.code || ""
 		: "";
 
-	/* ---------------------------------- state --------------------------------- */
+	if (!transaction || (transaction.giftCode && giftCards === undefined)) {
+		return <ActivityIndicator className="flex-1 items-center justify-center" />;
+	}
+	return (
+		<LoadedEditForm
+			key={transaction._id}
+			transaction={transaction}
+			giftCode={giftCode}
+			isAuthorized={isAuthorized}
+		/>
+	);
+}
+
+function LoadedEditForm({
+	transaction,
+	giftCode,
+	isAuthorized,
+}: {
+	transaction: Doc<"transactions">;
+	giftCode: string;
+	isAuthorized: boolean;
+}) {
+	const transactionId = transaction._id;
+	const updateTransaction = useMutation(api.transactions.updateTransaction);
 	const [open, setOpen] = useState(false);
 	const [isUpdating, setIsUpdating] = useState(false);
 	const [giftError, setGiftError] = useState("");
-	const [selectedInputs, setSelectedInputs] = useState<SelectedInput[]>([]);
-
-	const initialEarning = {
-		...initialEarningState,
-		technicianId: "" as User["_id"],
-		clientId: "" as User["_id"],
-		serviceDate: Date.now(),
-	};
-	const [earning, setEarning] = useState<EarningFormState>({
-		...initialEarning,
-	});
-
-	/* -------------- Populate form when transaction loads -------------- */
-	useEffect(() => {
-		if (transaction) {
-			setEarning({
-				compensation: transaction.compensation.toString(),
-				compInCash: transaction.compInCash?.toString() || "",
-				compInGift: transaction.compInGift?.toString() || "",
-				compensationMethods: transaction.compensationMethods as PaymentMethod[],
-				tip: transaction.tip.toString(),
-				tipInCash: transaction.tipInCash?.toString() || "",
-				tipInGift: transaction.tipInGift?.toString() || "",
-				tipMethods: transaction.tipMethods as PaymentMethod[],
-				discount: transaction.discount?.toString() || "",
-				discountType: transaction.discountType || undefined,
-				isCashDiscount: transaction.isCashDiscount || undefined,
-				supply: transaction.supply?.toString() || "",
-				isCashSupply: transaction.isCashSupply || undefined,
-				giftCode: giftCode,
-				services: transaction.services || [],
-				technicianId: transaction.technician,
-				clientId: transaction.client,
-				serviceDate: transaction.serviceDate || Date.now(),
-			});
-
-			if (transaction.discount) {
-				setSelectedInputs((prev) =>
-					prev.includes("Discount") ? prev : [...prev, "Discount"],
-				);
-			}
-
-			if (transaction.supply) {
-				setSelectedInputs((prev) =>
-					prev.includes("Supply") ? prev : [...prev, "Supply"],
-				);
-			}
-		}
-	}, [transaction, giftCode]);
+	const [selectedInputs, setSelectedInputs] = useState<SelectedInput[]>(() => [
+		...(transaction.discount ? ["Discount" as const] : []),
+		...(transaction.supply ? ["Supply" as const] : []),
+	]);
+	const [earning, setEarning] = useState<EarningFormState>(() => ({
+		compensation: transaction.compensation.toString(),
+		compInCash: transaction.compInCash?.toString() || "",
+		compInGift: transaction.compInGift?.toString() || "",
+		compensationMethods: transaction.compensationMethods as PaymentMethod[],
+		tip: transaction.tip.toString(),
+		tipInCash: transaction.tipInCash?.toString() || "",
+		tipInGift: transaction.tipInGift?.toString() || "",
+		tipMethods: transaction.tipMethods as PaymentMethod[],
+		discount: transaction.discount?.toString() || "",
+		discountType: transaction.discountType || undefined,
+		isCashDiscount: transaction.isCashDiscount || undefined,
+		supply: transaction.supply?.toString() || "",
+		isCashSupply: transaction.isCashSupply || undefined,
+		giftCode: giftCode,
+		services: transaction.services || [],
+		technicianId: transaction.technician,
+		clientId: transaction.client,
+		serviceDate: transaction.serviceDate ?? Date.now(),
+	}));
 
 	/* ----------------------------- handle edit transaction ----------------------------- */
 	const handleSubmit = async () => {
@@ -120,14 +116,8 @@ export default function EditTransactionScreen() {
 			setIsUpdating(false);
 			setOpen(false);
 			setGiftError("");
-			setEarning({ ...initialEarning });
-			setSelectedInputs(["Supply"]);
 		}
 	};
-
-	if (!transaction) {
-		return <ActivityIndicator className="flex-1 items-center justify-center" />;
-	}
 
 	return (
 		<TransactionForm

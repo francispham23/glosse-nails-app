@@ -7,7 +7,6 @@ import { api } from "@/convex/_generated/api";
 
 import { cn, type Gift } from "@/utils";
 import { DeleteButton } from "../Buttons/delete-button";
-import { TAX_RATE } from "../Form/constants";
 import { TransactionHistory } from "./transaction-history";
 
 type Props = {
@@ -37,17 +36,11 @@ export const BottomModal = ({
 		setIsOpen(index >= 0);
 	}, []);
 
+	// History can be self-only; the shared balance covers every redemption.
 	const totalUsed =
-		transactions?.reduce(
-			(sum, tx) =>
-				sum +
-				(tx.compInGift ?? 0) * TAX_RATE +
-				(tx.supply ?? 0) * TAX_RATE +
-				(tx.tipInGift ?? 0),
-			0,
-		) || 0;
+		giftCard.balance === undefined ? null : giftCard.value - giftCard.balance;
 
-	const isUnused = giftCard.transactionIds.length === 0 || totalUsed === 0;
+	const isUnused = giftCard.transactionIds.length === 0 && totalUsed === 0;
 
 	const balanceClassName = cn(
 		"text-right font-semibold text-md",
@@ -112,7 +105,7 @@ export const BottomModal = ({
 								!isLight && "text-gray-300",
 							)}
 						>
-							${totalUsed.toFixed(2)}
+							{totalUsed === null ? "—" : `$${totalUsed.toFixed(2)}`}
 						</Text>
 					</View>
 					<View className="flex-row justify-between">
@@ -124,6 +117,9 @@ export const BottomModal = ({
 				</View>
 				{transactions ? (
 					<TransactionHistory
+						title={
+							isAuthorized ? "Transaction History" : "Your Transaction History"
+						}
 						transactions={transactions}
 						textClassName={textClassName}
 						isLight={isLight}

@@ -5,12 +5,14 @@ import { cn, type Transaction } from "@/utils";
 import { GiftCardTransaction } from "../Gift/gift-card-transaction";
 
 type Props = {
+	title: string;
 	transactions: Transaction[];
 	textClassName: string;
 	isLight: boolean;
 };
 
 export const TransactionHistory = ({
+	title,
 	transactions,
 	textClassName,
 	isLight,
@@ -23,7 +25,7 @@ export const TransactionHistory = ({
 					!isLight && "text-gray-300",
 				)}
 			>
-				Transaction History
+				{title}
 			</Text>
 			<Animated.FlatList
 				contentInsetAdjustmentBehavior="automatic"
@@ -40,7 +42,7 @@ export const TransactionHistory = ({
 				ListEmptyComponent={
 					<View className="items-center justify-center py-8">
 						<Text className={textClassName}>
-							No transactions found for this gift card
+							No visible transactions for this gift card
 						</Text>
 					</View>
 				}
