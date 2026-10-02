@@ -5,6 +5,7 @@ import { TransactionForm } from "@/components/TransactionForm";
 import { normalizeFinancialInput } from "@/utils/financial-validation";
 import type { EarningFormState } from "@/utils/types";
 
+jest.mock("expo-router/react-navigation", () => ({ useHeaderHeight: () => 0 }));
 jest.mock("convex/react", () => ({
 	useQuery: (query: string, args: unknown) =>
 		query === "gift" && args !== "skip" ? { balance: 200 } : [],
@@ -65,6 +66,7 @@ jest.mock("react-native-paper", () => {
 		Button: control,
 		Chip: control,
 		Icon: () => null,
+		Text,
 		TextInput: Object.assign(TextInput, { Icon: () => null }),
 		useTheme: () => ({ colors: {} }),
 	};
@@ -87,9 +89,13 @@ const initial: EarningFormState = {
 function Harness({
 	onSubmit,
 	input = initial,
+	submitDisabled = false,
+	saveError = "",
 }: {
 	onSubmit: (value: EarningFormState) => void;
 	input?: EarningFormState;
+	submitDisabled?: boolean;
+	saveError?: string;
 }) {
 	const [earning, setEarning] = useState(input);
 	const [giftError, setGiftError] = useState("");
@@ -102,6 +108,8 @@ function Harness({
 			setEarning={setEarning}
 			onSubmit={() => onSubmit(earning)}
 			isLoading={false}
+			submitDisabled={submitDisabled}
+			saveError={saveError}
 			submitLabel="Save"
 			open={false}
 			setOpen={() => {}}
@@ -174,3 +182,29 @@ test.each([
 		expect(submitted).toHaveBeenCalledTimes(1);
 	},
 );
+
+test("real form displays server error and submitDisabled locks valid submission and draft changes", async () => {
+	const submitted = jest.fn<(value: EarningFormState) => void>();
+	const mounted = await render(
+		<Harness
+			onSubmit={submitted}
+			submitDisabled
+			saveError="Insufficient gift card balance"
+		/>,
+	);
+	expect(screen.getByRole("alert").props.children).toBe(
+		"Insufficient gift card balance",
+	);
+	await fireEvent.press(screen.getByText("Save"));
+	await fireEvent.changeText(
+		screen.getByPlaceholderText(
+			"Enter Total Charge in Card, Cash and Gift Card",
+		),
+		"999",
+	);
+	expect(submitted).not.toHaveBeenCalled();
+	await mounted.rerender(<Harness onSubmit={submitted} />);
+	await fireEvent.press(screen.getByText("Save"));
+	expect(submitted).toHaveBeenCalledTimes(1);
+	expect(submitted.mock.calls[0][0].compensation).toBe("100");
+});

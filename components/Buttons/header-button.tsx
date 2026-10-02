@@ -8,9 +8,16 @@ import { useThemeColor } from "@/utils";
 type HeaderButtonProps = {
 	iconName: React.ComponentProps<typeof Ionicons>["name"];
 	route?: Href;
+	disabled?: boolean;
+	isBlocked?: () => boolean;
 };
 
-export const HeaderButton = ({ iconName, route }: HeaderButtonProps) => {
+export const HeaderButton = ({
+	iconName,
+	route,
+	disabled = false,
+	isBlocked,
+}: HeaderButtonProps) => {
 	const router = useRouter();
 	const themeColorForeground = useThemeColor("foreground");
 
@@ -18,7 +25,12 @@ export const HeaderButton = ({ iconName, route }: HeaderButtonProps) => {
 		return (
 			<Pressable
 				className="justify-center rounded-full px-2.5"
+				disabled={disabled}
+				accessibilityState={{ disabled }}
+				accessibilityLabel={route ? "View technician" : "Close"}
+				style={{ opacity: disabled ? 0.5 : 1 }}
 				onPress={() => {
+					if (disabled || isBlocked?.()) return;
 					Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 					router.navigate(route);
 				}}
@@ -28,8 +40,20 @@ export const HeaderButton = ({ iconName, route }: HeaderButtonProps) => {
 		);
 
 	return (
-		<Link href=".." asChild>
-			<Pressable className="justify-center rounded-full px-2.5">
+		<Link
+			href=".."
+			asChild
+			onPress={(event) => {
+				if (disabled || isBlocked?.()) event.preventDefault();
+			}}
+		>
+			<Pressable
+				className="justify-center rounded-full px-2.5"
+				disabled={disabled}
+				accessibilityState={{ disabled }}
+				accessibilityLabel={route ? "View technician" : "Close"}
+				style={{ opacity: disabled ? 0.5 : 1 }}
+			>
 				<Ionicons name="close" size={18} color={themeColorForeground} />
 			</Pressable>
 		</Link>

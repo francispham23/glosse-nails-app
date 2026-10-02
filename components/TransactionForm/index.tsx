@@ -1,7 +1,8 @@
 import { useQuery } from "convex/react";
-import { useCallback, useMemo } from "react";
-import { Keyboard } from "react-native";
-import { Button } from "react-native-paper";
+import { useHeaderHeight } from "expo-router/react-navigation";
+import { useCallback, useEffect, useMemo } from "react";
+import { Keyboard, View } from "react-native";
+import { Button, Text, useTheme } from "react-native-paper";
 import { DeleteButton } from "@/components/Buttons/delete-button";
 import type { otherInputs } from "@/components/Form/constants";
 import FormHeader from "@/components/Form/form";
@@ -41,6 +42,8 @@ interface TransactionFormProps {
 	setEarning: React.Dispatch<React.SetStateAction<EarningFormState>>;
 	onSubmit: () => void;
 	isLoading: boolean;
+	submitDisabled?: boolean;
+	saveError?: string;
 	submitLabel: string;
 	open: boolean;
 	setOpen: (open: boolean) => void;
@@ -58,19 +61,42 @@ export function TransactionForm({
 	title,
 	description,
 	earning,
-	setEarning,
+	setEarning: changeEarning,
 	onSubmit,
 	isLoading,
+	submitDisabled = false,
+	saveError = "",
 	submitLabel,
 	open,
-	setOpen,
+	setOpen: changeOpen,
 	giftError,
 	setGiftError,
 	transactionId,
 	selectedInputs,
-	setSelectedInputs,
+	setSelectedInputs: changeSelectedInputs,
 	isAuthorized,
 }: TransactionFormProps) {
+	const { colors } = useTheme();
+	const headerHeight = useHeaderHeight();
+	const draftLocked = isLoading || submitDisabled;
+	const setEarning = useCallback<typeof changeEarning>(
+		(update) => {
+			if (!draftLocked) changeEarning(update);
+		},
+		[draftLocked, changeEarning],
+	);
+	const setSelectedInputs = useCallback<typeof changeSelectedInputs>(
+		(update) => {
+			if (!draftLocked) changeSelectedInputs(update);
+		},
+		[draftLocked, changeSelectedInputs],
+	);
+	const setOpen = (value: boolean) => {
+		if (!draftLocked) changeOpen(value);
+	};
+	useEffect(() => {
+		if (draftLocked || saveError) Keyboard.dismiss();
+	}, [draftLocked, saveError]);
 	const mutedColor = useThemeColor("muted");
 	const { endOfDay } = useAppDate();
 	const { compensationMethods, tipMethods, serviceDate, services, giftCode } =
@@ -107,12 +133,14 @@ export function TransactionForm({
 	const isDisabled = useMemo(
 		() =>
 			isLoading ||
+			submitDisabled ||
 			Object.keys(errors).length > 0 ||
 			!!giftError ||
 			(!!normalizedGiftCode && !giftCard) ||
 			!compensationPlaceholder,
 		[
 			isLoading,
+			submitDisabled,
 			errors,
 			giftError,
 			normalizedGiftCode,
@@ -231,10 +259,10 @@ export function TransactionForm({
 	);
 
 	const handleValidateAndSubmit = useCallback(() => {
-		if (validate(earning)) {
+		if (!draftLocked && validate(earning)) {
 			onSubmit();
 		}
-	}, [validate, earning, onSubmit]);
+	}, [draftLocked, validate, earning, onSubmit]);
 
 	const handleDateChange = useCallback(
 		(_: unknown, selectedDate: Date | undefined) => {
@@ -245,91 +273,110 @@ export function TransactionForm({
 
 	/* --------------------------------- Render --------------------------------- */
 	return (
-		<ScreenScrollView
-			contentContainerClassName="gap-4"
-			keyboardShouldPersistTaps="handled"
-			onScrollBeginDrag={Keyboard.dismiss}
-		>
-			<FormHeader title={title} description={description} />
-
-			{/* Compensation */}
-			<CompensationSection
-				cash={cash}
-				card={card}
-				gift={gift}
-				compensationPlaceholder={compensationPlaceholder}
-				mutedColor={mutedColor}
-				earning={earning}
-				updateEarning={updateEarning}
-				giftCard={giftCard}
-				giftError={giftError}
-				setGiftError={setGiftError}
-				getFieldError={getFieldError}
-				onSelectCompensationMethod={handleSelectCompensationMethod}
-			/>
-
-			{/* Tip */}
-			<TipSection
-				tipCash={tipCash}
-				tipCard={tipCard}
-				tipGift={tipGift}
-				mutedColor={mutedColor}
-				earning={earning}
-				updateEarning={updateEarning}
-				giftCard={giftCard}
-				giftError={giftError}
-				setGiftError={setGiftError}
-				getFieldError={getFieldError}
-				onSelectTipMethod={handleSelectTipMethod}
-			/>
-
-			{/* Others */}
-			<OthersSection
-				mutedColor={mutedColor}
-				getFieldError={getFieldError}
-				selectedInputs={selectedInputs}
-				setSelectedInputs={setSelectedInputs}
-				earning={earning}
-				setEarning={setEarning}
-				updateEarning={updateEarning}
-			/>
-
-			{/* Service Time Picker */}
-			<ServiceTimePicker
-				serviceDate={serviceDate}
-				open={open}
-				setOpen={setOpen}
-				endOfDay={endOfDay}
-				mutedColor={mutedColor}
-				onDateChange={handleDateChange}
-			/>
-
-			{/* Service Categories */}
-			<ServiceCategoryChips
-				categories={categories}
-				selectedServices={services}
-				onSelect={handleSelectServices}
-			/>
-
-			{/* Submit Button */}
-			<Button
-				onPress={handleValidateAndSubmit}
-				disabled={isDisabled}
-				loading={isLoading}
-				mode="contained"
-				className="rounded-3xl"
+		<>
+			{!!saveError && (
+				<Text
+					accessibilityRole="alert"
+					style={{
+						color: colors.error,
+						padding: 16,
+						paddingTop: headerHeight + 16,
+					}}
+				>
+					{saveError}
+				</Text>
+			)}
+			<ScreenScrollView
+				contentContainerClassName="gap-4"
+				keyboardShouldPersistTaps="handled"
+				onScrollBeginDrag={Keyboard.dismiss}
 			>
-				{submitLabel}
-			</Button>
+				<FormHeader title={title} description={description} />
 
-			{/* Delete Button (Edit mode only) */}
-			{type === "edit" && isAuthorized ? (
-				<DeleteButton
-					type="transactions"
-					id={transactionId}
-					isDisabled={isDisabled}
-				/>
-			) : null}
-		</ScreenScrollView>
+				<View
+					className="gap-4"
+					pointerEvents={draftLocked ? "none" : "auto"}
+					accessibilityState={{ disabled: draftLocked }}
+				>
+					{/* Compensation */}
+					<CompensationSection
+						cash={cash}
+						card={card}
+						gift={gift}
+						compensationPlaceholder={compensationPlaceholder}
+						mutedColor={mutedColor}
+						earning={earning}
+						updateEarning={updateEarning}
+						giftCard={giftCard}
+						giftError={giftError}
+						setGiftError={setGiftError}
+						getFieldError={getFieldError}
+						onSelectCompensationMethod={handleSelectCompensationMethod}
+					/>
+
+					{/* Tip */}
+					<TipSection
+						tipCash={tipCash}
+						tipCard={tipCard}
+						tipGift={tipGift}
+						mutedColor={mutedColor}
+						earning={earning}
+						updateEarning={updateEarning}
+						giftCard={giftCard}
+						giftError={giftError}
+						setGiftError={setGiftError}
+						getFieldError={getFieldError}
+						onSelectTipMethod={handleSelectTipMethod}
+					/>
+
+					{/* Others */}
+					<OthersSection
+						mutedColor={mutedColor}
+						getFieldError={getFieldError}
+						selectedInputs={selectedInputs}
+						setSelectedInputs={setSelectedInputs}
+						earning={earning}
+						setEarning={setEarning}
+						updateEarning={updateEarning}
+					/>
+
+					{/* Service Time Picker */}
+					<ServiceTimePicker
+						serviceDate={serviceDate}
+						open={open}
+						setOpen={setOpen}
+						endOfDay={endOfDay}
+						mutedColor={mutedColor}
+						onDateChange={handleDateChange}
+					/>
+
+					{/* Service Categories */}
+					<ServiceCategoryChips
+						categories={categories}
+						selectedServices={services}
+						onSelect={handleSelectServices}
+					/>
+				</View>
+				{/* Submit Button */}
+				<Button
+					onPress={handleValidateAndSubmit}
+					disabled={isDisabled}
+					loading={isLoading}
+					mode="contained"
+					className="rounded-3xl"
+				>
+					{submitLabel}
+				</Button>
+
+				{/* Delete Button (Edit mode only) */}
+				{type === "edit" && isAuthorized ? (
+					<DeleteButton
+						type="transactions"
+						id={transactionId}
+						isDisabled={isDisabled}
+					/>
+				) : null}
+			</ScreenScrollView>
+		</>
 	);
 }

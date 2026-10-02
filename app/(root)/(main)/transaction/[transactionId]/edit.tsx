@@ -1,22 +1,21 @@
 import { useMutation, useQuery } from "convex/react";
-import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
-import { Alert } from "react-native";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
 import { ActivityIndicator } from "react-native-paper";
+import { HeaderButton } from "@/components/Buttons/header-button";
 
 import {
 	type SelectedInput,
 	TransactionForm,
 } from "@/components/TransactionForm";
+import {
+	TransactionSaveFeedback,
+	useTransactionSave,
+} from "@/components/transaction-save-feedback";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { useAuthorization } from "@/hooks/use-authorization";
-import {
-	type EarningFormState,
-	getErrorMessage,
-	type PaymentMethod,
-	type Transaction,
-} from "@/utils";
+import type { EarningFormState, PaymentMethod, Transaction } from "@/utils";
 
 export default function EditTransactionScreen() {
 	const { transactionId } = useLocalSearchParams<{ transactionId: string }>();
@@ -53,10 +52,11 @@ function LoadedEditForm({
 	giftCode: string;
 	isAuthorized: boolean;
 }) {
+	const router = useRouter();
 	const transactionId = transaction._id;
 	const updateTransaction = useMutation(api.transactions.updateTransaction);
 	const [open, setOpen] = useState(false);
-	const [isUpdating, setIsUpdating] = useState(false);
+	const feedback = useTransactionSave();
 	const [giftError, setGiftError] = useState("");
 	const [selectedInputs, setSelectedInputs] = useState<SelectedInput[]>(() => [
 		...(transaction.discount ? ["Discount" as const] : []),
@@ -83,60 +83,86 @@ function LoadedEditForm({
 		serviceDate: transaction.serviceDate ?? Date.now(),
 	}));
 
+	const { isLockedNow, isLocked } = feedback;
+	const changeEarning = useCallback<typeof setEarning>(
+		(update) => {
+			if (!isLockedNow()) setEarning(update);
+		},
+		[isLockedNow],
+	);
+	const changeSelectedInputs = useCallback<typeof setSelectedInputs>(
+		(update) => {
+			if (!isLockedNow()) setSelectedInputs(update);
+		},
+		[isLockedNow],
+	);
+	const changeOpen = useCallback(
+		(value: boolean) => {
+			if (!isLockedNow()) setOpen(value);
+		},
+		[isLockedNow],
+	);
+	const headerOptions = useMemo(
+		() => ({
+			headerLeft: () => (
+				<HeaderButton
+					iconName="close"
+					disabled={isLocked}
+					isBlocked={isLockedNow}
+				/>
+			),
+		}),
+		[isLocked, isLockedNow],
+	);
+
 	/* ----------------------------- handle edit transaction ----------------------------- */
-	const handleSubmit = async () => {
-		if (giftError) {
-			Alert.alert("Error", giftError);
-			return;
-		}
-
-		if (!transaction || !transactionId) return;
-
-		try {
-			setIsUpdating(true);
-			const tip = earning.tip.length > 0 ? earning.tip : "0";
-			await updateTransaction({
-				id: transactionId as Transaction["_id"],
-				body: { ...earning, tip },
-			});
-
-			Alert.alert("Success", "Transaction updated successfully", [
-				{
-					text: "OK",
-					onPress: () => router.back(),
+	const handleSubmit = () =>
+		feedback.save(
+			async () => {
+				const tip = earning.tip.length > 0 ? earning.tip : "0";
+				await updateTransaction({
+					id: transactionId,
+					body: { ...earning, tip },
+				});
+			},
+			{
+				blockedMessage: giftError,
+				successMessage: "Transaction updated successfully",
+				fallback: "Failed to update transaction. Please try again.",
+				onSuccess: () => {
+					if (router.canGoBack()) router.back();
+					else router.replace(`/technician/${transaction.technician}`);
 				},
-			]);
-		} catch (error) {
-			Alert.alert(
-				"Error",
-				getErrorMessage(error, "Failed to update transaction"),
-			);
-			console.error("Failed to update transaction:", error);
-		} finally {
-			setIsUpdating(false);
-			setOpen(false);
-			setGiftError("");
-		}
-	};
+			},
+		);
 
 	return (
-		<TransactionForm
-			type="edit"
-			earning={earning}
-			setEarning={setEarning}
-			onSubmit={handleSubmit}
-			isLoading={isUpdating}
-			submitLabel={isUpdating ? "Updating..." : "Update"}
-			open={open}
-			setOpen={setOpen}
-			giftError={giftError}
-			setGiftError={setGiftError}
-			title={"Edit Transaction"}
-			description="Update transaction details"
-			transactionId={transactionId as Transaction["_id"]}
-			selectedInputs={selectedInputs}
-			setSelectedInputs={setSelectedInputs}
-			isAuthorized={isAuthorized}
-		/>
+		<>
+			<Stack.Screen options={headerOptions} />
+			<TransactionForm
+				type="edit"
+				earning={earning}
+				setEarning={changeEarning}
+				onSubmit={handleSubmit}
+				saveError={feedback.error}
+				submitDisabled={feedback.isLocked}
+				isLoading={feedback.isSaving}
+				submitLabel={feedback.isSaving ? "Updating..." : "Update"}
+				open={open}
+				setOpen={changeOpen}
+				giftError={giftError}
+				setGiftError={setGiftError}
+				title={"Edit Transaction"}
+				description="Update transaction details"
+				transactionId={transactionId as Transaction["_id"]}
+				selectedInputs={selectedInputs}
+				setSelectedInputs={changeSelectedInputs}
+				isAuthorized={isAuthorized}
+			/>
+			<TransactionSaveFeedback
+				message={feedback.success}
+				onAcknowledge={feedback.acknowledge}
+			/>
+		</>
 	);
 }
