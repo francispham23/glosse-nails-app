@@ -77,6 +77,6 @@
 	},
 	"private": true,
 	"lint-staged": {
-		"*.{js,jsx,ts,tsx,mjs,mts,cjs,cts}": "eslint --max-warnings 0"
+		"*.{js,jsx,ts,tsx,mjs,mts,cjs,cts}": "eslint --max-warnings 0 --no-warn-ignored"
 	}
 }
