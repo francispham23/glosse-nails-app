@@ -40,6 +40,14 @@ android
 !.agents/skills/grill-with-docs/**
 !.agents/skills/glosse-task/
 !.agents/skills/glosse-task/**
+!.agents/skills/animate-expo/
+!.agents/skills/animate-expo/**
+!.agents/skills/domain-modeling/
+!.agents/skills/domain-modeling/**
+!.agents/skills/writing-for-agents/
+!.agents/skills/writing-for-agents/**
+!.agents/skills/verify-glosse/
+!.agents/skills/verify-glosse/**
 .claude
 .vscode
 skills-lock.json

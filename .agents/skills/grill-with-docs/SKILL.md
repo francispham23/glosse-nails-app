@@ -35,6 +35,15 @@ task format, and stop for approval before implementation.
 On resume, verify the current checkout and reuse the existing task record. Grill
 only new or changed assumptions; do not derive the full plan again.
 
+For unresolved business terminology or relationships, read
+[domain-modeling](../domain-modeling/SKILL.md) with its
+[local boundaries](../domain-modeling/UPSTREAM.md). During this planning skill,
+capture resolved terms in the task record; propose glossary/ADR files in scope
+before their implementation. Existing financial/access policies remain the rule source.
+For a contract about agent instructions, consult
+[writing-for-agents](../writing-for-agents/SKILL.md) and its
+[Codex host notes](../writing-for-agents/UPSTREAM.md).
+
 ## 2. Draft the contract
 
 Define these fields before asking questions:

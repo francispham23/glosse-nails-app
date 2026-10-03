@@ -5,6 +5,15 @@ changed state, including relevant untracked files. Review only: no edits,
 installation, deployment, secrets access or data modification. Record the reviewed
 files/revision or working-tree fingerprint so material changes trigger rereview.
 
+Consider two lenses separately: **standards** checks documented repository rules;
+**contract** checks acceptance, missing/partial behavior and scope creep. Existing
+policies override generic design preferences. Select the actual review state,
+including relevant committed, staged, unstaged and untracked files; a branch-only
+diff does not cover working-tree work. Two lenses do not imply two reviewers ran.
+For shared-interface/lifecycle/storage changes, use
+[design and impact](design-and-impact.md) to trace consumers beyond the diff and
+assess proof of critical assumptions; label unproven assumptions explicitly.
+
 For Convex changes read convex/_generated/ai/guidelines.md and relevant schema.
 For authorization read [access policy](../../../../docs/access-policy.md):
 trace caller identity, active role, stored ownership, alternate endpoints,

@@ -78,7 +78,12 @@ for (let i = 0; i < 4; i++) {
 		"Token must authenticate a real user",
 	);
 	clients.push(client);
-	actors.push({ email, password, userId: access.user._id });
+	actors.push({
+		email,
+		password,
+		token: result.tokens.token,
+		userId: access.user._id,
+	});
 }
 await admin.mutation(internal.runtimeFixtures.configureRoles, {
 	runId: config.runId,

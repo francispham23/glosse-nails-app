@@ -17,9 +17,22 @@ For money changes read [financial policy](../../../docs/financial-policy.md);
 for authorization read [access policy](../../../docs/access-policy.md).
 For Convex edits first read convex/_generated/ai/guidelines.md and relevant schema.
 
+For shared-interface, lifecycle/state, storage or contested-design changes, read
+[design and impact](references/design-and-impact.md). For behavior/regression tests,
+read [testing](references/testing.md). Native motion work uses
+[animate-expo](../animate-expo/SKILL.md) with its
+[recipe/platform boundaries](../animate-expo/UPSTREAM.md), alongside relevant Expo guidance.
+Approved glossary/ADR work uses [domain-modeling](../domain-modeling/SKILL.md) with
+[local scope notes](../domain-modeling/UPSTREAM.md). Agent-instruction edits use
+[writing-for-agents](../writing-for-agents/SKILL.md) with
+[Codex host notes](../writing-for-agents/UPSTREAM.md). Load only the applicable branch.
+
 Implement the agreed behavior and assert explicit acceptance results. For a bug,
 establish the failing regression where practical, fix the cause and rerun it.
 Do not compute expected financial results using the helper under test.
+
+For approved browser/backend runtime evidence, use
+[verify-glosse](../verify-glosse/SKILL.md) and its feature map.
 
 Choose targeted checks, then the completion gate using the workflow. Record
 actual failures and unexecuted checks; local simulated tests and exports do not
