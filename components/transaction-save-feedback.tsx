@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Dialog, Portal, Text } from "react-native-paper";
+import { View } from "react-native";
+import { Button, Text } from "react-native-paper";
 import { getErrorMessage } from "@/utils";
 
-/** A saved request stays locked until its acknowledgement leaves the screen. */
+/** A confirmed save stays locked until navigation unmounts the form. */
 export function useTransactionSave() {
 	const locked = useRef(false);
-	const acknowledging = useRef(false);
+	const navigating = useRef(false);
 	const mounted = useRef(true);
 	useEffect(() => {
 		mounted.current = true;
@@ -14,10 +15,23 @@ export function useTransactionSave() {
 		};
 	}, []);
 	const isLockedNow = useCallback(() => locked.current, []);
-	const navigate = useRef<() => void>(() => {});
+	const navigate = useRef<(() => void) | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 	const [success, setSuccess] = useState("");
 	const [error, setError] = useState("");
+	const returnToPreviousScreen = () => {
+		if (!mounted.current || !navigate.current || navigating.current) return;
+		navigating.current = true;
+		try {
+			navigate.current();
+		} catch {
+			// The write succeeded. Keep it locked and allow navigation to be retried.
+		} finally {
+			queueMicrotask(() => {
+				navigating.current = false;
+			});
+		}
+	};
 	const save = async (
 		operation: () => Promise<unknown>,
 		options: {
@@ -40,6 +54,7 @@ export function useTransactionSave() {
 			if (!mounted.current) return;
 			navigate.current = options.onSuccess;
 			setSuccess(options.successMessage);
+			returnToPreviousScreen();
 		} catch (cause) {
 			if (!mounted.current) return;
 			const data =
@@ -56,19 +71,6 @@ export function useTransactionSave() {
 			if (mounted.current) setIsSaving(false);
 		}
 	};
-	const acknowledge = () => {
-		if (!success || acknowledging.current) return;
-		acknowledging.current = true;
-		try {
-			navigate.current();
-		} catch {
-			// The write succeeded. Keep its draft and allow navigation to be retried.
-		} finally {
-			queueMicrotask(() => {
-				acknowledging.current = false;
-			});
-		}
-	};
 	return {
 		save,
 		isLockedNow,
@@ -76,28 +78,25 @@ export function useTransactionSave() {
 		success,
 		error,
 		isLocked: isSaving || !!success,
-		acknowledge,
+		returnToPreviousScreen,
 	};
 }
 
 export function TransactionSaveFeedback({
 	message,
-	onAcknowledge,
+	onReturn,
 }: {
 	message: string;
-	onAcknowledge: () => void;
+	onReturn: () => void;
 }) {
+	if (!message) return null;
+	// Render in the screen itself so recovery is visible above native modals.
 	return (
-		<Portal>
-			<Dialog visible={!!message} dismissable={false}>
-				<Dialog.Title>Success</Dialog.Title>
-				<Dialog.Content>
-					<Text variant="bodyMedium">{message}</Text>
-				</Dialog.Content>
-				<Dialog.Actions>
-					<Button onPress={onAcknowledge}>OK</Button>
-				</Dialog.Actions>
-			</Dialog>
-		</Portal>
+		<View style={{ padding: 16 }}>
+			<Text accessibilityRole="alert" variant="bodyMedium">
+				{message}
+			</Text>
+			<Button onPress={onReturn}>Return to previous screen</Button>
+		</View>
 	);
 }

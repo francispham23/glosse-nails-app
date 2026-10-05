@@ -131,7 +131,7 @@ function LoadedEditForm({
 				fallback: "Failed to update transaction. Please try again.",
 				onSuccess: () => {
 					if (router.canGoBack()) router.back();
-					else router.replace(`/technician/${transaction.technician}`);
+					else router.replace("/earnings");
 				},
 			},
 		);
@@ -161,7 +161,7 @@ function LoadedEditForm({
 			/>
 			<TransactionSaveFeedback
 				message={feedback.success}
-				onAcknowledge={feedback.acknowledge}
+				onReturn={feedback.returnToPreviousScreen}
 			/>
 		</>
 	);

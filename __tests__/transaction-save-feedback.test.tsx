@@ -7,7 +7,7 @@ import { HeaderButton } from "@/components/Buttons/header-button";
 import type { TransactionForm } from "@/components/TransactionForm";
 
 const mockMutation = jest.fn<(args: unknown) => Promise<unknown>>();
-let mockAcknowledge: () => void;
+let mockReturn: () => void;
 let mockHeader: {
 	headerLeft: () => React.ReactNode;
 	headerRight?: () => React.ReactNode;
@@ -134,21 +134,8 @@ jest.mock("react-native-paper", () => {
 	const React = jest.requireActual<typeof import("react")>("react");
 	const { View, Text, Pressable } =
 		jest.requireActual<typeof import("react-native")>("react-native");
-	const dialog = ({
-		visible,
-		children,
-	}: {
-		visible: boolean;
-		children: React.ReactNode;
-	}) => (visible ? React.createElement(View, null, children) : null);
 	return {
 		Text,
-		Portal: View,
-		Dialog: Object.assign(dialog, {
-			Title: Text,
-			Content: View,
-			Actions: View,
-		}),
 		ActivityIndicator: View,
 		Button: ({
 			onPress,
@@ -157,7 +144,7 @@ jest.mock("react-native-paper", () => {
 			onPress: () => void;
 			children: React.ReactNode;
 		}) => {
-			mockAcknowledge = onPress;
+			mockReturn = onPress;
 			return React.createElement(
 				Pressable,
 				{ onPress },
@@ -173,6 +160,20 @@ beforeEach(() => {
 	mockRouter.back.mockReset();
 	mockRouter.canGoBack.mockReturnValue(true);
 });
+
+for (const [name, Route] of [
+	["create", CreateRoute],
+	["edit", EditRoute],
+] as const) {
+	test(`${name} returns automatically after saving without a success acknowledgement`, async () => {
+		mockMutation.mockResolvedValue(null);
+		await render(<Route />);
+		await fireEvent.press(screen.getByText("Save"));
+		expect(mockRouter.back).toHaveBeenCalledTimes(1);
+		expect(mockRouter.replace).not.toHaveBeenCalled();
+		expect(screen.queryByText("OK")).toBeNull();
+	});
+}
 
 for (const [name, Route] of [
 	["create", CreateRoute],
@@ -227,15 +228,10 @@ for (const [name, Route] of [
 			}),
 		);
 		expect(screen.queryByText("Insufficient gift card balance")).toBeNull();
-		expect(screen.getByText("Success")).toBeTruthy();
 		expect(mockRouter.replace).not.toHaveBeenCalled();
-		expect(mockRouter.back).not.toHaveBeenCalled();
-		await fireEvent.press(screen.getByText("OK"));
-		if (name === "create")
-			expect(mockRouter.replace).toHaveBeenCalledWith("/technician/tech");
-		else expect(mockRouter.back).toHaveBeenCalledTimes(1);
+		expect(mockRouter.back).toHaveBeenCalledTimes(1);
 	});
-	test(`${name} blocks duplicate requests and same-turn acknowledgements`, async () => {
+	test(`${name} blocks duplicate requests and same-turn return taps`, async () => {
 		let resolve!: (value: unknown) => void;
 		mockMutation.mockImplementation(
 			() =>
@@ -250,20 +246,23 @@ for (const [name, Route] of [
 		});
 		expect(mockMutation).toHaveBeenCalledTimes(1);
 		expect(mockForm.submitDisabled).toBe(true);
+		expect(mockRouter.back).not.toHaveBeenCalled();
+		expect(mockRouter.replace).not.toHaveBeenCalled();
 		await act(async () => {
 			resolve(null);
 		});
+		expect(mockRouter.back).toHaveBeenCalledTimes(1);
 		await act(async () => {
 			void mockForm.onSubmit();
 		});
 		expect(mockMutation).toHaveBeenCalledTimes(1);
 		await act(async () => {
-			mockAcknowledge();
-			mockAcknowledge();
+			mockReturn();
+			mockReturn();
 		});
 		expect(
 			mockRouter.back.mock.calls.length + mockRouter.replace.mock.calls.length,
-		).toBe(1);
+		).toBe(2);
 	});
 	test(`${name} supplies useful fallback feedback for an unknown rejection`, async () => {
 		mockMutation.mockRejectedValue(undefined);
@@ -276,20 +275,18 @@ for (const [name, Route] of [
 		);
 	});
 }
-test("edit acknowledgement falls back to the technician list without back history", async () => {
-	mockRouter.canGoBack.mockReturnValue(false);
-	mockMutation.mockResolvedValue(null);
-	await render(<EditRoute />);
-	await fireEvent.press(screen.getByText("Save"));
-	await fireEvent.press(screen.getByText("OK"));
-	expect(mockRouter.replace).toHaveBeenCalledWith("/technician/tech");
-	expect(mockRouter.back).not.toHaveBeenCalled();
-});
-
 for (const [name, Route] of [
 	["create", CreateRoute],
 	["edit", EditRoute],
 ] as const) {
+	test(`${name} returns to nonmodal Earnings without back history`, async () => {
+		mockRouter.canGoBack.mockReturnValue(false);
+		mockMutation.mockResolvedValue(null);
+		await render(<Route />);
+		await fireEvent.press(screen.getByText("Save"));
+		expect(mockRouter.replace).toHaveBeenCalledWith("/earnings");
+		expect(mockRouter.back).not.toHaveBeenCalled();
+	});
 	test(`${name} extracts a structured wrapped Convex error`, async () => {
 		mockMutation.mockRejectedValue(
 			Object.assign(
@@ -341,11 +338,10 @@ for (const [name, Route] of [
 		).toBe(false);
 	});
 	test.each([true, false])(
-		`${name} retains draft and lets OK retry navigation (throws=%s)`,
+		`${name} retains the saved draft and lets Return retry navigation (throws=%s)`,
 		async (throws) => {
 			mockMutation.mockResolvedValue(null);
-			const navigation =
-				name === "create" ? mockRouter.replace : mockRouter.back;
+			const navigation = mockRouter.back;
 			if (throws)
 				navigation.mockImplementationOnce(() => {
 					throw new Error("Navigation failed");
@@ -356,18 +352,43 @@ for (const [name, Route] of [
 			});
 			const draft = structuredClone(mockForm.earning);
 			await fireEvent.press(screen.getByText("Save"));
-			await fireEvent.press(screen.getByText("OK"));
+			expect(navigation).toHaveBeenCalledTimes(1);
+			expect(mockForm.saveError).toBe("");
 			expect(mockForm.earning).toEqual(draft);
 			expect(mockForm.submitDisabled).toBe(true);
 			expect(
 				(mockHeader.headerLeft() as React.ReactElement<{ disabled: boolean }>)
 					.props.disabled,
 			).toBe(true);
-			await fireEvent.press(screen.getByText("OK"));
+			await act(async () => {
+				mockForm.setEarning((old) => ({ ...old, compensation: "999" }));
+				void mockForm.onSubmit();
+			});
+			expect(mockForm.earning).toEqual(draft);
+			await fireEvent.press(screen.getByText("Return to previous screen"));
 			expect(navigation).toHaveBeenCalledTimes(2);
 			expect(mockMutation).toHaveBeenCalledTimes(1);
 		},
 	);
+	test(`${name} does not navigate after the form unmounts during a save`, async () => {
+		let resolve!: (value: unknown) => void;
+		mockMutation.mockImplementation(
+			() =>
+				new Promise((done) => {
+					resolve = done;
+				}),
+		);
+		const view = await render(<Route />);
+		await act(async () => {
+			void mockForm.onSubmit();
+		});
+		await view.unmount();
+		await act(async () => {
+			resolve(null);
+		});
+		expect(mockRouter.back).not.toHaveBeenCalled();
+		expect(mockRouter.replace).not.toHaveBeenCalled();
+	});
 }
 
 test("native close prevents Link navigation and swap ignores stale taps when the ref locks", async () => {

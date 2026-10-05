@@ -97,7 +97,8 @@ export default function CreateRoute() {
 				successMessage: "Earning saved successfully",
 				fallback: "Failed to save earning. Please try again.",
 				onSuccess: () => {
-					router.replace(`/technician/${technicianId}`);
+					if (router.canGoBack()) router.back();
+					else router.replace("/earnings");
 				},
 			},
 		);
@@ -125,7 +126,7 @@ export default function CreateRoute() {
 			/>
 			<TransactionSaveFeedback
 				message={feedback.success}
-				onAcknowledge={feedback.acknowledge}
+				onReturn={feedback.returnToPreviousScreen}
 			/>
 		</>
 	);

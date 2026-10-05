@@ -1,5 +1,185 @@
 # Task: Transaction save feedback and draft retention
 
+## Modal closure follow-up contract (2026-10-03)
+
+- Status: implemented and locally/browser verified; required native runtime
+  verification remains blocked by Expo Go's missing ExpoAsset native module.
+- Authorization: user reports "After submitting transaction, the modal doesn't close."
+  User replied "go", approving this follow-up contract and its verification scope.
+- Outcome: successful transaction create/edit leaves the form automatically and
+  returns to the previous screen; a direct entry without history returns to the
+  nonmodal Earnings screen. No required success-OK tap blocks leaving the form.
+- Owned files: the create/edit screens already listed below;
+  components/transaction-save-feedback.tsx;
+  __tests__/transaction-save-feedback.test.tsx; focused navigation/feedback tests
+  if real-provider coverage needs a separate file; this task record.
+- Out of scope: backend/schema, financial calculations, authorization, dependency
+  changes, other modal/header journeys, production access, commits/push/deploy.
+- Stop after: scoped implementation, executable checks, self-review and handoff
+  with each runtime criterion satisfied or explicitly deferred.
+- Baseline: add-more-skills at 2d124c7c9b3068c6ee324649429e2bda000623e0.
+  package.json and package-lock.json already have user changes; preserve them.
+- Assumptions / unresolved decisions: automatic closure is recommended based on
+  this report, superseding the earlier success-acknowledgement behavior only after
+  approval, now received. Platform and whether the Success dialog appears were
+  asked during investigation; no response received. Native layering remains a
+  supported hypothesis, not a reproduced diagnosis on the user's device.
+- Verification plan: establish a failing regression for no acknowledgement being
+  needed; test actual create/edit save handlers for success navigation, pending
+  lock, failed-save draft preservation, direct-entry fallback and duplicate-write
+  prevention. Retain existing field/error/header stability regressions. Exercise
+  real routing state where practical rather than infer modal closure from mocked
+  method calls. Run targeted app tests, npm run verify:quality, synthetic
+  all-platform export, docs checker and git diff --check. Native/browser runtime
+  smoke must use synthetic mutations/fixtures and no production access. A missing
+  usable isolated runtime is an explicit verification gap, not a native pass.
+
+### Acceptance
+
+- [x] A pending create/edit remains locked; no early navigation or duplicate write.
+  Controlled pending-mutation tests cover both handlers and saved-state locks.
+- [x] A resolved create/edit automatically leaves its form without an OK tap,
+  returning to the previous screen and removing the submitted form from history.
+  Normal create from Earnings dismisses its modal; edit returns to its originating
+  list (which may itself be a technician modal). Four real Expo Router tests prove
+  before/after navigation state using actual main/technician/transaction layouts;
+  browser runtime confirms create returns to Earnings and edit to Transactions.
+- [x] Direct-entry success without usable history opens nonmodal Earnings.
+  Both mocked-handler and real-router tests cover create and edit direct entry.
+- [x] Rejected saves preserve the entire draft, show a useful error and allow retry.
+  Screen tests plus real browser/backend create/edit rejection and retry pass.
+- [x] If navigation throws after a confirmed save, a visible retry action can retry
+  navigation without another mutation; confirmed writes remain submission-locked.
+  Both handlers test thrown and ineffective navigation, inline Return feedback,
+  locked saved drafts and exactly one mutation despite navigation retries.
+- [x] Existing validation, wrapped Convex errors, synchronous locks and memoized
+  header/setter behavior remain covered. Completion checks pass (see below).
+- [x] Browser smoke proves return navigation, failure retention and stored effects.
+  Isolated runtime evidence is recorded below; native rendering is separate.
+- [ ] Native runtime proves successful modal/form closure. Expo Go 0.5.0 / SDK57
+  on iPhone 18 Pro / iOS27 failed before app render with missing native ExpoAsset.
+  A compatible native runtime is required to execute this acceptance item; it is
+  not satisfied by exports, simulated native modules or the browser check.
+
+### Investigation evidence
+
+- useTransactionSave awaits the mutation, then sets success text. It invokes its
+  navigation callback only from acknowledge(), so saving alone cannot close it.
+- Create's callback uses router.replace('/technician/{id}'). Both create and the
+  destination are in the technician child stack; its parent is presentation=modal.
+  Replacing the child route does not dismiss that parent modal.
+- PaperProvider/Portal.Host is above the root Slot. TransactionSaveFeedback uses
+  that host rather than a host inside the native modal. Installed Paper source
+  confirms this placement; upstream issue 2962 reports hidden Portal content
+  behind native-stack modals. This is a layering hypothesis until runtime proof.
+- npm run test:app -- __tests__/transaction-save-feedback.test.tsx: exit 0,
+  18 tests passed. Router and Paper primitives are mocked, so this establishes
+  current handler behavior but does not establish native overlay visibility or
+  actual modal dismissal.
+
+### Follow-up implementation, review and handoff
+
+Implementation:
+
+- The shared hook invokes navigation immediately after a confirmed mutation.
+  Its navigation exception handling remains separate from write failure handling,
+  preserving the saved lock and draft and allowing a Return action without a write.
+- Create and edit go back when history exists; no-history entry replaces the modal
+  with /earnings. The root Portal/required OK dialog is replaced by inline saved
+  feedback and a Return button visible if the form remains mounted.
+- Existing failed-save error extraction, gift validation, guarded setters and
+  memoized native header options are preserved. Two new unmount regressions prevent
+  a mutation finishing on an abandoned form from navigating another screen.
+
+Executable local evidence (2026-10-03):
+
+- Before product edits, `npm run test:app --
+  __tests__/transaction-save-feedback.test.tsx -t 'returns automatically'` failed
+  both new cases for the intended reason: no back navigation after save without OK.
+  Both passed after the repair.
+- Focused feedback/form tests passed; final suites include 23 save-feedback cases,
+  six real financial-form cases and four real-router cases. Router/Paper are real
+  in navigation tests; Convex and the form are substituted at their boundaries.
+  These tests establish routing state, not actual UIKit modal rendering.
+- The navigation harness initially imported unrelated Uniwind theme-toggle code
+  that Jest cannot transform; substituting only that cosmetic button resolved it.
+  Initial state assertions also needed to descend through ExpoRoot's __root route.
+  Both harness failures are resolved; production router behavior was not mocked.
+- `npm run verify:quality`: exit 0; both typechecks, zero-warning lint, 115 backend
+  tests and 87 app tests passed. No product changes occurred after this gate.
+- `CI=1 EXPO_NO_DOTENV=1 EXPO_PUBLIC_CONVEX_URL=https://example.convex.cloud npx expo
+  export --platform all --output-dir /private/tmp/glosse-modal-close-export-20261003
+  --max-workers 2`: exit 0; iOS/Android bundles and 110 static web routes exported.
+  No production configuration was used for this export.
+- Final `node scripts/check-agent-docs.mjs`: exit 0, 13 files / 39 local links /
+  19 npm references. `git diff --check`: exit 0. Only documentation changed after
+  product verification; the reviewed source fingerprints remain unchanged.
+
+Browser/backend runtime:
+
+- Evidence: `/private/tmp/glosse-modal-close-20261003`; run
+  `runtime-191b4b852420c09f`; source digest
+  `5d5a5960bf3dfee20c3dd18752b7c3a41e8c9be5702d47bd9a1ef528b2ddbb48`.
+  Chrome development web with installed Expo57 / RN0.86.3; synthetic active
+  technician; backend `precompiled-2026-09-28-5c7cb5b` at 127.0.0.1:33210;
+  app localhost:33212. Doctor passed source/process/auth/fixture identity before
+  driving and before each stored-effect checkpoint. Baseline financial API harness
+  also passed; no normal env files or production records were used.
+- Create: synthetic rate -1 produced a visible pay-rate error, retained
+  100/20/2/Amount discount3, enabled Submit and unchanged full stored snapshot
+  (12 transactions). Restoring rate0.5 and changing only charge to125 returned
+  automatically to Earnings without OK. Stored checkpoint found exactly one new
+  row (13 total), charge125/tip20/supply2/discount3/rate0.5.
+- Edit: synthetic rate snapshot -1 rejected charge150 visibly, retained
+  150/20/2/discount3 and left stored state unchanged (13 transactions). Restoring
+  snapshot0.5 and retrying returned automatically to originating Transactions;
+  its row showed charge150/tip20. Stored checkpoint confirmed exact values and
+  still 13 total rows, with no extra transaction.
+- Proof: create-rejected-ui.txt, create-returned-ui.txt, edit-rejected-ui.txt,
+  edit-returned-ui.txt, verified-result.png and the four checkpoint JSON files.
+
+Native attempt and cleanup:
+
+- Device Hub iPhone18 Pro / iOS27 initially displayed the main app. No records were
+  submitted or edited there. Expo Go's tools → Go home → Enter URL selected only
+  the identified disposable project `exp://localhost:33212`.
+- Initial bundle request used IPv4 127.0.0.1 while Metro listened on ::1. A
+  task-owned IPv4 loopback proxy resolved that reachability issue; its PID/start/
+  command identity was registered for cleanup. The bundle then reached Expo Go,
+  but native launch stopped with `Cannot find native module 'ExpoAsset'` before
+  app render or synthetic sign-in. No native save/closure pass is claimed.
+- native-blocked-ui.txt and native-blocked.png retain the blocker. Expo Go was
+  returned to its home screen; the task-owned browser tab was closed.
+- Cleanup passed: owned backend/Metro/proxy absent, IPv4/IPv6 ports33210–33212
+  free, scratch backend/data/credentials deleted, evidence retained in cleanup.json.
+
+Self-review:
+
+- Reviewed the five owned product/test files and both save callers, mutation vs
+  navigation exceptions, lifecycle/unmount behavior, draft/header locks, direct
+  entry and nested modal routing. No unresolved scoped source finding. No
+  independent delegation was authorized; this is self-review.
+- During runtime work, the checkout changed to update-expo-57 at
+  `6ab0a0dcb02d2b26a18c2d50b8693dda10d6be8d`, which includes the fix. The agent did
+  not commit or switch branches. Doctor confirmed the committed product state
+  exactly matches the already-running isolated source. The runtime script was
+  removed by that checkout change; a scratch copy from original baseline
+  2d124c7 was used with ROOT pointed at this checkout, preserving all identity
+  checks and avoiding restoration of files into the user's branch.
+- Reviewed SHA256 fingerprints:
+  - feedback component: 4533dae9ba549750f344d15de54b73507744a79c3ccc1050951d8ea8d8e7888b
+  - create screen: ca3310aea95f74d6fa8dcd1e2b07f248fd4030b96382b59a65cb77572fc0a785
+  - edit screen: 7d56b44531e96aaecbca30c1ac64622f3d895431ca4c75489298b135e321d9cd
+  - feedback tests: d64209fb356b4839dd321bbc80731fd8602365dc68da39081a62836a50c78375
+  - navigation tests: b00dc94b2ea026d5645e28a578ed52a42fe22a47a16ffc3fe5daebcc25486adc
+
+Handoff: automatic close is implemented and verified locally and in the isolated
+browser/backend. Required iOS smoke remains open due to the ExpoAsset runtime
+blocker. Next native step is to run these synthetic save scenarios in a compatible
+Expo Go or development build; dependency/runtime installation is outside this
+repair. No agent commit, push, deployment or production-data change was performed.
+The only remaining working-tree edit is this evidence update to the task record.
+
 ## Contract
 
 - Status: implemented and locally verified; native iOS runtime remains deferred.
