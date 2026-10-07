@@ -1,9 +1,8 @@
 import { useMutation, useQuery } from "convex/react";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
-import { ActivityIndicator } from "react-native-paper";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ActivityIndicator } from "react-native";
 import { HeaderButton } from "@/components/Buttons/header-button";
-
 import {
 	type SelectedInput,
 	TransactionForm,
@@ -12,6 +11,7 @@ import {
 	TransactionSaveFeedback,
 	useTransactionSave,
 } from "@/components/transaction-save-feedback";
+import { useWebRouteDismiss } from "@/contexts/web-route-dismiss-context";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { useAuthorization } from "@/hooks/use-authorization";
@@ -84,6 +84,11 @@ function LoadedEditForm({
 	}));
 
 	const { isLockedNow, isLocked } = feedback;
+	const { setDismissDisabled } = useWebRouteDismiss();
+	useEffect(() => {
+		setDismissDisabled(isLocked);
+		return () => setDismissDisabled(false);
+	}, [isLocked, setDismissDisabled]);
 	const changeEarning = useCallback<typeof setEarning>(
 		(update) => {
 			if (!isLockedNow()) setEarning(update);

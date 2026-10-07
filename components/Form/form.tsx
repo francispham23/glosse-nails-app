@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { Platform, Text, View } from "react-native";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { cn } from "@/utils";
 
@@ -10,7 +10,15 @@ export function FormContainer({ children }: { children: React.ReactNode }) {
 	 *
 	 * i think maybe that would be a good idea??
 	 */
-	return <View className="flex-1 gap-4 px-6 pt-20">{children}</View>;
+	return (
+		<View
+			className={
+				Platform.OS === "web" ? "flex-1 gap-4 px-6" : "flex-1 gap-4 px-6 pt-20"
+			}
+		>
+			{children}
+		</View>
+	);
 }
 
 /* ------------------------------- form header ------------------------------ */

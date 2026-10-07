@@ -1,7 +1,7 @@
 import { useQuery } from "convex/react";
 import { useHeaderHeight } from "expo-router/react-navigation";
 import { useCallback, useEffect, useMemo } from "react";
-import { Keyboard, View } from "react-native";
+import { Keyboard, Platform, View } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
 import { DeleteButton } from "@/components/Buttons/delete-button";
 import type { otherInputs } from "@/components/Form/constants";
@@ -280,7 +280,7 @@ export function TransactionForm({
 					style={{
 						color: colors.error,
 						padding: 16,
-						paddingTop: headerHeight + 16,
+						paddingTop: Platform.OS === "web" ? 16 : headerHeight + 16,
 					}}
 				>
 					{saveError}
@@ -295,7 +295,7 @@ export function TransactionForm({
 
 				<View
 					className="gap-4"
-					pointerEvents={draftLocked ? "none" : "auto"}
+					style={{ pointerEvents: draftLocked ? "none" : "auto" }}
 					accessibilityState={{ disabled: draftLocked }}
 				>
 					{/* Compensation */}

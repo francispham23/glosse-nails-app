@@ -1,13 +1,27 @@
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { Pressable, Text } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
+import { Text as PaperText, useTheme } from "react-native-paper";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-
+import {
+	Amount,
+	OverviewCard,
+	RowIndicator,
+} from "@/components/workspace/card";
+import { workspaceStyles } from "@/components/workspace/screen";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
+import { useWorkspaceLayout } from "@/hooks/use-workspace-layout";
 import { cn, isToday, type Transaction } from "@/utils";
+import { blurActiveElementOnWeb } from "@/utils/web-focus";
+
+function openTransactionEdit(transactionId: string) {
+	blurActiveElementOnWeb();
+	router.navigate(`/transaction/${transactionId}/edit`);
+}
 
 type Props = {
+	overview?: boolean;
 	transaction: Transaction;
 	isAuthorized?: boolean;
 	technicianId?: string;
@@ -16,11 +30,14 @@ type Props = {
 
 export const TransactionCard = ({
 	transaction,
+	overview = false,
 	technicianId,
 	isAuthorized,
 	userName,
 }: Props) => {
 	const { isLight } = useAppTheme();
+	const { colors } = useTheme();
+	const { isWide, isCompact } = useWorkspaceLayout();
 	const { endOfDay } = useAppDate();
 	const className = cn("text-lg text-muted", !isLight && "text-gray-300");
 
@@ -34,6 +51,124 @@ export const TransactionCard = ({
 		(!isAuthorized &&
 			transaction.technician === userName &&
 			!isSelectedDateToday);
+	if (overview && isCompact)
+		return (
+			<OverviewCard
+				label={`Transaction for ${transaction.technician}, compensation $${transaction.compensation}, tip $${transaction.tip}`}
+				disabled={isDisabled}
+				onPress={() => openTransactionEdit(transaction._id)}
+			>
+				<View style={{ padding: 12, gap: 8 }}>
+					<View
+						style={{
+							flexDirection: "row",
+							flexWrap: "wrap",
+							alignItems: "center",
+							gap: 12,
+						}}
+					>
+						<View style={{ flex: 1, minWidth: 72, gap: 4 }}>
+							<PaperText style={{ fontSize: 16, fontWeight: "600" }}>
+								{transaction.technician}
+							</PaperText>
+							{transaction.serviceDate ? (
+								<PaperText
+									style={{ color: colors.onSurfaceVariant, fontSize: 12 }}
+								>
+									{getServiceDateString(
+										transaction.serviceDate,
+										isSelectedDateToday,
+									)}
+								</PaperText>
+							) : null}
+						</View>
+						<View
+							style={{
+								flexDirection: "row",
+								alignItems: "center",
+								gap: 8,
+								maxWidth: "100%",
+								minWidth: 0,
+							}}
+						>
+							<View style={[workspaceStyles.numbers, { gap: 12 }]}>
+								<Amount
+									label="Compensation"
+									value={`$${transaction.compensation}`}
+								/>
+								<Amount label="Tip" value={`$${transaction.tip}`} />
+							</View>
+							{!isDisabled ? <RowIndicator /> : null}
+						</View>
+					</View>
+					{showClient || transaction.services ? (
+						<View style={{ gap: 4 }}>
+							{showClient ? (
+								<PaperText style={{ color: colors.onSurfaceVariant }}>
+									Client: {transaction.client}
+								</PaperText>
+							) : null}
+							{transaction.services ? (
+								<PaperText
+									style={{ color: colors.onSurfaceVariant, lineHeight: 22 }}
+								>
+									{transaction.services}
+								</PaperText>
+							) : null}
+						</View>
+					) : null}
+				</View>
+			</OverviewCard>
+		);
+
+	if (overview)
+		return (
+			<OverviewCard
+				label={`Transaction for ${transaction.technician}, compensation $${transaction.compensation}, tip $${transaction.tip}`}
+				disabled={isDisabled}
+				onPress={() => openTransactionEdit(transaction._id)}
+			>
+				<View style={[workspaceStyles.row, { alignItems: "flex-start" }]}>
+					<View
+						style={[workspaceStyles.name, !isWide && { flexBasis: "100%" }]}
+					>
+						<PaperText style={{ fontSize: 16, fontWeight: "600" }}>
+							{transaction.technician}
+						</PaperText>
+						{showClient ? (
+							<PaperText style={{ color: colors.onSurfaceVariant }}>
+								Client: {transaction.client}
+							</PaperText>
+						) : null}
+						{transaction.services ? (
+							<PaperText
+								style={{ color: colors.onSurfaceVariant, lineHeight: 22 }}
+							>
+								{transaction.services}
+							</PaperText>
+						) : null}
+						{transaction.serviceDate ? (
+							<PaperText
+								style={{ color: colors.onSurfaceVariant, fontSize: 12 }}
+							>
+								{getServiceDateString(
+									transaction.serviceDate,
+									isSelectedDateToday,
+								)}
+							</PaperText>
+						) : null}
+					</View>
+					<View style={workspaceStyles.numbers}>
+						<Amount
+							label="Compensation"
+							value={`$${transaction.compensation}`}
+						/>
+						<Amount label="Tip" value={`$${transaction.tip}`} />
+					</View>
+					{!isDisabled ? <RowIndicator /> : null}
+				</View>
+			</OverviewCard>
+		);
 
 	return (
 		<Pressable
@@ -43,7 +178,7 @@ export const TransactionCard = ({
 					return;
 				}
 				Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-				router.navigate(`/transaction/${transaction._id}/edit`);
+				openTransactionEdit(transaction._id);
 			}}
 			disabled={isDisabled}
 		>
@@ -52,8 +187,17 @@ export const TransactionCard = ({
 				entering={FadeIn}
 				exiting={FadeOut}
 				className={cn(
-					"gap-3 rounded-lg border-r-accent bg-gray-300 p-3 shadow-md dark:bg-gray-700",
+					"gap-3 rounded-lg border-r-accent bg-gray-300 p-3 dark:bg-gray-700",
+					Platform.OS !== "web" && "shadow-md",
 				)}
+				style={
+					Platform.OS === "web"
+						? {
+								boxShadow:
+									"0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)",
+							}
+						: undefined
+				}
 			>
 				{/* Render transaction details here */}
 				{!technicianId ? (

@@ -74,8 +74,13 @@ jest.mock("@/convex/_generated/api", () => ({
 		giftCards: { listByDateRange: "gifts" },
 	},
 }));
+jest.mock("react-native-safe-area-context", () => ({
+	useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
 jest.mock("expo-router", () => ({
 	useLocalSearchParams: () => ({ startDate: "1000", endDate: "2000" }),
+	useFocusEffect: jest.fn(),
+	useIsFocused: () => true,
 	useRouter: () => ({ navigate: jest.fn() }),
 }));
 jest.mock("expo-haptics", () => ({
@@ -108,14 +113,19 @@ jest.mock("react-native-gesture-handler", () => ({
 		jest.requireActual<typeof import("react-native")>("react-native").FlatList,
 }));
 jest.mock("react-native-paper", () => {
-	const { Text, TextInput } =
+	const { Text, TextInput, View } =
 		jest.requireActual<typeof import("react-native")>("react-native");
 	return {
+		Portal: Object.assign(View, { Host: View }),
 		Button: Text,
+		Text,
 		TextInput: Object.assign(TextInput, { Icon: () => null }),
 		useTheme: () => ({ colors: {} }),
 	};
 });
+jest.mock("@/components/workspace/actions", () => ({
+	WorkspaceActions: () => null,
+}));
 jest.mock("@/components/Form/form", () => ({ ErrorText: () => null }));
 jest.mock("@/components/Buttons/delete-button", () => ({
 	DeleteButton: () => null,

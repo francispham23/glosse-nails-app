@@ -4,6 +4,17 @@ import { useMutation, useQuery } from "convex/react";
 import HomeRoute from "@/app/(root)/(main)/(tabs)/earnings";
 import { api } from "@/convex/_generated/api";
 
+jest.mock("react-native-safe-area-context", () => ({
+	useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
+jest.mock("expo-router", () => ({
+	useRouter: () => ({ navigate: jest.fn() }),
+	useFocusEffect: jest.fn(),
+	useIsFocused: () => true,
+}));
+jest.mock("@/hooks/use-workspace-layout", () => ({
+	useWorkspaceLayout: () => ({ isCompact: false, isWide: true }),
+}));
 jest.mock("convex/react", () => ({
 	useQuery: jest.fn(),
 	useMutation: jest.fn(),
@@ -127,4 +138,35 @@ test("shift draft survives a live query refresh and saves the selected IDs", asy
 		shiftDate: Date.parse("2026-09-29T00:00:00Z"),
 		technicians: ["first", "second"],
 	});
+});
+
+test("a rejected shift save keeps the selection and permits a retry", async () => {
+	const first = { _id: "first", name: "First", compensation: 10, tip: 2 };
+	const second = { _id: "second", name: "Second", compensation: 10, tip: 2 };
+	const saveShift = jest
+		.fn<() => Promise<string>>()
+		.mockRejectedValueOnce(new Error("Rejected"))
+		.mockResolvedValueOnce("shift");
+	jest.mocked(useQuery).mockImplementation((reference, ..._args) => {
+		if (reference === api.users.usersByDateRange)
+			return [first, second] as never;
+		if (reference === api.shifts.getShiftByDate) return [first] as never;
+		return undefined as never;
+	});
+	jest.mocked(useMutation).mockReturnValue(saveShift as never);
+	await render(<HomeRoute />);
+	await fireEvent.press(screen.getByTestId("shift-toggle"));
+	await fireEvent.press(screen.getByTestId("tech-second"));
+	await fireEvent.press(screen.getByTestId("shift-toggle"));
+	expect(screen.getByText("Failed to save shift")).toBeTruthy();
+	expect(screen.getByText("Second: selected")).toBeTruthy();
+	expect(screen.getByText("Save shift")).toBeTruthy();
+	await fireEvent.press(screen.getByTestId("shift-toggle"));
+	expect(saveShift).toHaveBeenCalledTimes(2);
+	expect(saveShift).toHaveBeenLastCalledWith({
+		shiftDate: Date.parse("2026-09-29T00:00:00Z"),
+		technicians: ["first", "second"],
+	});
+	expect(screen.queryByText("Failed to save shift")).toBeNull();
+	expect(screen.getByText("Edit shift")).toBeTruthy();
 });

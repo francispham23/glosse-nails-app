@@ -1,2 +1,36 @@
 @import 'tailwindcss';
 @import 'uniwind';
+
+@layer theme {
+  :root {
+    @variant light {
+      --color-background: #f7f8fc;
+      --color-background-secondary: #eef0f6;
+      --color-foreground: #202331;
+      --color-muted: #596174;
+      --color-muted-foreground: #596174;
+      --color-primary: #5b4fe0;
+      --color-accent: #5b4fe0;
+      --color-accent-foreground: #ffffff;
+      --color-border: #dfe2eb;
+    }
+    @variant dark {
+      --color-background: #15171f;
+      --color-background-secondary: #2b2f3e;
+      --color-foreground: #edeef5;
+      --color-muted: #b6bdcf;
+      --color-muted-foreground: #b6bdcf;
+      --color-primary: #bdb4ff;
+      --color-accent: #bdb4ff;
+      --color-accent-foreground: #261b68;
+      --color-border: #3c4254;
+    }
+  }
+}
+
+@media screen {
+  :is([role="button"], [role="tab"], [role="checkbox"], button, input):focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -3px;
+  }
+}

@@ -2,6 +2,8 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 
+import { Text as PaperText, useTheme } from "react-native-paper";
+import { OverviewCard } from "@/components/workspace/card";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { cn } from "@/utils";
 
@@ -25,14 +27,21 @@ export type Report = {
 };
 
 type Props = {
+	overview?: boolean;
 	item: Report;
 	startDate: Date;
 	endDate: Date;
 };
 
-export const ReportCard = ({ item, startDate, endDate }: Props) => {
+export const ReportCard = ({
+	item,
+	startDate,
+	endDate,
+	overview = false,
+}: Props) => {
 	const router = useRouter();
 	const { isLight } = useAppTheme();
+	const { colors } = useTheme();
 
 	const onPress = (type: ReportType) => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -49,6 +58,65 @@ export const ReportCard = ({ item, startDate, endDate }: Props) => {
 	if (item.rows[0].value === "$0.00") {
 		return null;
 	}
+
+	if (overview)
+		return (
+			<OverviewCard
+				label={`View ${item.title} report`}
+				onPress={() => onPress(item.id)}
+			>
+				<View style={{ padding: 20, gap: 16 }}>
+					<View
+						style={{
+							flexDirection: "row",
+							alignItems: "center",
+							justifyContent: "space-between",
+							gap: 8,
+						}}
+					>
+						<PaperText style={{ fontWeight: "700", fontSize: 18, flex: 1 }}>
+							{item.title}
+						</PaperText>
+						<PaperText style={{ color: colors.primary }}>↗</PaperText>
+					</View>
+					{item.rows.map((row) => (
+						<View
+							key={row.label}
+							style={{
+								flexDirection: "row",
+								flexWrap: "wrap",
+								justifyContent: "space-between",
+								gap: 8,
+								paddingTop: 12,
+								borderTopWidth: 1,
+								borderColor: colors.outlineVariant,
+							}}
+						>
+							<PaperText
+								style={{
+									color: colors.onSurfaceVariant,
+									flex: 1,
+									minWidth: 100,
+									lineHeight: 22,
+								}}
+							>
+								{row.label}
+							</PaperText>
+							<PaperText
+								style={{
+									fontWeight: row.isBold ? "700" : "500",
+									fontSize: row.isLarge ? 20 : 14,
+									fontVariant: ["tabular-nums"],
+									flexShrink: 1,
+								}}
+							>
+								{row.value}
+							</PaperText>
+						</View>
+					))}
+				</View>
+			</OverviewCard>
+		);
 
 	return (
 		<Pressable onPress={() => onPress(item.id)}>

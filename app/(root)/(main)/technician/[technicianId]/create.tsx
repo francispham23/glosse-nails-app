@@ -1,8 +1,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { HeaderButton } from "@/components/Buttons/header-button";
-
 import { initialEarningState } from "@/components/Form/constants";
 import {
 	type SelectedInput,
@@ -13,6 +12,7 @@ import {
 	useTransactionSave,
 } from "@/components/transaction-save-feedback";
 import { useAppDate } from "@/contexts/app-date-context";
+import { useWebRouteDismiss } from "@/contexts/web-route-dismiss-context";
 import { api } from "@/convex/_generated/api";
 import { type EarningFormState, isToday, type User } from "@/utils";
 
@@ -46,6 +46,11 @@ export default function CreateRoute() {
 		useState<EarningFormState>(createInitialEarning);
 
 	const { isLockedNow, isLocked } = feedback;
+	const { setDismissDisabled } = useWebRouteDismiss();
+	useEffect(() => {
+		setDismissDisabled(isLocked);
+		return () => setDismissDisabled(false);
+	}, [isLocked, setDismissDisabled]);
 	const changeEarning = useCallback<typeof setEarning>(
 		(update) => {
 			if (!isLockedNow()) setEarning(update);

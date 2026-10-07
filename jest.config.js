@@ -4,5 +4,5 @@ module.exports = {
 	moduleNameMapper: {
 		"^@/(.*)$": "<rootDir>/$1",
 	},
-	testMatch: ["<rootDir>/__tests__/**/*.test.tsx"],
+	testMatch: ["<rootDir>/__tests__/**/*.test.{ts,tsx}"],
 };

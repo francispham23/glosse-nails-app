@@ -1,9 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { type Href, Link, useRouter } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import { Pressable } from "react-native";
-
+import { useWebRouteDismiss } from "@/contexts/web-route-dismiss-context";
 import { useThemeColor } from "@/utils";
+import { tryDismissModalRoute } from "@/utils/modal-route-dismiss";
 
 type HeaderButtonProps = {
 	iconName: React.ComponentProps<typeof Ionicons>["name"];
@@ -20,6 +21,8 @@ export const HeaderButton = ({
 }: HeaderButtonProps) => {
 	const router = useRouter();
 	const themeColorForeground = useThemeColor("foreground");
+	const { dismissDisabled, isDismissDisabled } = useWebRouteDismiss();
+	const closeLocked = disabled || dismissDisabled;
 
 	if (route)
 		return (
@@ -40,22 +43,23 @@ export const HeaderButton = ({
 		);
 
 	return (
-		<Link
-			href=".."
-			asChild
-			onPress={(event) => {
-				if (disabled || isBlocked?.()) event.preventDefault();
+		<Pressable
+			className="justify-center rounded-full px-2.5"
+			disabled={closeLocked}
+			accessibilityState={{ disabled: closeLocked }}
+			accessibilityLabel="Close"
+			style={{ opacity: closeLocked ? 0.5 : 1 }}
+			onPress={() => {
+				if (closeLocked || isBlocked?.() || isDismissDisabled()) return;
+				Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+				tryDismissModalRoute(
+					isDismissDisabled(),
+					() => router.canGoBack(),
+					() => router.dismiss(),
+				);
 			}}
 		>
-			<Pressable
-				className="justify-center rounded-full px-2.5"
-				disabled={disabled}
-				accessibilityState={{ disabled }}
-				accessibilityLabel={route ? "View technician" : "Close"}
-				style={{ opacity: disabled ? 0.5 : 1 }}
-			>
-				<Ionicons name="close" size={18} color={themeColorForeground} />
-			</Pressable>
-		</Link>
+			<Ionicons name="close" size={18} color={themeColorForeground} />
+		</Pressable>
 	);
 };

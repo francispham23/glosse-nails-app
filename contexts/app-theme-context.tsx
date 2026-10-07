@@ -4,6 +4,60 @@ import { Uniwind, useUniwind } from "uniwind";
 
 import { useReturnContext } from "@/hooks";
 
+export const glosseLightTheme = {
+	...MD3LightTheme,
+	colors: {
+		...MD3LightTheme.colors,
+		primary: "#5b4fe0",
+		onPrimary: "#ffffff",
+		primaryContainer: "#eeebff",
+		onPrimaryContainer: "#4438a8",
+		secondary: "#087f75",
+		onSecondary: "#ffffff",
+		secondaryContainer: "#ddf6f1",
+		onSecondaryContainer: "#08645c",
+		background: "#f7f8fc",
+		onBackground: "#202331",
+		surface: "#ffffff",
+		onSurface: "#202331",
+		surfaceVariant: "#eef0f6",
+		onSurfaceVariant: "#596174",
+		outline: "#787e90",
+		outlineVariant: "#dfe2eb",
+		error: "#ba1a1a",
+		onError: "#ffffff",
+		errorContainer: "#ffdad6",
+		onErrorContainer: "#410002",
+	},
+};
+
+export const glosseDarkTheme = {
+	...MD3DarkTheme,
+	colors: {
+		...MD3DarkTheme.colors,
+		primary: "#bdb4ff",
+		onPrimary: "#261b68",
+		primaryContainer: "#342b64",
+		onPrimaryContainer: "#e5dfff",
+		secondary: "#75dbcb",
+		onSecondary: "#00382f",
+		secondaryContainer: "#134d44",
+		onSecondaryContainer: "#b2f2e5",
+		background: "#15171f",
+		onBackground: "#edeef5",
+		surface: "#1e212c",
+		onSurface: "#edeef5",
+		surfaceVariant: "#2b2f3e",
+		onSurfaceVariant: "#b6bdcf",
+		outline: "#8991a7",
+		outlineVariant: "#3c4254",
+		error: "#ffb4ab",
+		onError: "#690005",
+		errorContainer: "#93000a",
+		onErrorContainer: "#ffdad6",
+	},
+};
+
 type ThemeName = "light" | "dark";
 
 type AppThemeContextType = {
@@ -39,7 +93,7 @@ export const AppThemeProvider = ({ children }: { children: ReactNode }) => {
 	}, [theme]);
 
 	const paperTheme = useMemo(() => {
-		return theme === "light" ? MD3LightTheme : MD3DarkTheme;
+		return theme === "light" ? glosseLightTheme : glosseDarkTheme;
 	}, [theme]);
 
 	const value = useMemo(

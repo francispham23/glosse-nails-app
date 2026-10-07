@@ -6,6 +6,7 @@ import { FlatList } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { ListEmptyComponent } from "@/components/list-empty";
+import { modalScreenClassName } from "@/components/workspace/modal-screen";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { cn, formatDate } from "@/utils";
@@ -53,7 +54,7 @@ export default function GiftRoute() {
 
 	return (
 		<Animated.View
-			className="flex-1 gap-2 px-6 pt-18"
+			className={modalScreenClassName()}
 			entering={FadeIn}
 			exiting={FadeOut}
 		>

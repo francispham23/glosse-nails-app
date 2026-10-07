@@ -16,6 +16,7 @@ const mockRouter = {
 	replace: jest.fn(),
 	navigate: jest.fn(),
 	back: jest.fn(),
+	dismiss: jest.fn(),
 	canGoBack: jest.fn(() => true),
 };
 let mockForm: ComponentProps<typeof TransactionForm>;
@@ -158,6 +159,7 @@ beforeEach(() => {
 	mockMutation.mockReset();
 	mockRouter.replace.mockReset();
 	mockRouter.back.mockReset();
+	mockRouter.dismiss.mockReset();
 	mockRouter.canGoBack.mockReturnValue(true);
 });
 
@@ -318,11 +320,14 @@ for (const [name, Route] of [
 			(mockHeader.headerLeft() as React.ReactElement<{ disabled: boolean }>)
 				.props.disabled,
 		).toBe(true);
-		if (name === "create")
+		if (name === "create") {
+			const headerRight = mockHeader.headerRight?.();
+			if (!headerRight) throw new Error("Create header is missing headerRight");
 			expect(
-				(mockHeader.headerRight!() as React.ReactElement<{ disabled: boolean }>)
-					.props.disabled,
+				(headerRight as React.ReactElement<{ disabled: boolean }>).props
+					.disabled,
 			).toBe(true);
+		}
 		const draft = structuredClone(mockForm.earning);
 		await act(async () => {
 			mockForm.setEarning((old) => ({ ...old, compensation: "999" }));
@@ -391,15 +396,14 @@ for (const [name, Route] of [
 	});
 }
 
-test("native close prevents Link navigation and swap ignores stale taps when the ref locks", async () => {
+test("native close skips dismiss and swap ignores stale taps when the ref locks", async () => {
 	let locked = false;
 	const close = await render(
 		<HeaderButton iconName="close" isBlocked={() => locked} />,
 	);
 	locked = true;
-	const preventDefault = jest.fn();
-	await fireEvent.press(screen.getByLabelText("Close"), { preventDefault });
-	expect(preventDefault).toHaveBeenCalledTimes(1);
+	await fireEvent.press(screen.getByLabelText("Close"));
+	expect(mockRouter.dismiss).not.toHaveBeenCalled();
 	await close.unmount();
 	await render(
 		<HeaderButton

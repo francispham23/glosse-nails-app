@@ -1,13 +1,14 @@
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation } from "convex/react";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Keyboard } from "react-native";
-import { Button, TextInput } from "react-native-paper";
+import { Button } from "react-native-paper";
 import FormHeader from "@/components/Form/form";
 import { NumericInput } from "@/components/Form/numeric-input";
+import { SellDatePicker } from "@/components/Form/sell-date-picker";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppDate } from "@/contexts/app-date-context";
+import { useWebRouteDismiss } from "@/contexts/web-route-dismiss-context";
 import { api } from "@/convex/_generated/api";
 import { getErrorMessage, useThemeColor } from "@/utils";
 import { parseAmount } from "@/utils/financial-validation";
@@ -21,8 +22,16 @@ export default function CreateRoute() {
 	const [code, setCode] = useState("");
 	const [value, setValue] = useState("");
 	const [date, setDate] = useState(new Date());
-	const [open, setOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const mounted = useRef(true);
+	const { setDismissDisabled } = useWebRouteDismiss();
+	useEffect(() => {
+		mounted.current = true;
+		return () => {
+			mounted.current = false;
+			setDismissDisabled(false);
+		};
+	}, [setDismissDisabled]);
 
 	/* ----------------------------- handle submit ----------------------------- */
 	const handleSubmit = async () => {
@@ -45,12 +54,14 @@ export default function CreateRoute() {
 		}
 
 		try {
+			setDismissDisabled(true);
 			setIsLoading(true);
 			await createGiftCard({
 				code: code.trim(),
 				value: amount,
 				sellDate: date.getTime(),
 			});
+			if (!mounted.current) return;
 
 			Alert.alert("Success", "Gift card created successfully");
 			setCode("");
@@ -58,12 +69,16 @@ export default function CreateRoute() {
 			setDate(new Date());
 			router.back();
 		} catch (error) {
+			if (!mounted.current) return;
 			Alert.alert(
 				"Error",
 				getErrorMessage(error, "Failed to create gift card"),
 			);
 		} finally {
-			setIsLoading(false);
+			if (mounted.current) {
+				setIsLoading(false);
+				setDismissDisabled(false);
+			}
 		}
 	};
 
@@ -96,28 +111,12 @@ export default function CreateRoute() {
 				iconColor={mutedColor}
 			/>
 
-			{/* Sell Time Picker */}
-			<TextInput
-				mode="outlined"
-				className="h-16 rounded-3xl"
-				placeholder="Select service date"
-				value={date.toLocaleDateString([])}
-				editable={false}
-				onPressIn={() => setOpen(!open)}
-				left={<TextInput.Icon icon="calendar-outline" color={mutedColor} />}
+			<SellDatePicker
+				date={date}
+				maximumDate={endOfDay}
+				mutedColor={mutedColor}
+				onChange={setDate}
 			/>
-			{open ? (
-				<DateTimePicker
-					mode="date"
-					value={date}
-					maximumDate={endOfDay}
-					display="spinner"
-					onValueChange={(_, selectedDate) => {
-						setDate(selectedDate || date);
-						setOpen(false);
-					}}
-				/>
-			) : null}
 
 			{/* Submit Button */}
 			<Button

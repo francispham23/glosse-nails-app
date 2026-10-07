@@ -6,6 +6,7 @@ import {
 	renderRouter,
 	screen,
 } from "expo-router/testing-library";
+import type { ComponentProps } from "react";
 import { Pressable, Text, View } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import MainLayout from "@/app/(root)/(main)/_layout";
@@ -14,7 +15,6 @@ import CreateRoute from "@/app/(root)/(main)/technician/[technicianId]/create";
 import TransactionLayout from "@/app/(root)/(main)/transaction/_layout";
 import EditRoute from "@/app/(root)/(main)/transaction/[transactionId]/edit";
 import type { TransactionForm } from "@/components/TransactionForm";
-import type { ComponentProps } from "react";
 
 const mockMutation = jest.fn<(args: unknown) => Promise<unknown>>();
 const mockOptions = { standard: {}, root: {}, modal: {} };

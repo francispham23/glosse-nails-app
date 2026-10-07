@@ -1,18 +1,18 @@
-import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useQuery } from "convex/react";
-import * as Haptics from "expo-haptics";
 import { useState } from "react";
-import { View } from "react-native";
-import { Button } from "react-native-paper";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { ScrollView, View } from "react-native";
 
 import { type Report, ReportCard } from "@/components/Cards/report-card";
 import { ListEmptyComponent } from "@/components/list-empty";
+import { ReportDateControls } from "@/components/workspace/report-date-controls";
+import {
+	WorkspaceListFooter,
+	WorkspaceScreen,
+} from "@/components/workspace/screen";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import { useAuthorization } from "@/hooks/use-authorization";
-import { formatDate, getDiscount } from "@/utils";
+import { getDiscount } from "@/utils";
 import { getCashCompensation, getCashTip } from "@/utils/financial-validation";
 
 export default function ReportsRoute() {
@@ -21,24 +21,28 @@ export default function ReportsRoute() {
 
 	const [startDate, setStartDate] = useState<Date>(startOfDay);
 	const [endDate, setEndDate] = useState<Date>(endOfDay);
-	const [openPicker, setOpenPicker] = useState<"start" | "end" | null>(null);
+
+	const rangeStart = new Date(startDate);
+	rangeStart.setHours(0, 0, 0, 0);
+	const rangeEnd = new Date(endDate);
+	rangeEnd.setHours(23, 59, 59, 999);
 
 	// Query technicians with totals for the selected date range
 	const technicians = useQuery(api.users.usersByDateRange, {
-		startDate: startDate.setHours(0, 0, 0, 0),
-		endDate: endDate.setHours(23, 59, 59, 999),
+		startDate: rangeStart.getTime(),
+		endDate: rangeEnd.getTime(),
 		report: true,
 	});
 
 	const transactions = useQuery(api.transactions.listByDateRange, {
-		startDate: startDate.setHours(0, 0, 0, 0),
-		endDate: endDate.setHours(23, 59, 59, 999),
+		startDate: rangeStart.getTime(),
+		endDate: rangeEnd.getTime(),
 		report: true,
 	});
 
 	const giftCards = useQuery(api.giftCards.listByDateRange, {
-		startDate: startDate.setHours(0, 0, 0, 0),
-		endDate: endDate.setHours(23, 59, 59, 999),
+		startDate: rangeStart.getTime(),
+		endDate: rangeEnd.getTime(),
 	});
 
 	const totalGiftCardBalance =
@@ -204,88 +208,61 @@ export default function ReportsRoute() {
 	const endOfToday = new Date();
 	endOfToday.setHours(23, 59, 59, 999);
 
+	const loading =
+		technicians === undefined ||
+		transactions === undefined ||
+		giftCards === undefined;
 	return (
-		<Animated.View
-			className="flex-1 bg-background-secondary pt-4"
-			entering={FadeIn}
-			exiting={FadeOut}
+		<WorkspaceScreen
+			title="Reports"
+			description="Review your selected period’s figures."
+			actions={
+				<ReportDateControls
+					startDate={startDate}
+					endDate={endDate}
+					maximumDate={endOfToday}
+					onApply={(start, end) => {
+						setStartDate(start);
+						setEndDate(end);
+					}}
+				/>
+			}
 		>
-			{/* Date range selectors */}
-			<View className="flex-row gap-2 px-6 pt-40 pb-4">
-				<Button
-					mode="outlined"
-					onPress={() => {
-						Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-						setOpenPicker(openPicker === "start" ? null : "start");
-					}}
-					icon={({ size, color }) => (
-						<Ionicons name="calendar-outline" size={size} color={color} />
-					)}
-					className={openPicker === "start" ? "opacity-70" : ""}
-				>
-					{formatDate(startDate)}
-				</Button>
-
-				<Button
-					mode="outlined"
-					onPress={() => {
-						Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-						setOpenPicker(openPicker === "end" ? null : "end");
-					}}
-					icon={({ size, color }) => (
-						<Ionicons name="calendar-outline" size={size} color={color} />
-					)}
-					className={openPicker === "end" ? "opacity-70" : ""}
-				>
-					{formatDate(endDate)}
-				</Button>
-			</View>
-			<View className={openPicker ? "h-56" : ""}>
-				{/* Date pickers */}
-				{openPicker === "start" ? (
-					<DateTimePicker
-						value={startDate}
-						mode="date"
-						display="spinner"
-						maximumDate={endDate}
-						onValueChange={(_, selectedDate) => {
-							setOpenPicker(null);
-							if (selectedDate) {
-								setStartDate(selectedDate);
-							}
-						}}
-					/>
-				) : null}
-				{openPicker === "end" ? (
-					<DateTimePicker
-						value={endDate}
-						mode="date"
-						display="spinner"
-						minimumDate={startDate}
-						maximumDate={endOfToday}
-						onValueChange={(_, selectedDate) => {
-							setOpenPicker(null);
-							if (selectedDate) {
-								setEndDate(selectedDate);
-							}
-						}}
-					/>
-				) : null}
-			</View>
-
-			{/* Report cards list */}
-
-			<Animated.FlatList
-				contentInsetAdjustmentBehavior="automatic"
-				contentContainerClassName="gap-2 pt-2 px-4 pb-24"
-				data={data}
-				renderItem={({ item }) => (
-					<ReportCard item={item} startDate={startDate} endDate={endDate} />
+			<ScrollView
+				contentContainerStyle={{
+					paddingTop: 8,
+					paddingBottom: 32,
+					flexGrow: 1,
+				}}
+			>
+				{loading || data.length === 0 ? (
+					<ListEmptyComponent item="report" loading={loading} />
+				) : (
+					<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 16 }}>
+						{data
+							.filter((item) => item.rows[0].value !== "$0.00")
+							.map((item) => (
+								<View
+									key={item.id}
+									style={{
+										flexGrow: 1,
+										flexBasis: 320,
+										minWidth: 0,
+										maxWidth: "100%",
+									}}
+								>
+									<ReportCard
+										overview
+										item={item}
+										startDate={rangeStart}
+										endDate={rangeEnd}
+									/>
+								</View>
+							))}
+					</View>
 				)}
-				keyExtractor={(item) => item.id}
-				scrollEnabled={true}
-				ListEmptyComponent={<ListEmptyComponent item="report" />}
-			/>
-		</Animated.View>
+				<WorkspaceListFooter />
+			</ScrollView>
+		</WorkspaceScreen>
 	);
 }

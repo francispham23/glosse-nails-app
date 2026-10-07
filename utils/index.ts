@@ -41,7 +41,7 @@ export function useThemeColor(colorName: string): string {
 		"muted-foreground": theme.colors.onSurfaceVariant,
 		background: theme.colors.surface,
 		"background-secondary": theme.colors.surfaceVariant,
-		muted: theme.colors.onSurfaceDisabled,
+		muted: theme.colors.onSurfaceVariant,
 		accent: theme.colors.primary,
 		"accent-foreground": theme.colors.onPrimary,
 	};
