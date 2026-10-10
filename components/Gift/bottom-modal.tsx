@@ -3,6 +3,7 @@ import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useQuery } from "convex/react";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import { useTheme } from "react-native-paper";
 import { api } from "@/convex/_generated/api";
 
 import { cn, type Gift } from "@/utils";
@@ -23,6 +24,7 @@ export const BottomModal = ({
 	bottomSheetRef,
 	closeBottomSheet,
 }: Props) => {
+	const { colors } = useTheme();
 	const [isOpen, setIsOpen] = useState(false);
 
 	const transactions = useQuery(
@@ -43,10 +45,9 @@ export const BottomModal = ({
 	const isUnused = giftCard.transactionIds.length === 0 && totalUsed === 0;
 
 	const balanceClassName = cn(
-		"text-right font-semibold text-md",
-		!isLight && "text-gray-300",
+		"text-right font-semibold text-foreground text-md",
 	);
-	const textClassName = cn("text-base text-muted", !isLight && "text-gray-300");
+	const textClassName = cn("text-base text-muted");
 
 	return (
 		<BottomSheetModal
@@ -54,20 +55,15 @@ export const BottomModal = ({
 			snapPoints={snapPoints}
 			onChange={handleSheetChanges}
 			enablePanDownToClose
-			backgroundStyle={{ backgroundColor: isLight ? "#fff" : "#1f2937" }}
+			backgroundStyle={{ backgroundColor: colors.surface }}
 			handleIndicatorStyle={{
-				backgroundColor: isLight ? "#2d2e31" : "#6b7280",
+				backgroundColor: colors.onSurfaceVariant,
 			}}
 		>
 			<BottomSheetView className="flex-1 px-6 pb-6">
 				<View className="mb-4 flex-row items-center justify-between">
 					<View className="flex-1">
-						<Text
-							className={cn(
-								"font-bold text-2xl text-foreground",
-								!isLight && "text-gray-300",
-							)}
-						>
+						<Text className={cn("font-bold text-2xl text-foreground")}>
 							Gift Card: {giftCard.code}
 						</Text>
 						<Text className={textClassName}>
@@ -78,33 +74,19 @@ export const BottomModal = ({
 						onPress={closeBottomSheet}
 						className="rounded-full bg-background-secondary p-2"
 					>
-						<Ionicons
-							name="close"
-							size={24}
-							color={isLight ? "#000" : "#fff"}
-						/>
+						<Ionicons name="close" size={24} color={colors.onSurface} />
 					</Pressable>
 				</View>
-				<View className="mb-4 gap-2 rounded-lg bg-gray-300 p-4 shadow-md dark:bg-gray-700">
+				<View className="mb-4 gap-2 rounded-lg bg-background-secondary p-4 shadow-md">
 					<View className="flex-row justify-between">
 						<Text className={textClassName}>Owner:</Text>
-						<Text
-							className={cn(
-								"font-semibold text-foreground",
-								!isLight && "text-gray-300",
-							)}
-						>
+						<Text className={cn("font-semibold text-foreground")}>
 							{giftCard.client || "-"}
 						</Text>
 					</View>
 					<View className="flex-row justify-between">
 						<Text className={textClassName}>Total Used:</Text>
-						<Text
-							className={cn(
-								"font-semibold text-foreground",
-								!isLight && "text-gray-300",
-							)}
-						>
+						<Text className={cn("font-semibold text-foreground")}>
 							{totalUsed === null ? "—" : `$${totalUsed.toFixed(2)}`}
 						</Text>
 					</View>

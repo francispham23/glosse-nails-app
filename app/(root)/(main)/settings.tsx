@@ -1,17 +1,22 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useAction, useQuery } from "convex/react";
-import { useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, Text, View } from "react-native";
-import { Button, TextInput } from "react-native-paper";
+import { useRef, useState } from "react";
+import {
+	ActivityIndicator,
+	Alert,
+	Platform,
+	ScrollView,
+	Text,
+	View,
+} from "react-native";
+import { Button, Dialog, Portal, TextInput } from "react-native-paper";
 import Animated from "react-native-reanimated";
-
 import FormHeader, { FormContainer } from "@/components/Form/form";
-import { useAppTheme } from "@/contexts/app-theme-context";
+import { PasswordInput } from "@/components/Form/password-input";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/utils";
 
 export default function SettingsRoute() {
-	const { isLight } = useAppTheme();
 	const user = useQuery(api.users.viewer);
 	const changePassword = useAction(api.users.changePassword);
 
@@ -24,26 +29,73 @@ export default function SettingsRoute() {
 	const [confirmNewPassword, setConfirmNewPassword] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 
-	const className = cn("text-lg text-muted", !isLight && "text-gray-300");
+	const signingOut = useRef(false);
+	const [dialog, setDialog] = useState<{
+		title: string;
+		message: string;
+		confirmLabel?: string;
+		onConfirm?: () => void;
+	} | null>(null);
+
+	const showMessage = (title: string, message: string) => {
+		if (Platform.OS === "web") setDialog({ title, message });
+		else Alert.alert(title, message);
+	};
+
+	const confirmAction = (
+		title: string,
+		message: string,
+		onConfirm: () => void,
+	) => {
+		if (Platform.OS === "web") {
+			setDialog({ title, message, confirmLabel: title, onConfirm });
+		} else {
+			Alert.alert(title, message, [
+				{ text: "Cancel", style: "cancel" },
+				{ text: title, onPress: onConfirm },
+			]);
+		}
+	};
+
+	const handleSignOut = async () => {
+		if (signingOut.current) return;
+		signingOut.current = true;
+		setIsSigningOut(true);
+		try {
+			await signOut();
+		} catch (error) {
+			showMessage(
+				"Sign Out Failed",
+				error instanceof Error
+					? error.message
+					: "Could not sign out. Please try again.",
+			);
+		} finally {
+			signingOut.current = false;
+			setIsSigningOut(false);
+		}
+	};
+
+	const className = cn("text-lg text-muted");
 
 	const handleChangePassword = async () => {
 		if (!oldPassword) {
-			Alert.alert("Error", "Please enter your current password");
+			showMessage("Error", "Please enter your current password");
 			return;
 		}
 
 		if (!newPassword) {
-			Alert.alert("Error", "Please enter your new password");
+			showMessage("Error", "Please enter your new password");
 			return;
 		}
 
 		if (newPassword.length < 8) {
-			Alert.alert("Error", "New password must be at least 8 characters");
+			showMessage("Error", "New password must be at least 8 characters");
 			return;
 		}
 
 		if (newPassword !== confirmNewPassword) {
-			Alert.alert("Error", "New passwords do not match");
+			showMessage("Error", "New passwords do not match");
 			return;
 		}
 
@@ -58,11 +110,11 @@ export default function SettingsRoute() {
 			setOldPassword("");
 			setNewPassword("");
 			setConfirmNewPassword("");
-			Alert.alert("Success", "Password updated successfully.");
+			showMessage("Success", "Password updated successfully.");
 			setIsResettingPassword(false);
 		} catch (error) {
 			console.error("Change password error:", error);
-			Alert.alert(
+			showMessage(
 				"Change Password Failed",
 				error instanceof Error
 					? error.message
@@ -89,28 +141,28 @@ export default function SettingsRoute() {
 							title="Change Password"
 							description="Enter your current password and set a new one"
 						/>
-						<TextInput
+						<PasswordInput
 							mode="outlined"
 							placeholder="Current password"
-							secureTextEntry
+							visibilityLabel="current password"
 							value={oldPassword}
 							onChangeText={setOldPassword}
 							left={<TextInput.Icon icon="lock-outline" />}
 							className="h-16 rounded-3xl"
 						/>
-						<TextInput
+						<PasswordInput
 							mode="outlined"
 							placeholder="New password"
-							secureTextEntry
+							visibilityLabel="new password"
 							value={newPassword}
 							onChangeText={setNewPassword}
 							left={<TextInput.Icon icon="lock-reset" />}
 							className="h-16 rounded-3xl"
 						/>
-						<TextInput
+						<PasswordInput
 							mode="outlined"
 							placeholder="Confirm new password"
-							secureTextEntry
+							visibilityLabel="new password confirmation"
 							value={confirmNewPassword}
 							onChangeText={setConfirmNewPassword}
 							left={<TextInput.Icon icon="lock-check-outline" />}
@@ -150,24 +202,13 @@ export default function SettingsRoute() {
 								className="self-start rounded-full"
 								disabled={isResettingPassword}
 								loading={isResettingPassword}
-								onPress={async () => {
-									Alert.alert(
+								onPress={() =>
+									confirmAction(
 										"Reset Password",
 										"Are you sure you want to reset your password?",
-										[
-											{
-												text: "Cancel",
-												style: "cancel",
-											},
-											{
-												text: "Reset Password",
-												onPress: () => {
-													setIsResettingPassword(true);
-												},
-											},
-										],
-									);
-								}}
+										() => setIsResettingPassword(true),
+									)
+								}
 							>
 								Reset Password
 							</Button>
@@ -177,26 +218,15 @@ export default function SettingsRoute() {
 								className="self-start rounded-full"
 								disabled={isSigningOut}
 								loading={isSigningOut}
-								onPress={async () => {
-									setIsSigningOut(true);
-									Alert.alert(
+								onPress={() =>
+									confirmAction(
 										"Sign Out",
 										"Are you sure you want to sign out?",
-										[
-											{
-												text: "Cancel",
-												style: "cancel",
-											},
-											{
-												text: "Sign Out",
-												onPress: () => {
-													void signOut();
-												},
-											},
-										],
-									);
-									setIsSigningOut(false);
-								}}
+										() => {
+											void handleSignOut();
+										},
+									)
+								}
 							>
 								{isSigningOut ? "Signing Out..." : "Sign Out"}
 							</Button>
@@ -204,6 +234,32 @@ export default function SettingsRoute() {
 					</View>
 				)}
 			</ScrollView>
+			{Platform.OS === "web" && dialog && (
+				<Portal>
+					<Dialog visible onDismiss={() => setDialog(null)}>
+						<Dialog.Title>{dialog.title}</Dialog.Title>
+						<Dialog.Content>
+							<Text>{dialog.message}</Text>
+						</Dialog.Content>
+						<Dialog.Actions>
+							<Button onPress={() => setDialog(null)}>
+								{dialog.onConfirm ? "Cancel" : "OK"}
+							</Button>
+							{dialog.onConfirm && (
+								<Button
+									onPress={() => {
+										const confirm = dialog.onConfirm;
+										setDialog(null);
+										confirm?.();
+									}}
+								>
+									{dialog.confirmLabel}
+								</Button>
+							)}
+						</Dialog.Actions>
+					</Dialog>
+				</Portal>
+			)}
 		</Animated.View>
 	);
 }

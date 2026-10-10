@@ -1,5 +1,4 @@
 import { Platform, Text, View } from "react-native";
-import { useAppTheme } from "@/contexts/app-theme-context";
 import { cn } from "@/utils";
 
 /* ----------------------------- form container ----------------------------- */
@@ -31,23 +30,12 @@ export default function FormHeader({
 	description: string;
 	children?: React.ReactNode;
 }) {
-	const { isLight } = useAppTheme();
-
 	return (
 		<View className="gap-2">
-			<Text
-				className={cn(
-					"font-extrabold text-4xl text-foreground",
-					!isLight && "text-gray-300",
-				)}
-			>
+			<Text className={cn("font-extrabold text-4xl text-foreground")}>
 				{title}
 			</Text>
-			<Text
-				className={cn("text-muted-foreground", !isLight && "text-gray-400")}
-			>
-				{description}
-			</Text>
+			<Text className={cn("text-muted-foreground")}>{description}</Text>
 			{children}
 		</View>
 	);
@@ -55,4 +43,4 @@ export default function FormHeader({
 
 /* ------------------------------ error text ----------------------------- */
 export const ErrorText = ({ error }: { error: string | undefined }) =>
-	error ? <Text className="px-4 text-red-500 text-sm">{error}</Text> : null;
+	error ? <Text className="px-4 text-error text-sm">{error}</Text> : null;

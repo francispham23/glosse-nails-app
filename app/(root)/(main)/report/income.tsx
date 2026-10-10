@@ -7,12 +7,10 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { ListEmptyComponent } from "@/components/list-empty";
 import { modalScreenClassName } from "@/components/workspace/modal-screen";
-import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { cn, formatDate, type Transaction } from "@/utils";
 
 export default function IncomeRoute() {
-	const { isLight } = useAppTheme();
 	const params = useLocalSearchParams();
 	const [fallbackDate] = useState(() => Date.now());
 	const startDate = params.startDate ? Number(params.startDate) : fallbackDate;
@@ -37,10 +35,7 @@ export default function IncomeRoute() {
 		return Object.entries(incomeMap).map(([date, total]) => ({ date, total }));
 	};
 
-	const classname = cn(
-		"font-semibold text-foreground",
-		!isLight && "text-gray-300",
-	);
+	const classname = cn("font-semibold text-foreground");
 
 	if (!transactions) {
 		return <ActivityIndicator className="flex-1 items-center justify-center" />;
@@ -52,12 +47,7 @@ export default function IncomeRoute() {
 			entering={FadeIn}
 			exiting={FadeOut}
 		>
-			<Text
-				className={cn(
-					"font-extrabold text-3xl text-foreground",
-					!isLight && "text-gray-300",
-				)}
-			>
+			<Text className={cn("font-extrabold text-3xl text-foreground")}>
 				Income Report
 			</Text>
 			<View className="flex-1 pt-6">
@@ -79,11 +69,10 @@ export default function IncomeRoute() {
 }
 
 const IncomeCard = ({ item }: { item: { date: string; total: number } }) => {
-	const { isLight } = useAppTheme();
-	const classname = cn("text-md text-muted", !isLight && "text-gray-300");
+	const classname = cn("text-md text-muted");
 
 	return (
-		<View className="rounded-lg bg-gray-300 p-4 shadow-md dark:bg-gray-700">
+		<View className="rounded-lg bg-background-secondary p-4 shadow-md">
 			<View className="flex-row justify-between">
 				<Text className={cn(classname, "min-w-[105]")}>{item.date}</Text>
 				<Text className={cn(classname, "min-w-[40] text-right")}>

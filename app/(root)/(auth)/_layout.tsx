@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { Platform } from "react-native";
 import { useNavigationOptions } from "@/hooks";
 import {
 	modalGroupAnimation,
@@ -16,9 +17,9 @@ export default function AuthLayout() {
 			<Stack.Screen
 				name="index"
 				options={{
-					headerShown: true,
 					title: "",
 					...standard,
+					headerShown: Platform.OS !== "web",
 				}}
 			/>
 			<Stack.Screen

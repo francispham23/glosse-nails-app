@@ -53,7 +53,7 @@ export function CompensationSection({
 			/>
 			<ErrorText error={getFieldError("compensation")} />
 			{!compensationPlaceholder ? (
-				<Text className="px-4 text-red-500 text-sm">
+				<Text className="px-4 text-error text-sm">
 					Please select at least one compensation method
 				</Text>
 			) : null}

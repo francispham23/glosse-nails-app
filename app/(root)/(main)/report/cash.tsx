@@ -7,7 +7,6 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { ListEmptyComponent } from "@/components/list-empty";
 import { modalScreenClassName } from "@/components/workspace/modal-screen";
-import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { cn, formatDate, getDiscount } from "@/utils";
 import { getCashCompensation, getCashTip } from "@/utils/financial-validation";
@@ -61,11 +60,10 @@ const EmptyCash = <ListEmptyComponent item="cash" />;
 // ── Memoised sub-components ──────────────────────────────────────────────
 
 const CashCard = memo(function CashCard({ item }: { item: CashTransaction }) {
-	const { isLight } = useAppTheme();
-	const base = cn("text-muted text-sm", !isLight && "text-gray-300");
+	const base = cn("text-muted text-sm");
 
 	return (
-		<View className="flex-row items-center rounded-lg border-r-accent bg-gray-300 p-2 shadow-md dark:bg-gray-700">
+		<View className="flex-row items-center rounded-lg border-r-accent bg-background-secondary p-2 shadow-md">
 			<Text className={cn(base, "min-w-[50]")}>
 				{formatDate(item.serviceDate, false)}
 			</Text>
@@ -90,11 +88,10 @@ const TechnicianCashCard = memo(function TechnicianCashCard({
 }: {
 	item: TechnicianSummary;
 }) {
-	const { isLight } = useAppTheme();
-	const base = cn("text-muted text-sm", !isLight && "text-gray-300");
+	const base = cn("text-muted text-sm");
 
 	return (
-		<View className="flex-row items-center rounded-lg border-r-accent bg-gray-300 p-2 shadow-md dark:bg-gray-700">
+		<View className="flex-row items-center rounded-lg border-r-accent bg-background-secondary p-2 shadow-md">
 			<Text className={cn(base, "min-w-[50] flex-1")}>
 				{item._id?.split(" ")[0] ?? "Unknown"}
 			</Text>
@@ -114,7 +111,6 @@ const TechnicianCashCard = memo(function TechnicianCashCard({
 // ── Screen ───────────────────────────────────────────────────────────────
 
 export default function CashReportRoute() {
-	const { isLight } = useAppTheme();
 	const params = useLocalSearchParams();
 	const [fallbackDate] = useState(() => Date.now());
 	const startDate = params.startDate ? Number(params.startDate) : fallbackDate;
@@ -181,10 +177,7 @@ export default function CashReportRoute() {
 	);
 	const cashKeyExtractor = useCallback((item: CashTransaction) => item._id, []);
 
-	const headerCn = cn(
-		"font-semibold text-foreground",
-		!isLight && "text-gray-300",
-	);
+	const headerCn = cn("font-semibold text-foreground");
 
 	return (
 		<Animated.View
@@ -192,12 +185,7 @@ export default function CashReportRoute() {
 			entering={FadeIn}
 			exiting={FadeOut}
 		>
-			<Text
-				className={cn(
-					"font-extrabold text-3xl text-foreground",
-					!isLight && "text-gray-300",
-				)}
-			>
+			<Text className={cn("font-extrabold text-3xl text-foreground")}>
 				Cash Report
 			</Text>
 

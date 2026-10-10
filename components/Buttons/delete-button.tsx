@@ -2,7 +2,7 @@ import { useMutation } from "convex/react";
 import { router } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert } from "react-native";
-import { Button } from "react-native-paper";
+import { Button, useTheme } from "react-native-paper";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 
@@ -14,6 +14,7 @@ type Props = {
 };
 
 export const DeleteButton = ({ type, id, isDisabled }: Props) => {
+	const { colors } = useTheme();
 	const [isDeleting, setIsDeleting] = useState(false);
 	const deleteApi =
 		type === "transactions"
@@ -67,7 +68,8 @@ export const DeleteButton = ({ type, id, isDisabled }: Props) => {
 			disabled={isDeleting || isDisabled}
 			mode="contained"
 			className="rounded-3xl"
-			buttonColor="#ef4444"
+			buttonColor={colors.error}
+			textColor={colors.onError}
 			loading={isDeleting}
 		>
 			{isDeleting ? "Deleting..." : `Delete ${type}`}

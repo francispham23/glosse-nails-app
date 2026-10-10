@@ -8,12 +8,10 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { TechnicianCard } from "@/components/Cards/technician-card";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { modalScreenClassName } from "@/components/workspace/modal-screen";
-import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/utils";
 
 export default function PayrollRoute() {
-	const { isLight } = useAppTheme();
 	const params = useLocalSearchParams();
 	const [fallbackDate] = useState(() => Date.now());
 	const startDate = params.startDate ? Number(params.startDate) : fallbackDate;
@@ -25,10 +23,7 @@ export default function PayrollRoute() {
 		report: true,
 	});
 
-	const classname = cn(
-		"font-semibold text-foreground",
-		!isLight && "text-gray-300",
-	);
+	const classname = cn("font-semibold text-foreground");
 
 	return (
 		<Animated.View
@@ -36,12 +31,7 @@ export default function PayrollRoute() {
 			entering={FadeIn}
 			exiting={FadeOut}
 		>
-			<Text
-				className={cn(
-					"font-extrabold text-3xl text-foreground",
-					!isLight && "text-gray-300",
-				)}
-			>
+			<Text className={cn("font-extrabold text-3xl text-foreground")}>
 				PayRoll Report
 			</Text>
 			<View className="flex-1 pt-6">

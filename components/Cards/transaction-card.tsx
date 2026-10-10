@@ -10,7 +10,6 @@ import {
 } from "@/components/workspace/card";
 import { workspaceStyles } from "@/components/workspace/screen";
 import { useAppDate } from "@/contexts/app-date-context";
-import { useAppTheme } from "@/contexts/app-theme-context";
 import { useWorkspaceLayout } from "@/hooks/use-workspace-layout";
 import { cn, isToday, type Transaction } from "@/utils";
 import { blurActiveElementOnWeb } from "@/utils/web-focus";
@@ -35,11 +34,10 @@ export const TransactionCard = ({
 	isAuthorized,
 	userName,
 }: Props) => {
-	const { isLight } = useAppTheme();
 	const { colors } = useTheme();
 	const { isWide, isCompact } = useWorkspaceLayout();
 	const { endOfDay } = useAppDate();
-	const className = cn("text-lg text-muted", !isLight && "text-gray-300");
+	const className = cn("text-lg text-muted");
 
 	const isSelectedDateToday = isToday(endOfDay.getTime());
 	const showClient =
@@ -187,7 +185,7 @@ export const TransactionCard = ({
 				entering={FadeIn}
 				exiting={FadeOut}
 				className={cn(
-					"gap-3 rounded-lg border-r-accent bg-gray-300 p-3 dark:bg-gray-700",
+					"gap-3 rounded-lg border-r-accent bg-background-secondary p-3",
 					Platform.OS !== "web" && "shadow-md",
 				)}
 				style={

@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { Text } from "react-native";
 import { TextInput } from "react-native-paper";
-import { useAppTheme } from "@/contexts/app-theme-context";
 import { cn, type EarningFormState, type Gift } from "@/utils";
 import {
 	FinancialValidationError,
@@ -34,7 +33,6 @@ export const GiftCardInputs = ({
 	setGiftError,
 	type,
 }: GiftCardInputsProps) => {
-	const { isLight } = useAppTheme();
 	const {
 		giftCode,
 		tipInGift,
@@ -145,12 +143,7 @@ export const GiftCardInputs = ({
 
 			{giftCard ? (
 				<>
-					<Text
-						className={cn(
-							"px-4 text-foreground text-sm",
-							!isLight && "text-gray-300",
-						)}
-					>
+					<Text className={cn("px-4 text-foreground text-sm")}>
 						Available balance: ${availableBalance.toFixed(2)}
 					</Text>
 					<TextInput

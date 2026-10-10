@@ -3,8 +3,8 @@ import { Link } from "expo-router";
 import { useState } from "react";
 import { Alert, Text } from "react-native";
 import { Button, TextInput } from "react-native-paper";
-
 import FormHeader, { FormContainer } from "@/components/Form/form";
+import { PasswordInput } from "@/components/Form/password-input";
 
 export default function SignUpRoute() {
 	const { signIn } = useAuthActions();
@@ -90,25 +90,23 @@ export default function SignUpRoute() {
 				className="h-16 rounded-3xl"
 			/>
 			{/* password */}
-			<TextInput
+			<PasswordInput
 				mode="outlined"
 				placeholder="Enter your password"
-				secureTextEntry
+				visibilityLabel="password"
 				value={password}
 				onChangeText={setPassword}
 				left={<TextInput.Icon icon="form-textbox-password" />}
-				right={<TextInput.Icon icon="eye-outline" />}
 				className="h-16 rounded-3xl"
 			/>
 			{/* confirm password */}
-			<TextInput
+			<PasswordInput
 				mode="outlined"
 				placeholder="Confirm your password"
-				secureTextEntry
+				visibilityLabel="password confirmation"
 				value={confirmPassword}
 				onChangeText={setConfirmPassword}
 				left={<TextInput.Icon icon="form-textbox-password" />}
-				right={<TextInput.Icon icon="eye-check-outline" />}
 				className="h-16 rounded-3xl"
 			/>
 			{/* submit button */}

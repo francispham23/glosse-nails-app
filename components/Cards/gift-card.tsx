@@ -40,8 +40,7 @@ export const GiftCard = ({
 	}, []);
 
 	const balanceClassName = cn(
-		"text-right font-semibold text-md",
-		!isLight && "text-gray-300",
+		"text-right font-semibold text-foreground text-md",
 	);
 
 	return (
@@ -81,13 +80,10 @@ export const GiftCard = ({
 				<Pressable onPress={openBottomSheet}>
 					<Animated.View
 						key={giftCard._id}
-						className="flex-row items-center justify-between rounded-lg bg-gray-300 p-4 shadow-md dark:bg-gray-700"
+						className="flex-row items-center justify-between rounded-lg bg-background-secondary p-4 shadow-md"
 					>
 						<Text
-							className={cn(
-								"font-medium font-mono text-foreground text-md",
-								!isLight && "text-gray-300",
-							)}
+							className={cn("font-medium font-mono text-foreground text-md")}
 						>
 							{giftCard.code}
 						</Text>

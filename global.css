@@ -13,6 +13,8 @@
       --color-accent: #5b4fe0;
       --color-accent-foreground: #ffffff;
       --color-border: #dfe2eb;
+      --color-surface: #ffffff;
+      --color-error: #ba1a1a;
     }
     @variant dark {
       --color-background: #15171f;
@@ -24,11 +26,27 @@
       --color-accent: #bdb4ff;
       --color-accent-foreground: #261b68;
       --color-border: #3c4254;
+      --color-surface: #1e212c;
+      --color-error: #ffb4ab;
     }
   }
 }
 
 @media screen {
+  /* Browsers lock autofill background/color; paint the shared Paper input roles. */
+  input:is(:autofill, :-webkit-autofill) {
+    appearance: none;
+    border-radius: 8px;
+    /* Paper draws its outline behind the input; inset shadows alone still cover it. */
+    clip-path: inset(6px 8px round 8px);
+    padding-inline: 12px !important;
+    box-shadow:
+      0 0 0 6px var(--color-background) inset,
+      0 0 0 1000px var(--color-background) inset;
+    -webkit-text-fill-color: var(--color-foreground);
+    caret-color: var(--color-foreground);
+  }
+
   :is([role="button"], [role="tab"], [role="checkbox"], button, input):focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: -3px;

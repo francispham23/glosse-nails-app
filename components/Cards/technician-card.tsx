@@ -11,7 +11,6 @@ import {
 } from "@/components/workspace/card";
 import { workspaceStyles } from "@/components/workspace/screen";
 
-import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/utils";
 import type { User } from "@/utils/types";
@@ -37,7 +36,6 @@ export const TechnicianCard = ({
 	isAuthorized = false,
 	onToggleSelect,
 }: Props) => {
-	const { isLight } = useAppTheme();
 	const { colors } = useTheme();
 	const router = useRouter();
 
@@ -45,15 +43,9 @@ export const TechnicianCard = ({
 		userId: item._id,
 	});
 
-	const technicianClassName = cn(
-		"min-w-[50] text-left text-lg text-muted",
-		!isLight && "text-gray-300",
-	);
+	const technicianClassName = cn("min-w-[50] text-left text-lg text-muted");
 
-	const className = cn(
-		"text-right text-lg text-muted",
-		!isLight && "text-gray-300",
-	);
+	const className = cn("text-right text-lg text-muted");
 
 	const disabled = report || !isAuthorized || interactionDisabled;
 	const handlePress = () => {
@@ -119,12 +111,8 @@ export const TechnicianCard = ({
 				entering={FadeIn}
 				exiting={FadeOut}
 				className={cn(
-					"flex-row justify-between rounded-lg border-r-accent bg-gray-300 p-2 shadow-md dark:bg-gray-700",
-					isSelecting && isSelected && !isLight
-						? "border border-amber-50"
-						: isSelecting && isSelected && isLight
-							? "border border-primary"
-							: undefined,
+					"flex-row justify-between rounded-lg border-r-accent bg-background-secondary p-2 shadow-md",
+					isSelecting && isSelected ? "border border-primary" : undefined,
 				)}
 			>
 				<View className="w-full flex-row items-center gap-4">

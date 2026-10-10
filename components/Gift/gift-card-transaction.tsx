@@ -9,26 +9,18 @@ type Props = {
 	isLight: boolean;
 };
 
-export const GiftCardTransaction = ({ transaction, isLight }: Props) => {
-	const textClassName = cn("text-base text-muted", !isLight && "text-gray-300");
+export const GiftCardTransaction = ({ transaction }: Props) => {
+	const textClassName = cn("text-base text-muted");
 
 	return (
 		<Animated.View
 			key={transaction._id}
 			entering={FadeIn}
 			exiting={FadeOut}
-			className={cn(
-				"gap-2 rounded-lg bg-gray-300 p-3 shadow-md",
-				!isLight && "dark:bg-gray-700",
-			)}
+			className={cn("gap-2 rounded-lg bg-background-secondary p-3 shadow-md")}
 		>
 			<View className="flex-row items-center justify-between">
-				<Text
-					className={cn(
-						"font-semibold text-foreground text-lg",
-						!isLight && "text-gray-300",
-					)}
-				>
+				<Text className={cn("font-semibold text-foreground text-lg")}>
 					${(giftUsageCents(transaction) / 100).toFixed(2)} Used
 				</Text>
 				<Text className={cn(textClassName, "text-xs")}>
