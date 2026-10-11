@@ -2,7 +2,7 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { Link } from "expo-router";
 import { useState } from "react";
-import { Alert } from "react-native";
+import { Alert, Platform, Text } from "react-native";
 import { Button, TextInput } from "react-native-paper";
 import FormHeader, { FormContainer } from "@/components/Form/form";
 import { PasswordInput } from "@/components/Form/password-input";
@@ -17,15 +17,21 @@ export default function SignInRoute() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
+	const [message, setMessage] = useState<string | null>(null);
+	const showError = (title: string, description: string) => {
+		if (Platform.OS === "web") setMessage(description);
+		else Alert.alert(title, description);
+	};
 
 	/* ----------------------------- handle sign in ----------------------------- */
 	const handleSignIn = async () => {
+		setMessage(null);
 		if (!email.trim()) {
-			Alert.alert("Error", "Please enter your email");
+			showError("Error", "Please enter your email");
 			return;
 		}
 		if (!password) {
-			Alert.alert("Error", "Please enter your password");
+			showError("Error", "Please enter your password");
 			return;
 		}
 
@@ -39,11 +45,14 @@ export default function SignInRoute() {
 			// Navigation handled automatically by auth state change
 		} catch (error) {
 			console.error("Sign in error:", error);
-			Alert.alert(
+			const description = error instanceof Error ? error.message : "";
+			showError(
 				"Sign In Failed",
-				error instanceof Error
-					? error.message
-					: "Invalid email or password. Please try again.",
+				/InvalidAccountId|InvalidSecret/i.test(description)
+					? "Invalid email or password. Please try again."
+					: description && !description.startsWith("[CONVEX")
+						? description
+						: "Unable to sign in. Please try again.",
 			);
 		} finally {
 			setIsLoading(false);
@@ -82,6 +91,11 @@ export default function SignInRoute() {
 			/>
 
 			{/* submit button */}
+			{message ? (
+				<Text accessibilityRole="alert" className="text-error">
+					{message}
+				</Text>
+			) : null}
 			<Button
 				onPress={handleSignIn}
 				disabled={isLoading}

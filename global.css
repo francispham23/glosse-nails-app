@@ -33,6 +33,21 @@
 }
 
 @media screen {
+  /* Static HTML has no window dimensions. Keep Landing responsive before hydration. */
+  .landing-web {
+    min-height: 100dvh;
+  }
+
+  .landing-web-offset {
+    height: max(24px, calc((100dvh - min(320px, 100vw - 48px)) / 2));
+    flex-shrink: 0;
+  }
+
+  .landing-web-logo {
+    width: min(320px, calc(100vw - 48px));
+    height: min(320px, calc(100vw - 48px));
+  }
+
   /* Browsers lock autofill background/color; paint the shared Paper input roles. */
   input:is(:autofill, :-webkit-autofill) {
     appearance: none;
