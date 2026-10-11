@@ -3,7 +3,7 @@
 	"compilerOptions": {
 		"strict": true,
 		"ignoreDeprecations": "6.0",
-		"types": [],
+		"types": ["expo/types"],
 		"paths": {
 			"@/*": ["./*"],
 			"*": ["./*"]

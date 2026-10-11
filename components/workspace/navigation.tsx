@@ -1,7 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import type { Tabs } from "expo-router";
 import type { ComponentProps } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+	Platform,
+	Pressable,
+	ScrollView,
+	StyleSheet,
+	View,
+} from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useWorkspaceLayout } from "@/hooks/use-workspace-layout";
@@ -109,19 +116,29 @@ export function WorkspaceNavigation({ state, navigation }: TabBarProps) {
 					showsVerticalScrollIndicator={false}
 				>
 					<View style={[styles.brand, { borderColor: colors.outlineVariant }]}>
-						<View
-							style={[styles.monogram, { backgroundColor: colors.primary }]}
-						>
-							<Text
-								style={{
-									color: colors.onPrimary,
-									fontSize: 24,
-									fontWeight: "700",
-								}}
+						{Platform.OS === "web" ? (
+							<Image
+								source={require("@/assets/icon.png")}
+								accessibilityLabel="Glossé Nails"
+								accessible
+								contentFit="contain"
+								style={{ width: 60, height: 60, flexShrink: 0 }}
+							/>
+						) : (
+							<View
+								style={[styles.monogram, { backgroundColor: colors.primary }]}
 							>
-								G
-							</Text>
-						</View>
+								<Text
+									style={{
+										color: colors.onPrimary,
+										fontSize: 24,
+										fontWeight: "700",
+									}}
+								>
+									G
+								</Text>
+							</View>
+						)}
 						{mode === "sidebar" ? (
 							<View style={{ gap: 4 }}>
 								<Text style={{ fontSize: 20, fontWeight: "700" }}>
