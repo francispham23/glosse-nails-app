@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "convex/react";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator } from "react-native";
+import { DeleteDialogProvider } from "@/components/Buttons/delete-dialog";
 import { HeaderButton } from "@/components/Buttons/header-button";
 import {
 	type SelectedInput,
@@ -18,6 +19,14 @@ import { useAuthorization } from "@/hooks/use-authorization";
 import type { EarningFormState, PaymentMethod, Transaction } from "@/utils";
 
 export default function EditTransactionScreen() {
+	return (
+		<DeleteDialogProvider>
+			<EditTransactionContent />
+		</DeleteDialogProvider>
+	);
+}
+
+function EditTransactionContent() {
 	const { transactionId } = useLocalSearchParams<{ transactionId: string }>();
 	const { isAuthorized } = useAuthorization();
 

@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import { FlatList } from "react-native";
 import { AddButton } from "@/components/Buttons/add-button";
+import { DeleteDialogProvider } from "@/components/Buttons/delete-dialog";
 import { GiftCard } from "@/components/Cards/gift-card";
 import { ListEmptyComponent } from "@/components/list-empty";
 import {
@@ -31,43 +32,45 @@ export default function GiftCardRoute() {
 		[giftCards],
 	);
 	return (
-		<WorkspaceScreen
-			title="Gift Cards"
-			description="Gift card balances at a glance."
-			mobileAction={
-				isAuthorized
-					? {
-							label: "Create gift card",
-							icon: "plus",
-							onPress: () => router.navigate("/gift/create"),
-						}
-					: undefined
-			}
-			actions={
-				isAuthorized ? (
-					<AddButton
-						desktopOnly
-						label="Create gift card"
-						onPress={() => router.navigate("/gift/create")}
-					/>
-				) : null
-			}
-		>
-			<FlatList
-				contentContainerStyle={workspaceStyles.list}
-				ListFooterComponent={WorkspaceListFooter}
-				data={sortedGiftCards}
-				renderItem={({ item }) => (
-					<GiftCard overview giftCard={item} isAuthorized={isAuthorized} />
-				)}
-				keyExtractor={(item) => item._id.toString()}
-				ListEmptyComponent={
-					<ListEmptyComponent
-						item="gift card"
-						loading={giftCards === undefined}
-					/>
+		<DeleteDialogProvider>
+			<WorkspaceScreen
+				title="Gift Cards"
+				description="Gift card balances at a glance."
+				mobileAction={
+					isAuthorized
+						? {
+								label: "Create gift card",
+								icon: "plus",
+								onPress: () => router.navigate("/gift/create"),
+							}
+						: undefined
 				}
-			/>
-		</WorkspaceScreen>
+				actions={
+					isAuthorized ? (
+						<AddButton
+							desktopOnly
+							label="Create gift card"
+							onPress={() => router.navigate("/gift/create")}
+						/>
+					) : null
+				}
+			>
+				<FlatList
+					contentContainerStyle={workspaceStyles.list}
+					ListFooterComponent={WorkspaceListFooter}
+					data={sortedGiftCards}
+					renderItem={({ item }) => (
+						<GiftCard overview giftCard={item} isAuthorized={isAuthorized} />
+					)}
+					keyExtractor={(item) => item._id.toString()}
+					ListEmptyComponent={
+						<ListEmptyComponent
+							item="gift card"
+							loading={giftCards === undefined}
+						/>
+					}
+				/>
+			</WorkspaceScreen>
+		</DeleteDialogProvider>
 	);
 }
