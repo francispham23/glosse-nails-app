@@ -131,7 +131,7 @@ Biome provides formatting conventions. ESLint is the app lint gate.
 npm run verify:quality
 ```
 
-## Build & Deploy
+## Build & Deploy iOS
 
 ```bash
 # Deploy Convex Backend
@@ -142,6 +142,17 @@ eas build --platform ios --profile production
 
 # Submit to App Store
 eas submit --platform ios
+```
+
+## Build & Deploy Web
+
+```bash
+# Export the web project clean
+npx expo export --platform web --clear
+
+# Deploy it to production
+eas deploy --environment production
+eas deploy --prod
 ```
 
 ## Convex Auth Setup
