@@ -1,6 +1,6 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Link } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Alert, Text } from "react-native";
 import { Button, TextInput } from "react-native-paper";
 import FormHeader, { FormContainer } from "@/components/Form/form";
@@ -15,9 +15,11 @@ export default function SignUpRoute() {
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
+	const submitting = useRef(false);
 
 	/* ------------------------------ handle signup ----------------------------- */
 	const handleSignUp = async () => {
+		if (submitting.current) return;
 		if (!name.trim()) {
 			Alert.alert("Error", "Please enter your name");
 			return;
@@ -38,6 +40,7 @@ export default function SignUpRoute() {
 			return;
 		}
 
+		submitting.current = true;
 		setIsLoading(true);
 		try {
 			await signIn("password", {
@@ -56,13 +59,14 @@ export default function SignUpRoute() {
 					: "Unable to create account. Please try again.",
 			);
 		} finally {
+			submitting.current = false;
 			setIsLoading(false);
 		}
 	};
 
 	/* --------------------------------- return --------------------------------- */
 	return (
-		<FormContainer>
+		<FormContainer webForm onSubmit={handleSignUp}>
 			{/* header */}
 			<FormHeader
 				title="Sign Up"
@@ -84,6 +88,8 @@ export default function SignUpRoute() {
 				placeholder="Enter your email"
 				keyboardType="email-address"
 				autoCapitalize="none"
+				autoComplete="username"
+				autoCorrect={false}
 				value={email}
 				onChangeText={setEmail}
 				left={<TextInput.Icon icon="email-outline" />}
@@ -94,6 +100,7 @@ export default function SignUpRoute() {
 				mode="outlined"
 				placeholder="Enter your password"
 				visibilityLabel="password"
+				autoComplete="new-password"
 				value={password}
 				onChangeText={setPassword}
 				left={<TextInput.Icon icon="form-textbox-password" />}
@@ -104,6 +111,7 @@ export default function SignUpRoute() {
 				mode="outlined"
 				placeholder="Confirm your password"
 				visibilityLabel="password confirmation"
+				autoComplete="new-password"
 				value={confirmPassword}
 				onChangeText={setConfirmPassword}
 				left={<TextInput.Icon icon="form-textbox-password" />}

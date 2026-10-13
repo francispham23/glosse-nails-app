@@ -13,6 +13,8 @@ export function PasswordInput({ visibilityLabel, ...props }: Props) {
 	const [visible, setVisible] = useState(false);
 	return (
 		<TextInput
+			autoCapitalize="none"
+			autoCorrect={false}
 			{...props}
 			secureTextEntry={!visible}
 			right={

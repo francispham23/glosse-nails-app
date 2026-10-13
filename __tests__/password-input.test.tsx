@@ -46,3 +46,27 @@ test("passwords start masked and toggle independently without changing values", 
 		"synthetic-value",
 	);
 });
+
+test("password input disables capitalization and correction and supports credential autocomplete", async () => {
+	await render(
+		<PaperProvider>
+			<PasswordInput
+				placeholder="Login password"
+				visibilityLabel="password"
+				autoComplete="current-password"
+			/>
+			<PasswordInput
+				placeholder="New password"
+				visibilityLabel="new password"
+				autoComplete="new-password"
+			/>
+		</PaperProvider>,
+	);
+	const password = screen.getByPlaceholderText("Login password");
+	expect(password.props.autoCapitalize).toBe("none");
+	expect(password.props.autoCorrect).toBe(false);
+	expect(password.props.autoComplete).toBe("current-password");
+	expect(screen.getByPlaceholderText("New password").props.autoComplete).toBe(
+		"new-password",
+	);
+});

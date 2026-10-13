@@ -1,7 +1,7 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { Link } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Alert, Platform, Text } from "react-native";
 import { Button, TextInput } from "react-native-paper";
 import FormHeader, { FormContainer } from "@/components/Form/form";
@@ -18,6 +18,7 @@ export default function SignInRoute() {
 	const [password, setPassword] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [message, setMessage] = useState<string | null>(null);
+	const submitting = useRef(false);
 	const showError = (title: string, description: string) => {
 		if (Platform.OS === "web") setMessage(description);
 		else Alert.alert(title, description);
@@ -25,6 +26,7 @@ export default function SignInRoute() {
 
 	/* ----------------------------- handle sign in ----------------------------- */
 	const handleSignIn = async () => {
+		if (submitting.current) return;
 		setMessage(null);
 		if (!email.trim()) {
 			showError("Error", "Please enter your email");
@@ -35,6 +37,7 @@ export default function SignInRoute() {
 			return;
 		}
 
+		submitting.current = true;
 		setIsLoading(true);
 		try {
 			await signIn("password", {
@@ -55,13 +58,14 @@ export default function SignInRoute() {
 						: "Unable to sign in. Please try again.",
 			);
 		} finally {
+			submitting.current = false;
 			setIsLoading(false);
 		}
 	};
 
 	/* --------------------------------- return --------------------------------- */
 	return (
-		<FormContainer>
+		<FormContainer webForm onSubmit={handleSignIn}>
 			{/* header */}
 			<FormHeader
 				title="Login"
@@ -74,6 +78,8 @@ export default function SignInRoute() {
 				placeholder="Enter your email"
 				keyboardType="email-address"
 				autoCapitalize="none"
+				autoComplete="username"
+				autoCorrect={false}
 				value={email}
 				onChangeText={setEmail}
 				left={<TextInput.Icon icon="email-outline" />}
@@ -84,6 +90,7 @@ export default function SignInRoute() {
 				mode="outlined"
 				placeholder="Enter your password"
 				visibilityLabel="password"
+				autoComplete="current-password"
 				value={password}
 				onChangeText={setPassword}
 				left={<TextInput.Icon icon="form-textbox-password" />}

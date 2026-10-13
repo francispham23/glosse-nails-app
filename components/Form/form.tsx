@@ -2,14 +2,22 @@ import { Platform, Text, View } from "react-native";
 import { cn } from "@/utils";
 
 /* ----------------------------- form container ----------------------------- */
-export function FormContainer({ children }: { children: React.ReactNode }) {
+export function FormContainer({
+	children,
+	webForm = false,
+	onSubmit,
+}: {
+	children: React.ReactNode;
+	webForm?: boolean;
+	onSubmit?: () => void | Promise<void>;
+}) {
 	/**
 	 * reason for this FormContainer is to later add keyboard avoiding view
 	 * to the form
 	 *
 	 * i think maybe that would be a good idea??
 	 */
-	return (
+	const content = (
 		<View
 			className={
 				Platform.OS === "web" ? "flex-1 gap-4 px-6" : "flex-1 gap-4 px-6 pt-20"
@@ -17,6 +25,22 @@ export function FormContainer({ children }: { children: React.ReactNode }) {
 		>
 			{children}
 		</View>
+	);
+	return Platform.OS === "web" && webForm ? (
+		<form
+			style={{ display: "contents" }}
+			onSubmit={(event) => {
+				event.preventDefault();
+				void onSubmit?.();
+			}}
+		>
+			{content}
+			{onSubmit ? (
+				<button type="submit" hidden tabIndex={-1} aria-hidden="true" />
+			) : null}
+		</form>
+	) : (
+		content
 	);
 }
 
