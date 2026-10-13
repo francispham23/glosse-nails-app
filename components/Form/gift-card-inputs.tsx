@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Text } from "react-native";
-import { TextInput } from "react-native-paper";
 import { cn, type EarningFormState, type Gift } from "@/utils";
 import {
 	FinancialValidationError,
@@ -10,6 +9,7 @@ import {
 import { giftUsageCents, moneyToCents } from "@/utils/money";
 import { ErrorText } from "./form";
 import { formatCurrency } from "./helpers";
+import { NumericInput } from "./numeric-input";
 
 type GiftType = "tipInGift" | "compInGift";
 
@@ -128,15 +128,13 @@ export const GiftCardInputs = ({
 
 	return (
 		<>
-			<TextInput
-				mode="outlined"
+			<NumericInput
 				placeholder="Enter Gift Card Code"
-				keyboardType="numeric"
-				autoCapitalize="none"
+				inputMode="numeric"
 				value={giftCode}
 				onChangeText={handleCodeChange}
-				left={<TextInput.Icon icon="barcode" />}
-				className="h-16 rounded-3xl"
+				icon="barcode"
+				iconSize={24}
 			/>
 
 			{showNotFoundError && <ErrorText error="Gift card code not found" />}
@@ -146,19 +144,16 @@ export const GiftCardInputs = ({
 					<Text className={cn("px-4 text-foreground text-sm")}>
 						Available balance: ${availableBalance.toFixed(2)}
 					</Text>
-					<TextInput
-						mode="outlined"
+					<NumericInput
 						placeholder={
 							type === "compInGift"
 								? `Enter amount from Gift Card. Max $${maxCompGiftAmount.toFixed(2)}`
 								: "Enter amount from Gift Card"
 						}
-						keyboardType="numeric"
-						autoCapitalize="none"
 						value={earning[type]?.toString()}
 						onChangeText={handleAmountChange}
-						left={<TextInput.Icon icon="wallet-giftcard" />}
-						className="h-16 rounded-3xl"
+						icon="wallet-giftcard"
+						iconSize={24}
 					/>
 				</>
 			) : null}

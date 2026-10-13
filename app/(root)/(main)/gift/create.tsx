@@ -96,6 +96,7 @@ export default function CreateRoute() {
 			{/* gift card code field */}
 			<NumericInput
 				placeholder="Enter Gift Card Code"
+				inputMode="numeric"
 				value={code}
 				onChangeText={setCode}
 				icon="barcode"
