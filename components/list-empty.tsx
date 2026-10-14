@@ -1,37 +1,39 @@
-import { useEffect, useState } from "react";
-import { Text } from "react-native";
-import { ActivityIndicator } from "react-native-paper";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { ActivityIndicator, View } from "react-native";
+import { Text, useTheme } from "react-native-paper";
 
-import { useAppTheme } from "@/contexts/app-theme-context";
-import { cn } from "@/utils";
-
-interface Props {
+export const ListEmptyComponent = ({
+	item,
+	loading = false,
+}: {
 	item?: string;
-}
-
-export const ListEmptyComponent = ({ item }: Props) => {
-	const { isLight } = useAppTheme();
-	const [spinning, setSpinning] = useState(true);
-
-	useEffect(() => {
-		const timer = setTimeout(() => setSpinning(false), 2000);
-		return () => clearTimeout(timer);
-	}, []);
-
+	loading?: boolean;
+}) => {
+	const { colors } = useTheme();
 	return (
-		<Animated.View
-			className="flex-1 items-center justify-center py-10"
-			entering={FadeIn}
-			exiting={FadeOut}
+		<View
+			style={{
+				alignItems: "center",
+				justifyContent: "center",
+				padding: 32,
+				gap: 12,
+			}}
+			accessibilityLiveRegion="polite"
 		>
-			{spinning ? (
-				<ActivityIndicator className="flex-1 items-center justify-center" />
+			{loading ? (
+				<>
+					<ActivityIndicator accessibilityLabel="Loading" />
+					<Text style={{ color: colors.onSurfaceVariant }}>Loading…</Text>
+				</>
 			) : (
-				<Text className={cn("text-muted", !isLight && "text-gray-300")}>
-					No {item ? `${item}s` : "data"} to display.
-				</Text>
+				<>
+					<Text style={{ fontWeight: "600" }}>
+						No {item ? `${item}s` : "data"} to display
+					</Text>
+					<Text style={{ color: colors.onSurfaceVariant, textAlign: "center" }}>
+						Your records will appear here when available.
+					</Text>
+				</>
 			)}
-		</Animated.View>
+		</View>
 	);
 };

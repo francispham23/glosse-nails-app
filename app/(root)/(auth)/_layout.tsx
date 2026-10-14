@@ -1,5 +1,14 @@
 import { Stack } from "expo-router";
+import { Platform } from "react-native";
 import { useNavigationOptions } from "@/hooks";
+import {
+	modalGroupAnimation,
+	modalGroupPresentation,
+} from "@/utils/modal-route";
+
+export const unstable_settings = {
+	anchor: "index",
+};
 
 export default function AuthLayout() {
 	const { root, standard } = useNavigationOptions();
@@ -8,16 +17,17 @@ export default function AuthLayout() {
 			<Stack.Screen
 				name="index"
 				options={{
-					headerShown: true,
 					title: "",
 					...standard,
+					headerShown: Platform.OS !== "web",
 				}}
 			/>
 			<Stack.Screen
 				name="email"
 				options={{
 					headerShown: false,
-					presentation: "modal",
+					presentation: modalGroupPresentation,
+					animation: modalGroupAnimation,
 					...root,
 				}}
 			/>

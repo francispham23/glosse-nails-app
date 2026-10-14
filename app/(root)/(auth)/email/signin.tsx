@@ -1,34 +1,43 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { Link } from "expo-router";
-import { useState } from "react";
-import { Alert } from "react-native";
+import { useRef, useState } from "react";
+import { Alert, Platform, Text } from "react-native";
 import { Button, TextInput } from "react-native-paper";
-
 import FormHeader, { FormContainer } from "@/components/Form/form";
+import { PasswordInput } from "@/components/Form/password-input";
 import { isProduction, useThemeColor } from "@/utils";
 
 export default function SignInRoute() {
 	const { signIn } = useAuthActions();
 
-	const accentForegroundColor = useThemeColor("accent-foreground");
+	const accentForegroundColor = useThemeColor("accent");
 
 	/* ---------------------------------- state --------------------------------- */
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
+	const [message, setMessage] = useState<string | null>(null);
+	const submitting = useRef(false);
+	const showError = (title: string, description: string) => {
+		if (Platform.OS === "web") setMessage(description);
+		else Alert.alert(title, description);
+	};
 
 	/* ----------------------------- handle sign in ----------------------------- */
 	const handleSignIn = async () => {
+		if (submitting.current) return;
+		setMessage(null);
 		if (!email.trim()) {
-			Alert.alert("Error", "Please enter your email");
+			showError("Error", "Please enter your email");
 			return;
 		}
 		if (!password) {
-			Alert.alert("Error", "Please enter your password");
+			showError("Error", "Please enter your password");
 			return;
 		}
 
+		submitting.current = true;
 		setIsLoading(true);
 		try {
 			await signIn("password", {
@@ -39,20 +48,24 @@ export default function SignInRoute() {
 			// Navigation handled automatically by auth state change
 		} catch (error) {
 			console.error("Sign in error:", error);
-			Alert.alert(
+			const description = error instanceof Error ? error.message : "";
+			showError(
 				"Sign In Failed",
-				error instanceof Error
-					? error.message
-					: "Invalid email or password. Please try again.",
+				/InvalidAccountId|InvalidSecret/i.test(description)
+					? "Invalid email or password. Please try again."
+					: description && !description.startsWith("[CONVEX")
+						? description
+						: "Unable to sign in. Please try again.",
 			);
 		} finally {
+			submitting.current = false;
 			setIsLoading(false);
 		}
 	};
 
 	/* --------------------------------- return --------------------------------- */
 	return (
-		<FormContainer>
+		<FormContainer webForm onSubmit={handleSignIn}>
 			{/* header */}
 			<FormHeader
 				title="Login"
@@ -65,24 +78,31 @@ export default function SignInRoute() {
 				placeholder="Enter your email"
 				keyboardType="email-address"
 				autoCapitalize="none"
+				autoComplete="username"
+				autoCorrect={false}
 				value={email}
 				onChangeText={setEmail}
 				left={<TextInput.Icon icon="email-outline" />}
 				className="h-16 rounded-3xl"
 			/>
 			{/* password text-field */}
-			<TextInput
+			<PasswordInput
 				mode="outlined"
 				placeholder="Enter your password"
-				secureTextEntry
+				visibilityLabel="password"
+				autoComplete="current-password"
 				value={password}
 				onChangeText={setPassword}
 				left={<TextInput.Icon icon="form-textbox-password" />}
-				right={<TextInput.Icon icon="eye-outline" />}
 				className="h-16 rounded-3xl"
 			/>
 
 			{/* submit button */}
+			{message ? (
+				<Text accessibilityRole="alert" className="text-error">
+					{message}
+				</Text>
+			) : null}
 			<Button
 				onPress={handleSignIn}
 				disabled={isLoading}

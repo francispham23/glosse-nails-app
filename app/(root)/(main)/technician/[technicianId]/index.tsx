@@ -10,14 +10,13 @@ import Animated, {
 
 import { TransactionCard } from "@/components/Cards/transaction-card";
 import { ListEmptyComponent } from "@/components/list-empty";
+import { modalScreenClassName } from "@/components/workspace/modal-screen";
 import { useAppDate } from "@/contexts/app-date-context";
-import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { useAuthorization } from "@/hooks/use-authorization";
 import { cn, type Transaction, type User } from "@/utils";
 
 export default function TechnicianId() {
-	const { isLight } = useAppTheme();
 	const { startOfDay, endOfDay } = useAppDate();
 	const { isAuthorized, user } = useAuthorization();
 	const params = useLocalSearchParams();
@@ -32,16 +31,11 @@ export default function TechnicianId() {
 
 	return (
 		<Animated.View
-			className="flex-1 gap-2 px-6 pt-18"
+			className={modalScreenClassName()}
 			entering={FadeIn}
 			exiting={FadeOut}
 		>
-			<Text
-				className={cn(
-					"font-extrabold text-3xl text-foreground",
-					!isLight && "text-gray-300",
-				)}
-			>
+			<Text className={cn("font-extrabold text-3xl text-foreground")}>
 				{technician?.name}
 			</Text>
 			<Animated.FlatList

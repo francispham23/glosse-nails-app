@@ -4,12 +4,11 @@ import type { Stack } from "expo-router";
 import { type ComponentProps, useMemo } from "react";
 
 import { Platform } from "react-native";
+import { useThemeColor } from "@/utils";
 
 type StackScreenOptions = NonNullable<
 	ComponentProps<typeof Stack.Screen>["options"]
 >;
-
-import { useThemeColor } from "@/utils";
 
 export function useNavigationOptions() {
 	const themeColorForeground = useThemeColor("foreground");

@@ -1,12 +1,11 @@
 import { Text, View } from "react-native";
-
 import { paymentMethods } from "@/components/Form/constants";
 import { ErrorText } from "@/components/Form/form";
 import { GiftCardInputs } from "@/components/Form/gift-card-inputs";
 import { NumericInput } from "@/components/Form/numeric-input";
 import { PaymentMethodChips } from "@/components/TransactionForm/form-chips";
-
 import type { EarningFormState, Gift, PaymentMethod } from "@/utils";
+import { cashRemainderPreview } from "@/utils/financial-validation";
 import type { UpdateEarning } from ".";
 
 interface CompensationSectionProps {
@@ -40,6 +39,8 @@ export function CompensationSection({
 }: CompensationSectionProps) {
 	const { compensation, compInCash, compInGift, compensationMethods } = earning;
 
+	const cashRemainder = cashRemainderPreview(compensation, compInGift);
+
 	return (
 		<View className="flex gap-2">
 			{/* Compensation Input */}
@@ -52,7 +53,7 @@ export function CompensationSection({
 			/>
 			<ErrorText error={getFieldError("compensation")} />
 			{!compensationPlaceholder ? (
-				<Text className="px-4 text-red-500 text-sm">
+				<Text className="px-4 text-error text-sm">
 					Please select at least one compensation method
 				</Text>
 			) : null}
@@ -82,6 +83,12 @@ export function CompensationSection({
 			/>
 			<ErrorText error={getFieldError("compInGift")} />
 
+			{cash && gift && !card && cashRemainder !== undefined ? (
+				<Text className="px-4 text-muted-foreground">
+					Cash remainder: ${cashRemainder.toFixed(2)}
+				</Text>
+			) : null}
+			<ErrorText error={getFieldError("giftCode")} />
 			{/* Compensation Methods */}
 			<View className="flex-row flex-wrap gap-2">
 				<PaymentMethodChips

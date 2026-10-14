@@ -2,21 +2,62 @@
 
 A React Native nail salon management app for managing technicians' turns, payroll by tracking transactions, technicians, earnings, gift cards, and services.
 
+## Working with agents
+
+Start with [AGENTS.md](AGENTS.md) and the [agent workflow](docs/agent-workflow.md).
+Use one bounded task with acceptance criteria, implementation, executable checks,
+review and handoff. The canonical [glosse-task skill](.agents/skills/glosse-task/SKILL.md)
+and [review guidance](.agents/skills/glosse-task/references/review.md) are portable.
+Cursor entry points under `.cursor/` reference the same guidance; Markdown agent
+definitions do not start agents by themselves.
+Task contracts and verification evidence live under `docs/tasks/`.
+
+```bash
+npm run test:backend -- convex/authorization.test.ts
+npm run verify:backend
+npm run test:app
+npm run verify:quality
+node scripts/check-agent-docs.mjs
+```
+
+These checks use synthetic data without contacting a Convex deployment. The
+backend gate includes app/backend typechecks, backend lint and backend tests;
+`verify:quality` also runs full app lint and app interaction tests. Before each
+normal local commit, Husky runs staged JavaScript/TypeScript ESLint, then the full
+`verify:quality` gate. Any lint warning/error, typecheck error or failing test
+blocks the commit; files are not automatically fixed or staged.
+
+Full checks run against the working tree, which may differ from a partially
+staged commit. Hooks can be bypassed with `--no-verify` or `HUSKY=0`; passing
+checks catches covered regressions, not every bug. PR CI checks the pushed commit
+in a fresh checkout. The GitHub pull-request workflow runs the backend and app gates
+plus iOS, Android and web exports. These checks do not replace device, browser
+interaction or live sign-in testing. See [the access policy](docs/access-policy.md)
+for role permissions, intentional public endpoints and callback configuration.
+See [financial policy](docs/financial-policy.md) for approved rounding rules,
+characterized behavior and unresolved financial decisions.
+
+The planning and implementation skills are tracked under `.agents/skills/`.
+Other local Expo/Convex skills are optional installed tools; their presence is
+not assumed on a new clone. Use the matching skill when available, or current
+official documentation. Record source/revision in a task before adding or
+updating a vendor skill; this does not authorize installation or deployment.
+
 ## Tech Stack
 
-- **Framework**: [Expo](https://expo.dev) SDK 54 + React Native 0.81 + React 19
-- **Routing**: [Expo Router](https://docs.expo.dev/router/introduction/) v6 (file-based, typed routes)
+- **Framework**: [Expo](https://expo.dev) SDK 57 + React Native 0.86 + React 19
+- **Routing**: [Expo Router](https://docs.expo.dev/router/introduction/) 57.x (file-based, typed routes; see package.json for the pinned version)
 - **Backend**: [Convex](https://www.convex.dev/) (real-time database + auth)
 - **Styling**: [Uniwind](https://github.com/nicksrandall/uniwind) (Tailwind for React Native) + TailwindCSS v4
 - **Theming**: [React Native Papers](https://github.com/callstack/react-native-paper) Material Design for React Native (Android & iOS)
 - **Forms**: Zod validation
-- **Code Quality**: [Biome](https://biomejs.dev/) (linter + formatter)
+- **Code Quality**: ESLint with Expo configuration for lint and staged checks; Biome is available for formatting
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 22 (used by the pull-request workflow)
 - iOS Simulator (Xcode) or physical device
 - Convex account & project
 
@@ -84,13 +125,13 @@ Managed by Convex in `convex/schema.ts`:
 
 ## Code Quality
 
-Biome handles linting and formatting with tab indentation, double quotes, organized imports, and sorted Tailwind classes.
+Biome provides formatting conventions. ESLint is the app lint gate.
 
 ```bash
-npm run lint
+npm run verify:quality
 ```
 
-## Build & Deploy
+## Build & Deploy iOS
 
 ```bash
 # Deploy Convex Backend
@@ -101,6 +142,17 @@ eas build --platform ios --profile production
 
 # Submit to App Store
 eas submit --platform ios
+```
+
+## Build & Deploy Web
+
+```bash
+# Export the web project clean
+npx expo export --platform web --clear
+
+# Deploy it to production
+eas deploy --environment production
+eas deploy --prod
 ```
 
 ## Convex Auth Setup

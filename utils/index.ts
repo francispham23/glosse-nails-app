@@ -39,9 +39,11 @@ export function useThemeColor(colorName: string): string {
 	const colorMap: Record<string, string> = {
 		foreground: theme.colors.onSurface,
 		"muted-foreground": theme.colors.onSurfaceVariant,
-		background: theme.colors.surface,
+		background: theme.colors.background,
+		surface: theme.colors.surface,
+		error: theme.colors.error,
 		"background-secondary": theme.colors.surfaceVariant,
-		muted: theme.colors.onSurfaceDisabled,
+		muted: theme.colors.onSurfaceVariant,
 		accent: theme.colors.primary,
 		"accent-foreground": theme.colors.onPrimary,
 	};

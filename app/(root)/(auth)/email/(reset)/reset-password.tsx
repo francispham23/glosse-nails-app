@@ -104,7 +104,7 @@ export default function ResetPasswordRoute() {
 
 	/* --------------------------------- return --------------------------------- */
 	return (
-		<FormContainer>
+		<FormContainer webForm>
 			{/* header */}
 			<FormHeader
 				title="Reset Password"
@@ -114,6 +114,9 @@ export default function ResetPasswordRoute() {
 			<TextInput
 				mode="outlined"
 				placeholder="Enter your new password"
+				autoComplete="new-password"
+				autoCapitalize="none"
+				autoCorrect={false}
 				secureTextEntry
 				value={password}
 				onChangeText={setPassword}
@@ -125,6 +128,9 @@ export default function ResetPasswordRoute() {
 			<TextInput
 				mode="outlined"
 				placeholder="Confirm your new password"
+				autoComplete="new-password"
+				autoCapitalize="none"
+				autoCorrect={false}
 				secureTextEntry
 				value={confirmPassword}
 				onChangeText={setConfirmPassword}
