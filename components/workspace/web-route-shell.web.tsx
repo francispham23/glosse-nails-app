@@ -2,15 +2,10 @@ import { useRouter } from "expo-router";
 import type { PropsWithChildren } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FocusScope } from "react-aria";
-import {
-	Pressable,
-	StyleSheet,
-	useWindowDimensions,
-	View,
-	type ViewStyle,
-} from "react-native";
+import { Pressable, StyleSheet, View, type ViewStyle } from "react-native";
 import { useTheme } from "react-native-paper";
 import { useWebRouteDismiss } from "@/contexts/web-route-dismiss-context";
+import { useModalViewport } from "@/hooks/use-modal-viewport.web";
 import { useWorkspaceLayout } from "@/hooks/use-workspace-layout";
 import { tryDismissModalRoute } from "@/utils/modal-route-dismiss";
 import {
@@ -28,9 +23,14 @@ export function WebRouteShell({ children }: PropsWithChildren) {
 	const router = useRouter();
 	const { colors } = useTheme();
 	const { isCompact } = useWorkspaceLayout();
-	const { height: windowHeight } = useWindowDimensions();
+	const viewport = useModalViewport(WEB_ROUTE_MODAL_PANEL_ID);
 	const { dismissDisabled, isDismissDisabled } = useWebRouteDismiss();
-	const panelHeight = Math.round(windowHeight * 0.9);
+	const panelHeight = Math.round(
+		Math.min(
+			viewport.height * 0.9,
+			Math.max(0, viewport.height - (isCompact ? 0 : 48)),
+		),
+	);
 	const [reducedMotion] = useState(prefersReducedMotion);
 	const [presented, setPresented] = useState(false);
 	const dismissing = useRef(false);
@@ -48,11 +48,14 @@ export function WebRouteShell({ children }: PropsWithChildren) {
 		if (!router.canGoBack()) return;
 		dismissing.current = true;
 		setPresented(false);
-		window.setTimeout(() => {
-			if (!dismissing.current) return;
-			dismissing.current = false;
-			closeRoute();
-		}, reducedMotion ? 180 : 340);
+		window.setTimeout(
+			() => {
+				if (!dismissing.current) return;
+				dismissing.current = false;
+				closeRoute();
+			},
+			reducedMotion ? 180 : 340,
+		);
 	}, [closeRoute, isDismissDisabled, reducedMotion, router]);
 
 	useEffect(() => {
@@ -65,7 +68,10 @@ export function WebRouteShell({ children }: PropsWithChildren) {
 		if (!node) return;
 		const onEnd = (event: TransitionEvent) => {
 			if (event.target !== node || !dismissing.current) return;
-			if (event.propertyName !== "transform" && event.propertyName !== "opacity") {
+			if (
+				event.propertyName !== "transform" &&
+				event.propertyName !== "opacity"
+			) {
 				return;
 			}
 			dismissing.current = false;
@@ -116,9 +122,9 @@ export function WebRouteShell({ children }: PropsWithChildren) {
 			accessibilityViewIsModal
 			style={{
 				position: "fixed",
-				top: 0,
+				top: viewport.top,
+				height: viewport.height,
 				right: 0,
-				bottom: 0,
 				left: 0,
 				zIndex: 9999,
 				justifyContent: isCompact ? "flex-end" : "center",
