@@ -51,4 +51,5 @@ android
 .claude
 .vscode
 skills-lock.json
-docs/tasks
+docs/tasks/*
+!docs/tasks/template.md

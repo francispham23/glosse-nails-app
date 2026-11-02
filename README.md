@@ -146,14 +146,28 @@ eas submit --platform ios
 
 ## Build & Deploy Web
 
-```bash
-# Export the web project clean
-npx expo export --platform web --clear
+Set the required `EXPO_PUBLIC_*` variables in the EAS **production** environment
+before exporting, including `EXPO_PUBLIC_CONVEX_URL`. The export below disables
+local dotenv loading so missing EAS variables cannot fall back to `.env` or
+`.env.local`. Check that the selected URL is the intended production backend.
 
-# Deploy it to production
-eas deploy --environment production
-eas deploy --prod
+```bash
+# Export using the EAS production environment
+EXPO_NO_DOTENV=1 eas env:exec production \
+  'npx expo export --platform web --clear'
+
+# After inspecting the exported backend destination, deploy once to production
+eas deploy --environment production --prod
 ```
+
+`EXPO_PUBLIC_*` values are embedded during export. The deploy `--environment`
+flag supplies server-side variables for API routes; `--prod` assigns the deployment
+to the production URL. Neither changes an already exported browser bundle.
+`--clear` clears the bundler cache, and `eas.json` build profiles configure native
+EAS builds rather than this standalone web export.
+
+See [web export and destination verification](docs/web-preview.md) before release,
+and [Expo environment variable usage](https://docs.expo.dev/eas/environment-variables/usage/).
 
 ## Convex Auth Setup
 
@@ -166,3 +180,18 @@ npm install @convex-dev/auth @auth/core@0.37.0
 npx @convex-dev/auth
 npx expo install expo-secure-store
 ```
+
+```bash
+# Deployment used by `npx convex dev`
+CONVEX_DEPLOYMENT=dev:rapid-guineapig-653 # team: francis-pham-da47c, project: glosse-nail-app
+
+EXPO_PUBLIC_CONVEX_URL=https://rapid-guineapig-653.convex.cloud
+
+EXPO_PUBLIC_CONVEX_SITE_URL=https://rapid-guineapig-653.convex.site
+```
+
+## Local MCP credentials
+
+The GitHub MCP server inherits `GITHUB_PERSONAL_ACCESS_TOKEN` from the process
+environment. Supply it through your local credential or shell setup before
+starting the client; never put a literal token in `.mcp.json` or tracked files.

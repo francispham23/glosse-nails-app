@@ -6,7 +6,7 @@ authorize financial-policy changes, deployment or a storage migration.
 
 ## Approved rounding rules
 
-User approval is recorded in [the calculation task](tasks/critical-calculation-regressions.md).
+Executable coverage is recorded in [the calculation regressions](../convex/calculations.test.ts).
 The shared implementation is [utils/money.ts](../utils/money.ts).
 
 - For valid nonnegative decimal amounts, half-cent ties round up.
@@ -90,7 +90,7 @@ expected values with rationale, not weakened/skipped tests.
 
 ## Approved server validation
 
-Approval is recorded in [the server validation task](tasks/server-financial-validation.md).
+Executable coverage is recorded in [the server validation regressions](../convex/financial-validation.test.ts).
 Create/edit share [financial validation](../utils/financial-validation.ts), also
 used by the form. Gift availability is checked inside the recording mutation.
 

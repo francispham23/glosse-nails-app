@@ -1,0 +1,35 @@
+{
+  "mcpServers": {
+    "convex-mcp": {
+      "type": "local",
+      "command": "npx",
+      "args": [
+        "-y",
+        "convex@latest",
+        "mcp",
+        "start"
+      ],
+      "tools": [
+        "*"
+      ]
+    },
+    "io.github.github/github-mcp-server": {
+      "type": "local",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@github/github-mcp-server@latest"
+      ],
+      "tools": [
+        "*"
+      ]
+    },
+    "my-mcp-server-e36b4fb2": {
+      "type": "http",
+      "url": "https://mcp.expo.dev/mcp",
+      "tools": [
+        "*"
+      ]
+    }
+  }
+}
