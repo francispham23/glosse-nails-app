@@ -1,26 +1,23 @@
 import { Stack } from "expo-router";
 import { HeaderButton } from "@/components/Buttons/header-button";
-import { useNavigationOptions } from "@/hooks";
+import { ModalRouteLayout } from "@/components/workspace/modal-route-layout";
+import { useModalStackOptions } from "@/hooks/use-modal-stack-options";
 
 export default function GiftLayout() {
-	const { modal } = useNavigationOptions();
+	const screenOptions = useModalStackOptions();
 
 	return (
-		<Stack
-			screenOptions={{
-				gestureEnabled: false,
-				headerTransparent: true,
-				...modal,
-			}}
-		>
-			<Stack.Screen
-				name="create"
-				options={{
-					headerLeft: () => <HeaderButton iconName="close" />,
-					headerShown: true,
-					title: "",
-				}}
-			/>
-		</Stack>
+		<ModalRouteLayout>
+			<Stack screenOptions={screenOptions}>
+				<Stack.Screen
+					name="create"
+					options={{
+						headerLeft: () => <HeaderButton iconName="close" />,
+						headerShown: true,
+						title: "",
+					}}
+				/>
+			</Stack>
+		</ModalRouteLayout>
 	);
 }

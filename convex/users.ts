@@ -6,11 +6,21 @@ import {
 	retrieveAccount,
 } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
-
+import { payrollCompensation, roundMoney } from "../utils/money";
 import { action, query } from "./_generated/server";
-import { getStaffRoleRecord, hasAnyRole, requireActor } from "./authz";
+import {
+	getStaffRoleRecord,
+	hasAnyRole,
+	requireActor,
+	requireSelfOrRole,
+} from "./authz";
+import { staffRole, userDocument } from "./validators";
 
 export const viewer = query({
+	returns: v.union(
+		v.null(),
+		v.object({ ...userDocument.fields, role: staffRole }),
+	),
 	args: {},
 	handler: async (ctx) => {
 		const { userId, role } = await requireActor(ctx);
@@ -20,6 +30,7 @@ export const viewer = query({
 });
 
 export const viewerRole = query({
+	returns: staffRole,
 	args: {},
 	handler: async (ctx) => {
 		const { role } = await requireActor(ctx);
@@ -28,6 +39,14 @@ export const viewerRole = query({
 });
 
 export const viewerAccess = query({
+	returns: v.object({
+		authenticated: v.boolean(),
+		role: v.union(v.null(), staffRole),
+		isActive: v.boolean(),
+		isAuthorized: v.boolean(),
+		user: v.optional(v.union(v.null(), userDocument)),
+		message: v.union(v.null(), v.string()),
+	}),
 	args: {},
 	handler: async (ctx) => {
 		const userId = await getAuthUserId(ctx);
@@ -80,21 +99,23 @@ export const viewerAccess = query({
 });
 
 export const usersByDateRange = query({
+	returns: v.array(
+		v.object({
+			...userDocument.fields,
+			tip: v.number(),
+			compensation: v.number(),
+		}),
+	),
 	args: {
 		startDate: v.number(),
 		endDate: v.number(),
 		report: v.optional(v.boolean()),
 	},
 	handler: async (ctx, { startDate, endDate, report }) => {
-		const actor = report ? await requireActor(ctx) : null;
-		const canViewAllReportUsers = actor
-			? hasAnyRole(actor.role, ["owner", "manager"])
-			: true;
+		const actor = await requireActor(ctx);
+		const canViewAllReportUsers = hasAnyRole(actor.role, ["owner", "manager"]);
 
-		const roleRecords = (await ctx.db.query("staffRoles").collect()) as Array<{
-			userId: string;
-			payRate?: number;
-		}>;
+		const roleRecords = await ctx.db.query("staffRoles").collect();
 		const payRateByUserId = new Map(
 			roleRecords.map((record) => [record.userId, record.payRate]),
 		);
@@ -104,10 +125,9 @@ export const usersByDateRange = query({
 			.filter((q) => q.eq(q.field("isAnonymous"), undefined))
 			.collect();
 
-		const visibleTechnicians =
-			report && actor && !canViewAllReportUsers
-				? technicians.filter((tech) => tech._id === actor.userId)
-				: technicians;
+		const visibleTechnicians = !canViewAllReportUsers
+			? technicians.filter((tech) => tech._id === actor.userId)
+			: technicians;
 
 		const datedTransactions = await ctx.db
 			.query("transactions")
@@ -121,24 +141,19 @@ export const usersByDateRange = query({
 			visibleTechnicians.map(async (tech) => {
 				const transactions = datedTransactions.filter(
 					(t) => t.technician === tech._id,
-				) as Array<
-					(typeof datedTransactions)[number] & { payRateSnapshot?: number }
-				>;
-
-				const compensation = Number.parseFloat(
-					transactions
-						.reduce((sum, t) => {
-							if (!report) {
-								return sum + t.compensation;
-							}
-
-							const effectivePayRate =
-								t.payRateSnapshot ?? payRateByUserId.get(tech._id) ?? 0.5;
-
-							return sum + t.compensation * effectivePayRate;
-						}, 0)
-						.toFixed(2),
 				);
+
+				const compensation = report
+					? payrollCompensation(
+							transactions.map((t) => ({
+								compensation: t.compensation,
+								payRate:
+									t.payRateSnapshot ?? payRateByUserId.get(tech._id) ?? 0.5,
+							})),
+						)
+					: roundMoney(
+							transactions.reduce((sum, t) => sum + t.compensation, 0),
+						);
 				let tip: number;
 				if (report) {
 					const finalTip = transactions.reduce((sum, t) => {
@@ -169,13 +184,18 @@ export const usersByDateRange = query({
 });
 
 export const getUserById = query({
+	returns: v.union(v.null(), userDocument),
 	args: { userId: v.optional(v.id("users")) },
 	handler: async (ctx, { userId }) => {
-		if (userId) return await ctx.db.get(userId);
+		await requireActor(ctx);
+		if (!userId) return null;
+		await requireSelfOrRole(ctx, userId, ["owner", "manager"]);
+		return await ctx.db.get(userId);
 	},
 });
 
 export const changePassword = action({
+	returns: v.object({ success: v.boolean() }),
 	args: {
 		oldPassword: v.string(),
 		newPassword: v.string(),
@@ -201,13 +221,17 @@ export const changePassword = action({
 			);
 		}
 
-		await retrieveAccount(ctx, {
+		const account = await retrieveAccount(ctx, {
 			provider: "password",
 			account: {
 				id: email,
 				secret: oldPassword,
 			},
 		});
+
+		if (account.user._id !== userId) {
+			throw new ConvexError("You may only change your own password.");
+		}
 
 		await modifyAccountCredentials(ctx, {
 			provider: "password",

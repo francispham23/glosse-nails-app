@@ -1,19 +1,20 @@
 import { useQuery } from "convex/react";
 import { useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 import { Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { ListEmptyComponent } from "@/components/list-empty";
-import { useAppTheme } from "@/contexts/app-theme-context";
+import { modalScreenClassName } from "@/components/workspace/modal-screen";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/utils";
 
 export default function SupplyRoute() {
-	const { isLight } = useAppTheme();
 	const params = useLocalSearchParams();
-	const startDate = params.startDate ? Number(params.startDate) : Date.now();
-	const endDate = params.endDate ? Number(params.endDate) : Date.now();
+	const [fallbackDate] = useState(() => Date.now());
+	const startDate = params.startDate ? Number(params.startDate) : fallbackDate;
+	const endDate = params.endDate ? Number(params.endDate) : fallbackDate;
 	const transactions = useQuery(api.transactions.listByDateRange, {
 		startDate,
 		endDate,
@@ -34,23 +35,15 @@ export default function SupplyRoute() {
 				};
 			}) || [];
 
-	const classname = cn(
-		"font-semibold text-foreground",
-		!isLight && "text-gray-300",
-	);
+	const classname = cn("font-semibold text-foreground");
 
 	return (
 		<Animated.View
-			className="flex-1 gap-2 px-6 pt-18"
+			className={modalScreenClassName()}
 			entering={FadeIn}
 			exiting={FadeOut}
 		>
-			<Text
-				className={cn(
-					"font-extrabold text-3xl text-foreground",
-					!isLight && "text-gray-300",
-				)}
-			>
+			<Text className={cn("font-extrabold text-3xl text-foreground")}>
 				Supply Report
 			</Text>
 			<View className="flex-1 pt-6">
@@ -82,11 +75,10 @@ type Props = {
 };
 
 const SupplyCard = ({ item }: Props) => {
-	const { isLight } = useAppTheme();
-	const classname = cn("text-md text-muted", !isLight && "text-gray-300");
+	const classname = cn("text-md text-muted");
 
 	return (
-		<View className="flex-row items-center gap-4 rounded-lg border-r-accent bg-gray-300 p-2 shadow-md dark:bg-gray-700">
+		<View className="flex-row items-center gap-4 rounded-lg border-r-accent bg-background-secondary p-2 shadow-md">
 			<Text className={cn(classname, "min-w-[105]")}>
 				{new Date(item.serviceDate).toLocaleDateString("en-US", {
 					month: "short",

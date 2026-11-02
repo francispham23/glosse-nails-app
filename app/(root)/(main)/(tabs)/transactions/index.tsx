@@ -1,9 +1,13 @@
 import { useQuery } from "convex/react";
 import { useMemo } from "react";
 import Animated from "react-native-reanimated";
-
 import { TransactionCard } from "@/components/Cards/transaction-card";
 import { ListEmptyComponent } from "@/components/list-empty";
+import {
+	WorkspaceListFooter,
+	WorkspaceScreen,
+	workspaceStyles,
+} from "@/components/workspace/screen";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import { useAuthorization } from "@/hooks/use-authorization";
@@ -33,19 +37,31 @@ export default function Transactions() {
 	);
 
 	return (
-		<Animated.FlatList
-			contentInsetAdjustmentBehavior="automatic"
-			contentContainerClassName="gap-4 pt-2 px-3 pb-24"
-			data={data}
-			renderItem={({ item }: { item: Transaction }) => (
-				<TransactionCard
-					transaction={item}
-					userName={user?.name}
-					isAuthorized={isAuthorized}
-				/>
-			)}
-			keyExtractor={(item) => item._id.toString()}
-			ListEmptyComponent={<ListEmptyComponent item="transaction" />}
-		/>
+		<WorkspaceScreen
+			title="Transactions"
+			description="Service records, compensation and tips."
+			dateControl
+		>
+			<Animated.FlatList
+				contentContainerStyle={workspaceStyles.list}
+				ListFooterComponent={WorkspaceListFooter}
+				data={data}
+				renderItem={({ item }: { item: Transaction }) => (
+					<TransactionCard
+						overview
+						transaction={item}
+						userName={user?.name}
+						isAuthorized={isAuthorized}
+					/>
+				)}
+				keyExtractor={(item) => item._id.toString()}
+				ListEmptyComponent={
+					<ListEmptyComponent
+						item="transaction"
+						loading={transactions === undefined || onShiftTechs === undefined}
+					/>
+				}
+			/>
+		</WorkspaceScreen>
 	);
 }

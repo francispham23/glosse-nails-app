@@ -1,0 +1,323 @@
+diff --git a/node_modules/react-native-paper/src/components/ActivityIndicator.tsx b/node_modules/react-native-paper/src/components/ActivityIndicator.tsx
+index 893c49f..49f62d3 100644
+--- a/node_modules/react-native-paper/src/components/ActivityIndicator.tsx
++++ b/node_modules/react-native-paper/src/components/ActivityIndicator.tsx
+@@ -85,7 +85,7 @@ const ActivityIndicator = ({
+       duration: 200 * scale,
+       toValue: 1,
+       isInteraction: false,
+-      useNativeDriver: true,
++      useNativeDriver: Platform.OS !== 'web',
+     }).start();
+ 
+     // Circular animation in loop
+@@ -122,7 +122,7 @@ const ActivityIndicator = ({
+       Animated.timing(fade, {
+         duration: 200 * scale,
+         toValue: 0,
+-        useNativeDriver: true,
++        useNativeDriver: Platform.OS !== 'web',
+         isInteraction: false,
+       }).start(stopRotation);
+     } else {
+diff --git a/node_modules/react-native-paper/src/components/Button/Button.tsx b/node_modules/react-native-paper/src/components/Button/Button.tsx
+index 2e4d2cf..9c9def1 100644
+--- a/node_modules/react-native-paper/src/components/Button/Button.tsx
++++ b/node_modules/react-native-paper/src/components/Button/Button.tsx
+@@ -244,7 +244,7 @@ const Button = (
+     Animated.timing(elevation, {
+       toValue: isElevationEntitled ? initialElevation : 0,
+       duration: 0,
+-      useNativeDriver: true,
++      useNativeDriver: Platform.OS !== 'web',
+     });
+   }, [isElevationEntitled, elevation, initialElevation]);
+ 
+@@ -255,8 +255,7 @@ const Button = (
+       Animated.timing(elevation, {
+         toValue: activeElevation,
+         duration: 200 * scale,
+-        useNativeDriver:
+-          isWeb || Platform.constants.reactNativeVersion.minor <= 72,
++        useNativeDriver: Platform.OS !== 'web',
+       }).start();
+     }
+   };
+@@ -268,8 +267,7 @@ const Button = (
+       Animated.timing(elevation, {
+         toValue: initialElevation,
+         duration: 150 * scale,
+-        useNativeDriver:
+-          isWeb || Platform.constants.reactNativeVersion.minor <= 72,
++        useNativeDriver: Platform.OS !== 'web',
+       }).start();
+     }
+   };
+@@ -340,6 +338,7 @@ const Button = (
+       {...rest}
+       ref={ref}
+       testID={`${testID}-container`}
++      mode={isMode('elevated') ? 'elevated' : 'flat'}
+       style={
+         [
+           styles.button,
+diff --git a/node_modules/react-native-paper/src/components/CrossFadeIcon.tsx b/node_modules/react-native-paper/src/components/CrossFadeIcon.tsx
+index 4cf3748..b9b6ddd 100644
+--- a/node_modules/react-native-paper/src/components/CrossFadeIcon.tsx
++++ b/node_modules/react-native-paper/src/components/CrossFadeIcon.tsx
+@@ -1,5 +1,5 @@
+ import * as React from 'react';
+-import { Animated, StyleSheet, View } from 'react-native';
++import { Animated, Platform, StyleSheet, View } from 'react-native';
+ 
+ import Icon, { IconSource, isEqualIcon, isValidIcon } from './Icon';
+ import { useInternalTheme } from '../core/theming';
+@@ -58,7 +58,7 @@ const CrossFadeIcon = ({
+       Animated.timing(fade, {
+         duration: scale * 200,
+         toValue: 0,
+-        useNativeDriver: true,
++        useNativeDriver: Platform.OS !== 'web',
+       }).start();
+     }
+   }, [currentIcon, previousIcon, fade, scale]);
+diff --git a/node_modules/react-native-paper/src/components/FAB/FAB.tsx b/node_modules/react-native-paper/src/components/FAB/FAB.tsx
+index 7077779..e04d8f1 100644
+--- a/node_modules/react-native-paper/src/components/FAB/FAB.tsx
++++ b/node_modules/react-native-paper/src/components/FAB/FAB.tsx
+@@ -4,6 +4,7 @@ import {
+   Animated,
+   ColorValue,
+   GestureResponderEvent,
++  Platform,
+   PressableAndroidRippleConfig,
+   StyleProp,
+   StyleSheet,
+@@ -222,13 +223,13 @@ const FAB = forwardRef<View, Props>(
+         Animated.timing(visibility, {
+           toValue: 1,
+           duration: 200 * scale,
+-          useNativeDriver: true,
++          useNativeDriver: Platform.OS !== 'web',
+         }).start();
+       } else {
+         Animated.timing(visibility, {
+           toValue: 0,
+           duration: 150 * scale,
+-          useNativeDriver: true,
++          useNativeDriver: Platform.OS !== 'web',
+         }).start();
+       }
+     }, [visible, scale, visibility]);
+@@ -281,12 +282,12 @@ const FAB = forwardRef<View, Props>(
+                 scale: visibility,
+               },
+             ],
++            pointerEvents: visible ? 'auto' : 'none',
+           },
+           !isV3 && styles.elevated,
+           !isV3 && disabled && styles.disabled,
+           style,
+         ]}
+-        pointerEvents={visible ? 'auto' : 'none'}
+         testID={`${testID}-container`}
+         {...(isV3 && { elevation: md3Elevation })}
+         container
+@@ -307,9 +308,12 @@ const FAB = forwardRef<View, Props>(
+           {...rest}
+         >
+           <View
+-            style={[styles.content, label ? extendedStyle : fabStyle]}
++            style={[
++              styles.content,
++              label ? extendedStyle : fabStyle,
++              { pointerEvents: 'none' },
++            ]}
+             testID={`${testID}-content`}
+-            pointerEvents="none"
+           >
+             {icon && loading !== true ? (
+               <IconComponent
+diff --git a/node_modules/react-native-paper/src/components/FAB/FABGroup.tsx b/node_modules/react-native-paper/src/components/FAB/FABGroup.tsx
+index cb66cf0..57872db 100644
+--- a/node_modules/react-native-paper/src/components/FAB/FABGroup.tsx
++++ b/node_modules/react-native-paper/src/components/FAB/FABGroup.tsx
+@@ -3,6 +3,7 @@ import {
+   Animated,
+   ColorValue,
+   GestureResponderEvent,
++  Platform,
+   Pressable,
+   StyleProp,
+   StyleSheet,
+@@ -259,7 +260,7 @@ const FABGroup = ({
+         Animated.timing(backdrop, {
+           toValue: 1,
+           duration: 250 * scale,
+-          useNativeDriver: true,
++          useNativeDriver: Platform.OS !== 'web',
+         }),
+         Animated.stagger(
+           isV3 ? 15 : 50 * scale,
+@@ -268,7 +269,7 @@ const FABGroup = ({
+               Animated.timing(animation, {
+                 toValue: 1,
+                 duration: 150 * scale,
+-                useNativeDriver: true,
++                useNativeDriver: Platform.OS !== 'web',
+               })
+             )
+             .reverse()
+@@ -279,13 +280,13 @@ const FABGroup = ({
+         Animated.timing(backdrop, {
+           toValue: 0,
+           duration: 200 * scale,
+-          useNativeDriver: true,
++          useNativeDriver: Platform.OS !== 'web',
+         }),
+         ...animations.current.map((animation) =>
+           Animated.timing(animation, {
+             toValue: 0,
+             duration: 150 * scale,
+-            useNativeDriver: true,
++            useNativeDriver: Platform.OS !== 'web',
+           })
+         ),
+       ]).start(({ finished }) => {
+diff --git a/node_modules/react-native-paper/src/components/MaterialCommunityIcon.tsx b/node_modules/react-native-paper/src/components/MaterialCommunityIcon.tsx
+index 52719bd..eea3795 100644
+--- a/node_modules/react-native-paper/src/components/MaterialCommunityIcon.tsx
++++ b/node_modules/react-native-paper/src/components/MaterialCommunityIcon.tsx
+@@ -113,10 +113,10 @@ const DefaultIcon = ({
+         {
+           transform: [{ scaleX: direction === 'rtl' ? -1 : 1 }],
+           lineHeight: size,
++          pointerEvents: 'none',
+         },
+         styles.icon,
+       ]}
+-      pointerEvents="none"
+       selectable={false}
+       testID={testID}
+       {...accessibilityProps}
+diff --git a/node_modules/react-native-paper/src/components/Portal/PortalHost.tsx b/node_modules/react-native-paper/src/components/Portal/PortalHost.tsx
+index f884563..be06fce 100644
+--- a/node_modules/react-native-paper/src/components/Portal/PortalHost.tsx
++++ b/node_modules/react-native-paper/src/components/Portal/PortalHost.tsx
+@@ -124,9 +124,8 @@ export default class PortalHost extends React.Component<Props> {
+       >
+         {/* Need collapsable=false here to clip the elevations, otherwise they appear above Portal components */}
+         <View
+-          style={styles.container}
++          style={[styles.container, { pointerEvents: 'box-none' }]}
+           collapsable={false}
+-          pointerEvents="box-none"
+         >
+           {this.props.children}
+         </View>
+diff --git a/node_modules/react-native-paper/src/components/Portal/PortalManager.tsx b/node_modules/react-native-paper/src/components/Portal/PortalManager.tsx
+index cc2bdbe..c03b999 100644
+--- a/node_modules/react-native-paper/src/components/Portal/PortalManager.tsx
++++ b/node_modules/react-native-paper/src/components/Portal/PortalManager.tsx
+@@ -44,8 +44,7 @@ export default class PortalManager extends React.PureComponent<{}, State> {
+         collapsable={
+           false /* Need collapsable=false here to clip the elevations, otherwise they appear above sibling components */
+         }
+-        pointerEvents="box-none"
+-        style={StyleSheet.absoluteFill}
++        style={[StyleSheet.absoluteFill, { pointerEvents: 'box-none' }]}
+       >
+         {children}
+       </View>
+diff --git a/node_modules/react-native-paper/src/components/Surface.tsx b/node_modules/react-native-paper/src/components/Surface.tsx
+index 3b46d09..413aae1 100644
+--- a/node_modules/react-native-paper/src/components/Surface.tsx
++++ b/node_modules/react-native-paper/src/components/Surface.tsx
+@@ -301,19 +301,19 @@ const Surface = forwardRef<View, Props>(
+       return colors.elevation?.[`level${elevation}`];
+     })();
+ 
+-    const isElevated = mode === 'elevated';
++    const staticElevation = isAnimatedValue(elevation) ? 0 : elevation;
++    const isElevated = mode === 'elevated' && staticElevation > 0;
+ 
+     if (Platform.OS === 'web') {
+-      const { pointerEvents = 'auto' } = props;
++      const { pointerEvents = 'auto', ...restProps } = props;
+       return (
+         <Animated.View
+-          {...props}
+-          pointerEvents={pointerEvents}
++          {...restProps}
+           ref={ref}
+           testID={testID}
+           style={[
+-            { backgroundColor },
+-            elevation && isElevated ? shadow(elevation, theme.isV3) : null,
++            { backgroundColor, pointerEvents },
++            isElevated ? shadow(staticElevation, theme.isV3) : null,
+             style,
+           ]}
+         >
+diff --git a/node_modules/react-native-paper/src/styles/shadow.tsx b/node_modules/react-native-paper/src/styles/shadow.tsx
+index dcc11e8..e94640c 100644
+--- a/node_modules/react-native-paper/src/styles/shadow.tsx
++++ b/node_modules/react-native-paper/src/styles/shadow.tsx
+@@ -1,4 +1,4 @@
+-import { Animated } from 'react-native';
++import { Animated, Platform } from 'react-native';
+ 
+ import * as MD2Colors from './themes/v2/colors';
+ import { MD3Colors } from './themes/v3/tokens';
+@@ -17,6 +17,10 @@ export default function shadow(
+ 
+ function v2Shadow(elevation: number | Animated.Value = 0) {
+   if (elevation instanceof Animated.Value) {
++    if (Platform.OS === 'web') {
++      return {};
++    }
++
+     const inputRange = [0, 1, 2, 3, 8, 24];
+ 
+     return {
+@@ -58,6 +62,12 @@ function v2Shadow(elevation: number | Animated.Value = 0) {
+         radius = elevation;
+     }
+ 
++    if (Platform.OS === 'web') {
++      return {
++        boxShadow: `0px ${height}px ${radius}px rgba(0,0,0,${SHADOW_OPACITY})`,
++      };
++    }
++
+     return {
+       shadowColor: SHADOW_COLOR,
+       shadowOffset: {
+@@ -76,6 +86,10 @@ function v3Shadow(elevation: number | Animated.Value = 0) {
+   const shadowRadius = [0, 3, 6, 8, 10, 12];
+ 
+   if (elevation instanceof Animated.Value) {
++    if (Platform.OS === 'web') {
++      return {};
++    }
++
+     return {
+       shadowColor: MD3_SHADOW_COLOR,
+       shadowOffset: {
+@@ -96,6 +110,16 @@ function v3Shadow(elevation: number | Animated.Value = 0) {
+       }),
+     };
+   } else {
++    if (Platform.OS === 'web') {
++      if (!elevation) {
++        return {};
++      }
++
++      return {
++        boxShadow: `0px ${shadowHeight[elevation]}px ${shadowRadius[elevation]}px rgba(0,0,0,${MD3_SHADOW_OPACITY})`,
++      };
++    }
++
+     return {
+       shadowColor: MD3_SHADOW_COLOR,
+       shadowOpacity: elevation ? MD3_SHADOW_OPACITY : 0,

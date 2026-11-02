@@ -1,45 +1,34 @@
 import { Image } from "expo-image";
 import { Link } from "expo-router";
-import { Text, View } from "react-native";
+import { Text, useWindowDimensions, View } from "react-native";
 import { Button } from "react-native-paper";
 
 import SignInButton from "@/components/Buttons/sign-in-button";
 import { Container } from "@/components/container";
-import { useAppTheme } from "@/contexts/app-theme-context";
 import { cn, isProduction } from "@/utils";
 
 export default function Landing() {
-	const { isLight } = useAppTheme();
+	const { width } = useWindowDimensions();
+	const logoSize = Math.min(320, Math.max(1, width - 48));
 	return (
 		<Container className="mb-6 gap-8 p-6">
 			<View className="flex-1 justify-end">
-				<View className="mb-40 aspect-video w-full rounded-xl">
+				<View className="mb-8 items-center">
 					<Image
 						source={require("@/assets/logo.jpg")}
-						alt="Landing background"
+						accessibilityLabel="Glossé Nails"
+						accessible
 						contentFit="contain"
-						transition={1000}
-						className="h-full w-full"
-						style={{ width: "100%", height: "100%" }}
+						style={{ width: logoSize, height: logoSize }}
 					/>
 				</View>
-				<Text
-					className={cn(
-						"font-bold text-4xl text-muted-foreground",
-						!isLight && "text-gray-400",
-					)}
-				>
+				<Text className={cn("font-bold text-4xl text-muted-foreground")}>
 					The Beauty App
 				</Text>
 			</View>
 			<View className="w-full flex-row py-4">
 				{isProduction ? (
-					<Text
-						className={cn(
-							"font-medium text-lg text-muted-foreground",
-							!isLight && "text-white",
-						)}
-					>
+					<Text className={cn("font-medium text-lg text-muted-foreground")}>
 						Sign in with Email
 					</Text>
 				) : (

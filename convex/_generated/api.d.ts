@@ -13,9 +13,11 @@ import type * as authz from "../authz.js";
 import type * as categories from "../categories.js";
 import type * as giftCards from "../giftCards.js";
 import type * as http from "../http.js";
+import type * as redirectPolicy from "../redirectPolicy.js";
 import type * as shifts from "../shifts.js";
 import type * as transactions from "../transactions.js";
 import type * as users from "../users.js";
+import type * as validators from "../validators.js";
 
 import type {
   ApiFromModules,
@@ -29,9 +31,11 @@ declare const fullApi: ApiFromModules<{
   categories: typeof categories;
   giftCards: typeof giftCards;
   http: typeof http;
+  redirectPolicy: typeof redirectPolicy;
   shifts: typeof shifts;
   transactions: typeof transactions;
   users: typeof users;
+  validators: typeof validators;
 }>;
 
 /**

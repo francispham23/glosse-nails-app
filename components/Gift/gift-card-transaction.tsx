@@ -2,40 +2,26 @@ import { Text, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { cn, formatDate, type Transaction } from "@/utils";
-import { TAX_RATE } from "../Form/constants";
+import { giftUsageCents } from "@/utils/money";
 
 type Props = {
 	transaction: Transaction;
 	isLight: boolean;
 };
 
-export const GiftCardTransaction = ({ transaction, isLight }: Props) => {
-	const textClassName = cn("text-base text-muted", !isLight && "text-gray-300");
+export const GiftCardTransaction = ({ transaction }: Props) => {
+	const textClassName = cn("text-base text-muted");
 
 	return (
 		<Animated.View
 			key={transaction._id}
 			entering={FadeIn}
 			exiting={FadeOut}
-			className={cn(
-				"gap-2 rounded-lg bg-gray-300 p-3 shadow-md",
-				!isLight && "dark:bg-gray-700",
-			)}
+			className={cn("gap-2 rounded-lg bg-background-secondary p-3 shadow-md")}
 		>
 			<View className="flex-row items-center justify-between">
-				<Text
-					className={cn(
-						"font-semibold text-foreground text-lg",
-						!isLight && "text-gray-300",
-					)}
-				>
-					$
-					{(
-						(transaction.compInGift ?? 0) * TAX_RATE +
-						(transaction.supply ?? 0) * TAX_RATE +
-						(transaction.tipInGift ?? 0)
-					).toFixed(2) || "0.00"}{" "}
-					Used
+				<Text className={cn("font-semibold text-foreground text-lg")}>
+					${(giftUsageCents(transaction) / 100).toFixed(2)} Used
 				</Text>
 				<Text className={cn(textClassName, "text-xs")}>
 					{formatDate(transaction.serviceDate)}

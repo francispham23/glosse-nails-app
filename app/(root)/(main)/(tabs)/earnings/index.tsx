@@ -1,25 +1,25 @@
 import { useMutation, useQuery } from "convex/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Text, View } from "react-native";
-import Animated, {
-	FadeIn,
-	FadeOut,
-	LinearTransition,
-} from "react-native-reanimated";
-
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Text, useTheme } from "react-native-paper";
+import Animated from "react-native-reanimated";
 import { AddButton } from "@/components/Buttons/add-button";
 import { TechnicianCard } from "@/components/Cards/technician-card";
 import { ListEmptyComponent } from "@/components/list-empty";
+import {
+	WorkspaceListFooter,
+	WorkspaceScreen,
+	workspaceStyles,
+} from "@/components/workspace/screen";
 import { useAppDate } from "@/contexts/app-date-context";
-import { useAppTheme } from "@/contexts/app-theme-context";
 import { api } from "@/convex/_generated/api";
 import { useAuthorization } from "@/hooks/use-authorization";
-import { cn, getErrorMessage, isToday, type User } from "@/utils";
-
-const EMPTY_COMPONENT = <ListEmptyComponent item="technician" />;
+import { getErrorMessage, isToday, type User } from "@/utils";
 
 export default function HomeRoute() {
-	const { isLight } = useAppTheme();
+	const { colors } = useTheme();
+	const [saveError, setSaveError] = useState("");
+	const [saving, setSaving] = useState(false);
+	const saveLock = useRef(false);
 	const { startOfDay, endOfDay } = useAppDate();
 	const { isAuthorized: isAuthUser, user } = useAuthorization();
 
@@ -37,27 +37,18 @@ export default function HomeRoute() {
 	// Mutation to save shift
 	const saveShift = useMutation(api.shifts.saveShift);
 
-	const [selectedTechnicians, setSelectedTechnicians] = useState<User[]>([]);
-	const [isSelecting, setIsSelecting] = useState(false);
-
-	useEffect(() => {
-		if (onShiftTechs === null) return setSelectedTechnicians([]);
-		// Filter technicians based on onShiftTechs
-		if (onShiftTechs && technicians) {
-			const shiftUserIds = new Set(onShiftTechs.map((u) => u._id));
-			const filteredUsers = technicians.filter((u) => shiftUserIds.has(u._id));
-			setSelectedTechnicians(filteredUsers);
-		} else if (!isSelecting && technicians) {
-			// Update selected users when Convex data changes and not selecting
-			setSelectedTechnicians((prev) =>
-				prev.map((u) => {
-					// Update selected users info with new Convex data
-					const updated = technicians.find((t) => t._id === u._id);
-					return updated || u;
-				}),
-			);
-		}
-	}, [technicians, isSelecting, onShiftTechs]);
+	const [selection, setSelection] = useState<{
+		shiftDate: number;
+		ids: User["_id"][];
+	} | null>(null);
+	const shiftDate = startOfDay.getTime();
+	const isSelecting = selection?.shiftDate === shiftDate;
+	const selectedTechnicians = useMemo(() => {
+		const ids = new Set(
+			isSelecting ? selection.ids : onShiftTechs?.map((tech) => tech._id),
+		);
+		return technicians?.filter((tech) => ids.has(tech._id)) ?? [];
+	}, [isSelecting, selection, onShiftTechs, technicians]);
 
 	const isSelectedDateToday = useMemo(
 		() => isToday(endOfDay.getTime()),
@@ -91,17 +82,22 @@ export default function HomeRoute() {
 				isAuthUser || (user?._id === item._id && isSelectedDateToday);
 
 			const onToggleSelect = (user: User) => {
-				if (isSelected) {
-					setSelectedTechnicians((prev) =>
-						prev.filter((u) => u._id !== user._id),
-					);
-				} else {
-					setSelectedTechnicians((prev) => [...prev, user]);
-				}
+				setSelection((current) => {
+					if (saveLock.current || !current || current.shiftDate !== shiftDate)
+						return current;
+					return {
+						...current,
+						ids: current.ids.includes(user._id)
+							? current.ids.filter((id) => id !== user._id)
+							: [...current.ids, user._id],
+					};
+				});
 			};
 
 			return (
 				<TechnicianCard
+					overview
+					interactionDisabled={saving}
 					key={item._id}
 					item={item}
 					isSelecting={isSelecting}
@@ -117,6 +113,8 @@ export default function HomeRoute() {
 			isAuthUser,
 			user?._id,
 			isSelectedDateToday,
+			shiftDate,
+			saving,
 		],
 	);
 
@@ -124,51 +122,89 @@ export default function HomeRoute() {
 
 	const handleSetIsAdding = useCallback(
 		async (adding: boolean) => {
+			if (saveLock.current) return;
+			setSaveError("");
 			if (isSelecting && !adding && selectedTechnicians.length > 0) {
+				saveLock.current = true;
+				setSaving(true);
 				try {
 					await saveShift({
 						technicians: selectedTechnicians.map((u) => u._id),
 						shiftDate: startOfDay.getTime(),
 					});
 				} catch (error) {
-					Alert.alert("Error", getErrorMessage(error, "Failed to save shift"));
-					console.error("Failed to save shift:", error);
+					setSaveError(getErrorMessage(error, "Failed to save shift"));
+					return;
+				} finally {
+					saveLock.current = false;
+					setSaving(false);
 				}
 			}
-			setIsSelecting(adding);
+			setSelection(
+				adding
+					? { shiftDate, ids: selectedTechnicians.map((tech) => tech._id) }
+					: null,
+			);
 		},
-		[isSelecting, selectedTechnicians, saveShift, startOfDay],
+		[isSelecting, selectedTechnicians, saveShift, startOfDay, shiftDate],
 	);
 
-	const className = cn(
-		"min-w-[50] text-right font-bold text-lg",
-		!isLight && "text-gray-300",
-	);
-
+	const loading = technicians === undefined || onShiftTechs === undefined;
 	return (
-		<Animated.View className="flex-1 p-2" entering={FadeIn} exiting={FadeOut}>
-			<View className="flex-row justify-between gap-2 px-5 pt-45 pb-4">
-				<Text className={className}>Technician</Text>
-				<View className="min-w-[50] flex-row justify-between gap-6">
-					<Text className={className}>Earning</Text>
-					<Text className={cn("w-[50]", className)}>Tip</Text>
-				</View>
-			</View>
-			{/* Technician List */}
+		<WorkspaceScreen
+			title="Earnings"
+			description="Your team’s daily earnings and tips."
+			dateControl
+			mobileAction={
+				isAuthUser
+					? {
+							label: isSelecting ? "Save shift" : "Edit shift",
+							icon: isSelecting ? "check" : "account-edit-outline",
+							onPress: () => {
+								void handleSetIsAdding(!isSelecting);
+							},
+							disabled: loading || saving,
+							loading: saving,
+							direct: isSelecting,
+						}
+					: undefined
+			}
+			actions={
+				isAuthUser ? (
+					<AddButton
+						desktopOnly
+						isAdding={isSelecting}
+						setIsAdding={handleSetIsAdding}
+						label={isSelecting ? "Save shift" : "Edit shift"}
+						disabled={loading || saving}
+						loading={saving}
+					/>
+				) : null
+			}
+		>
+			{saveError ? (
+				<Text
+					accessibilityRole="alert"
+					style={{ color: colors.error, paddingBottom: 16 }}
+				>
+					{saveError}
+				</Text>
+			) : null}
+			{isSelecting ? (
+				<Text style={{ color: colors.onSurfaceVariant, paddingBottom: 12 }}>
+					Select the technicians working this shift, then save.
+				</Text>
+			) : null}
 			<Animated.FlatList
-				contentInsetAdjustmentBehavior="automatic"
-				contentContainerClassName="gap-4 p-2 pb-24"
+				contentContainerStyle={workspaceStyles.list}
+				ListFooterComponent={WorkspaceListFooter}
 				keyExtractor={keyExtractor}
 				data={data}
 				renderItem={renderItem}
-				itemLayoutAnimation={LinearTransition}
-				ListEmptyComponent={EMPTY_COMPONENT}
+				ListEmptyComponent={
+					<ListEmptyComponent item="technician" loading={loading} />
+				}
 			/>
-			{isAuthUser ? (
-				<View className="absolute bottom-25 self-center">
-					<AddButton isAdding={isSelecting} setIsAdding={handleSetIsAdding} />
-				</View>
-			) : null}
-		</Animated.View>
+		</WorkspaceScreen>
 	);
 }

@@ -2,12 +2,18 @@
 	"extends": "expo/tsconfig.base",
 	"compilerOptions": {
 		"strict": true,
-		"baseUrl": ".",
 		"ignoreDeprecations": "6.0",
-		"types": [],
+		"types": ["expo/types"],
 		"paths": {
-			"@/*": ["./*"]
+			"@/*": ["./*"],
+			"*": ["./*"]
 		}
 	},
-	"include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+	"include": [
+		"**/*.ts",
+		"**/*.tsx",
+		"vitest.config.mts",
+		".expo/types/**/*.ts",
+		"expo-env.d.ts"
+	]
 }

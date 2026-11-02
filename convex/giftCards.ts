@@ -1,12 +1,15 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
+import { assertDate, assertMoney } from "../utils/financial-validation";
+import { giftUsageCents, moneyToCents, roundMoney } from "../utils/money";
 import { mutation, query } from "./_generated/server";
-import { requireAnyRole } from "./authz";
-
-const TAX_RATE = 1.05; // 5% tax on gift card redemptions
+import { requireActor, requireAnyRole, requireSelfOrRole } from "./authz";
+import { giftCardDocument, giftCardView } from "./validators";
 
 export const list = query({
+	returns: v.array(giftCardView),
 	args: {},
 	handler: async (ctx) => {
+		await requireActor(ctx);
 		const giftCards = await ctx.db.query("giftCards").collect();
 
 		return Promise.all(
@@ -17,16 +20,11 @@ export const list = query({
 					.query("transactions")
 					.withIndex("by_gift_card", (q) => q.eq("giftCode", giftCard._id))
 					.collect();
-				const totalRedeemed = transactions.reduce((sum, tx) => {
-					return (
-						sum +
-						((tx.compInGift || 0) + (tx.supply || 0)) * TAX_RATE +
-						(tx.tipInGift || 0)
-					);
-				}, 0);
-				const balance = Number.parseFloat(
-					(giftCard.value - totalRedeemed).toFixed(2),
+				const totalRedeemed = transactions.reduce(
+					(sum, tx) => sum + giftUsageCents(tx),
+					0,
 				);
+				const balance = (moneyToCents(giftCard.value) - totalRedeemed) / 100;
 
 				return {
 					...giftCard,
@@ -39,11 +37,26 @@ export const list = query({
 });
 
 export const getByCode = query({
+	returns: v.union(
+		v.null(),
+		v.object({ ...giftCardDocument.fields, balance: v.number() }),
+	),
 	args: { code: v.string(), transactionId: v.optional(v.id("transactions")) },
 	handler: async (ctx, args) => {
+		await requireActor(ctx);
 		const code = args.code.trim();
 		if (!code) {
 			return null;
+		}
+		// Editing a transaction may exclude its redemption, but only its owner
+		// or management may use that transaction to adjust a balance quote.
+		if (args.transactionId) {
+			const transaction = await ctx.db.get(args.transactionId);
+			if (!transaction) throw new Error("Transaction not found");
+			await requireSelfOrRole(ctx, transaction.technician, [
+				"owner",
+				"manager",
+			]);
 		}
 
 		const giftCard = await ctx.db
@@ -63,23 +76,16 @@ export const getByCode = query({
 
 		const totalRedeemed = transactions
 			.filter((tx) => tx._id !== args.transactionId)
-			.reduce((sum, tx) => {
-				return (
-					sum +
-					((tx.compInGift || 0) + (tx.supply || 0)) * TAX_RATE +
-					(tx.tipInGift || 0)
-				);
-			}, 0);
+			.reduce((sum, tx) => sum + giftUsageCents(tx), 0);
 
-		const balance = Number.parseFloat(
-			(giftCard.value - totalRedeemed).toFixed(2),
-		);
+		const balance = (moneyToCents(giftCard.value) - totalRedeemed) / 100;
 
 		return { ...giftCard, balance };
 	},
 });
 
 export const create = mutation({
+	returns: v.id("giftCards"),
 	args: {
 		code: v.string(),
 		value: v.float64(),
@@ -87,19 +93,32 @@ export const create = mutation({
 	},
 	handler: async (ctx, args) => {
 		await requireAnyRole(ctx, ["owner", "manager"]);
-		// Check if code already exists
+		const code = args.code.trim();
+		let value: number;
+		try {
+			if (!code) throw new Error("Gift card code is required");
+			assertMoney(args.value, "Gift value");
+			value = roundMoney(args.value);
+			if (value <= 0)
+				throw new Error("Gift value must be positive after rounding");
+			assertDate(args.sellDate, "Sell date");
+		} catch (error) {
+			if (error instanceof Error) throw new ConvexError(error.message);
+			throw error;
+		}
+		// Check the trimmed code inside the creation mutation.
 		const existing = await ctx.db
 			.query("giftCards")
-			.withIndex("by_code", (q) => q.eq("code", args.code))
+			.withIndex("by_code", (q) => q.eq("code", code))
 			.first();
 
 		if (existing) {
-			throw new Error(`Gift card with code "${args.code}" already exists`);
+			throw new ConvexError(`Gift card with code "${code}" already exists`);
 		}
 
 		return await ctx.db.insert("giftCards", {
-			code: args.code,
-			value: args.value,
+			code,
+			value,
 			sellDate: args.sellDate,
 			transactionIds: [],
 		});
@@ -107,11 +126,13 @@ export const create = mutation({
 });
 
 export const listByDateRange = query({
+	returns: v.array(giftCardView),
 	args: {
 		startDate: v.number(),
 		endDate: v.number(),
 	},
 	handler: async (ctx, args) => {
+		await requireActor(ctx);
 		const giftCards = await ctx.db
 			.query("giftCards")
 			.filter((q) =>
@@ -130,16 +151,11 @@ export const listByDateRange = query({
 					.query("transactions")
 					.withIndex("by_gift_card", (q) => q.eq("giftCode", giftCard._id))
 					.collect();
-				const totalRedeemed = transactions.reduce((sum, tx) => {
-					return (
-						sum +
-						((tx.compInGift || 0) + (tx.supply || 0)) * TAX_RATE +
-						(tx.tipInGift || 0)
-					);
-				}, 0);
-				const balance = Number.parseFloat(
-					(giftCard.value - totalRedeemed).toFixed(2),
+				const totalRedeemed = transactions.reduce(
+					(sum, tx) => sum + giftUsageCents(tx),
+					0,
 				);
+				const balance = (moneyToCents(giftCard.value) - totalRedeemed) / 100;
 
 				return {
 					...giftCard,
@@ -152,6 +168,7 @@ export const listByDateRange = query({
 });
 
 export const deleteGiftCard = mutation({
+	returns: v.null(),
 	args: {
 		id: v.id("giftCards"),
 	},

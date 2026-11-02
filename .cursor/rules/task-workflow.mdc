@@ -1,0 +1,11 @@
+---
+description: Shared bounded-task workflow for changes to this repository
+alwaysApply: true
+---
+
+# Task Workflow
+
+Follow `AGENTS.md` and `docs/agent-workflow.md`.
+Use **one bounded task → explicit acceptance criteria → implementation → executable checks → review → handoff**.
+Keep detailed context in the task record, not in always-on rules.
+Do not restart approval for already authorized work or claim checks passed without evidence.

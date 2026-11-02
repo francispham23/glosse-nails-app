@@ -1,21 +1,20 @@
 import { useMutation, useQuery } from "convex/react";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
-import { Alert } from "react-native";
-
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { HeaderButton } from "@/components/Buttons/header-button";
 import { initialEarningState } from "@/components/Form/constants";
 import {
 	type SelectedInput,
 	TransactionForm,
 } from "@/components/TransactionForm";
-import { useAppDate } from "@/contexts/app-date-context";
-import { api } from "@/convex/_generated/api";
 import {
-	type EarningFormState,
-	getErrorMessage,
-	isToday,
-	type User,
-} from "@/utils";
+	TransactionSaveFeedback,
+	useTransactionSave,
+} from "@/components/transaction-save-feedback";
+import { useAppDate } from "@/contexts/app-date-context";
+import { useWebRouteDismiss } from "@/contexts/web-route-dismiss-context";
+import { api } from "@/convex/_generated/api";
+import { type EarningFormState, isToday, type User } from "@/utils";
 
 export default function CreateRoute() {
 	const router = useRouter();
@@ -31,68 +30,109 @@ export default function CreateRoute() {
 	/* ---------------------------------- state --------------------------------- */
 	const [open, setOpen] = useState(false);
 	const [giftError, setGiftError] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
+	const feedback = useTransactionSave();
 	const [selectedInputs, setSelectedInputs] = useState<SelectedInput[]>([
 		"Supply",
 	]);
 
-	const initialEarning = {
+	const createInitialEarning = (): EarningFormState => ({
 		...initialEarningState,
 		technicianId,
 		// TODO: allow selecting client ID later
 		clientId: technicianId, // Default client ID
 		serviceDate: isToday(midDay.getTime()) ? Date.now() : midDay.getTime(),
-	};
-	const [earning, setEarning] = useState<EarningFormState>({
-		...initialEarning,
 	});
+	const [earning, setEarning] =
+		useState<EarningFormState>(createInitialEarning);
+
+	const { isLockedNow, isLocked } = feedback;
+	const { setDismissDisabled } = useWebRouteDismiss();
+	useEffect(() => {
+		setDismissDisabled(isLocked);
+		return () => setDismissDisabled(false);
+	}, [isLocked, setDismissDisabled]);
+	const changeEarning = useCallback<typeof setEarning>(
+		(update) => {
+			if (!isLockedNow()) setEarning(update);
+		},
+		[isLockedNow],
+	);
+	const changeSelectedInputs = useCallback<typeof setSelectedInputs>(
+		(update) => {
+			if (!isLockedNow()) setSelectedInputs(update);
+		},
+		[isLockedNow],
+	);
+	const changeOpen = useCallback(
+		(value: boolean) => {
+			if (!isLockedNow()) setOpen(value);
+		},
+		[isLockedNow],
+	);
+	const headerOptions = useMemo(
+		() => ({
+			headerLeft: () => (
+				<HeaderButton
+					iconName="close"
+					disabled={isLocked}
+					isBlocked={isLockedNow}
+				/>
+			),
+			headerRight: () => (
+				<HeaderButton
+					iconName="swap-horizontal-outline"
+					route={`/technician/${technicianId}`}
+					disabled={isLocked}
+					isBlocked={isLockedNow}
+				/>
+			),
+		}),
+		[isLocked, isLockedNow, technicianId],
+	);
 
 	/* ----------------------------- handle create transaction ----------------------------- */
-	const handleSubmit = async () => {
-		if (giftError) {
-			Alert.alert("Error", giftError);
-			return;
-		}
-
-		try {
-			setIsLoading(true);
-			// Store earning in Convex
-			const tip = earning.tip.length > 0 ? earning.tip : "0";
-			await addTransaction({ body: { ...earning, tip } });
-
-			Alert.alert("Success", "Earning saved successfully");
-			router.push(`/technician/${technicianId}`);
-		} catch (error) {
-			console.error("Error storing earning:", error);
-			Alert.alert(
-				"Error",
-				getErrorMessage(error, "Failed to save earning. Please try again."),
-			);
-		} finally {
-			setIsLoading(false);
-			setOpen(false);
-			setGiftError("");
-			setEarning({ ...initialEarning });
-			setSelectedInputs(["Supply"]);
-		}
-	};
+	const handleSubmit = () =>
+		feedback.save(
+			async () => {
+				const tip = earning.tip.length > 0 ? earning.tip : "0";
+				await addTransaction({ body: { ...earning, tip } });
+			},
+			{
+				blockedMessage: giftError,
+				successMessage: "Earning saved successfully",
+				fallback: "Failed to save earning. Please try again.",
+				onSuccess: () => {
+					if (router.canGoBack()) router.back();
+					else router.replace("/earnings");
+				},
+			},
+		);
 
 	return (
-		<TransactionForm
-			type="create"
-			earning={earning}
-			setEarning={setEarning}
-			onSubmit={handleSubmit}
-			isLoading={isLoading}
-			submitLabel={isLoading ? "Submitting Earning..." : "Submit"}
-			open={open}
-			setOpen={setOpen}
-			giftError={giftError}
-			setGiftError={setGiftError}
-			title={`${technician?.name?.split(" ")[0]}'s Earning`}
-			description="Add a new earning for this technician"
-			selectedInputs={selectedInputs}
-			setSelectedInputs={setSelectedInputs}
-		/>
+		<>
+			<Stack.Screen options={headerOptions} />
+			<TransactionForm
+				type="create"
+				earning={earning}
+				setEarning={changeEarning}
+				onSubmit={handleSubmit}
+				saveError={feedback.error}
+				submitDisabled={feedback.isLocked}
+				isLoading={feedback.isSaving}
+				submitLabel={feedback.isSaving ? "Submitting Earning..." : "Submit"}
+				open={open}
+				setOpen={changeOpen}
+				giftError={giftError}
+				setGiftError={setGiftError}
+				title={`${technician?.name?.split(" ")[0]}'s Earning`}
+				description="Add a new earning for this technician"
+				selectedInputs={selectedInputs}
+				setSelectedInputs={changeSelectedInputs}
+			/>
+			<TransactionSaveFeedback
+				message={feedback.success}
+				onReturn={feedback.returnToPreviousScreen}
+			/>
+		</>
 	);
 }

@@ -1,5 +1,7 @@
 # Convex Backend Setup
 
+Read [AGENTS.md](AGENTS.md) for the shared task, verification and handoff workflow.
+
 <!-- convex-ai-start -->
 
 This project uses [Convex](https://convex.dev) as its backend.

@@ -26,10 +26,7 @@ export const ScreenScrollView: FC<PropsWithChildren<Props>> = ({
 			className={cn("bg-background", className)}
 			contentContainerClassName={cn("px-5", contentContainerClassName)}
 			contentContainerStyle={{
-				paddingTop: Platform.select({
-					ios: headerHeight,
-					android: 0,
-				}),
+				paddingTop: Platform.OS === "ios" ? headerHeight : 0,
 				paddingBottom: insets.bottom + 32,
 			}}
 			showsVerticalScrollIndicator={false}

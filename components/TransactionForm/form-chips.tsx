@@ -43,9 +43,6 @@ export const PaymentMethodChips = ({
 				key={method}
 				selected={selectedMethods.includes(method)}
 				disabled={disableGift && method === "Gift Card"}
-				className={
-					selectedMethods.includes(method) ? "opacity-60" : "opacity-100"
-				}
 				onPress={() => onSelect(method)}
 			>
 				{method}
@@ -88,9 +85,6 @@ export const ServiceCategoryChips = ({
 				<Chip
 					key={category._id}
 					selected={selectedServiceIds.has(category._id)}
-					className={
-						selectedServiceIds.has(category._id) ? "opacity-60" : "opacity-100"
-					}
 					onPress={() => onSelect(category._id)}
 				>
 					{category.name}
@@ -137,9 +131,6 @@ export const OtherInputChips = ({
 		<View className="flex-row flex-wrap gap-2">
 			{otherInputs.map((input) => (
 				<Chip
-					className={
-						selectedInputs.includes(input) ? "opacity-60" : "opacity-100"
-					}
 					key={input}
 					selected={selectedInputs.includes(input)}
 					disabled={

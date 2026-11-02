@@ -2,6 +2,14 @@ import { Stack } from "expo-router";
 
 import { ThemeToggleButton } from "@/components/Buttons/theme-toggle-button";
 import { useNavigationOptions } from "@/hooks";
+import {
+	modalGroupAnimation,
+	modalGroupPresentation,
+} from "@/utils/modal-route";
+
+export const unstable_settings = {
+	anchor: "(tabs)",
+};
 
 export default function MainLayout() {
 	const { standard, root } = useNavigationOptions();
@@ -18,7 +26,8 @@ export default function MainLayout() {
 				name="technician"
 				options={{
 					headerShown: false,
-					presentation: "modal",
+					presentation: modalGroupPresentation,
+					animation: modalGroupAnimation,
 					...root,
 				}}
 			/>
@@ -26,7 +35,8 @@ export default function MainLayout() {
 				name="transaction"
 				options={{
 					headerShown: false,
-					presentation: "modal",
+					presentation: modalGroupPresentation,
+					animation: modalGroupAnimation,
 					...root,
 				}}
 			/>
@@ -34,7 +44,8 @@ export default function MainLayout() {
 				name="gift"
 				options={{
 					headerShown: false,
-					presentation: "modal",
+					presentation: modalGroupPresentation,
+					animation: modalGroupAnimation,
 					...root,
 				}}
 			/>
@@ -42,7 +53,8 @@ export default function MainLayout() {
 				name="report"
 				options={{
 					headerShown: false,
-					presentation: "modal",
+					presentation: modalGroupPresentation,
+					animation: modalGroupAnimation,
 					...root,
 				}}
 			/>

@@ -1,12 +1,11 @@
-import { View } from "react-native";
-
+import { Text, View } from "react-native";
 import { paymentMethods } from "@/components/Form/constants";
 import { ErrorText } from "@/components/Form/form";
 import { GiftCardInputs } from "@/components/Form/gift-card-inputs";
 import { NumericInput } from "@/components/Form/numeric-input";
 import { PaymentMethodChips } from "@/components/TransactionForm/form-chips";
-
 import type { EarningFormState, Gift, PaymentMethod } from "@/utils";
+import { cashRemainderPreview } from "@/utils/financial-validation";
 import { getPaymentPlaceholder } from "../Form/helpers";
 import type { UpdateEarning } from ".";
 
@@ -38,6 +37,8 @@ export function TipSection({
 	onSelectTipMethod,
 }: TipSectionProps) {
 	const { tipMethods, tip, tipInCash, compInGift, tipInGift } = earning;
+
+	const cashRemainder = cashRemainderPreview(tip, tipInGift);
 	const tipPlaceholder = getPaymentPlaceholder(tipCard, tipCash, tipGift, true);
 
 	return (
@@ -77,6 +78,12 @@ export function TipSection({
 					<ErrorText error={getFieldError("tipInGift")} />
 				</>
 			) : null}
+			{tipCash && tipGift && !tipCard && cashRemainder !== undefined ? (
+				<Text className="px-4 text-muted-foreground">
+					Cash remainder: ${cashRemainder.toFixed(2)}
+				</Text>
+			) : null}
+			<ErrorText error={getFieldError("giftCode")} />
 			{/* Tip Methods */}
 			<PaymentMethodChips
 				methods={paymentMethods}
