@@ -1,6 +1,7 @@
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
-import { TextInput } from "react-native-paper";
+import { FormTextInput as TextInput } from "@/components/Form/form-text-input";
+import DateTimePicker from "@/components/Form/salon-date-time-picker";
+import { salonDateString } from "@/utils/salon-time";
 
 interface SellDatePickerProps {
 	date: Date;
@@ -21,9 +22,8 @@ export function SellDatePicker({
 		<>
 			<TextInput
 				mode="outlined"
-				className="h-16 rounded-3xl"
 				placeholder="Select service date"
-				value={date.toLocaleDateString([])}
+				value={salonDateString(date, [])}
 				editable={false}
 				onPressIn={() => setOpen(!open)}
 				left={<TextInput.Icon icon="calendar-outline" color={mutedColor} />}

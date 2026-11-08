@@ -12,14 +12,12 @@ import {
 	RangeCalendarStateContext,
 } from "react-aria-components";
 import { useTheme } from "react-native-paper";
+import { salonDate, salonDateString, salonParts } from "@/utils/salon-time";
 import { parseDateInput } from "./date-value";
 
 export function calendarValue(date: Date) {
-	return new CalendarDate(
-		date.getFullYear(),
-		date.getMonth() + 1,
-		date.getDate(),
-	);
+	const parts = salonParts(date);
+	return new CalendarDate(parts.year, parts.month + 1, parts.day);
 }
 
 export function calendarDate(
@@ -60,7 +58,7 @@ export function CalendarHeader({
 	};
 	const monthOptions = Array.from({ length: 12 }, (_, month) => ({
 		value: month + 1,
-		label: new Date(2020, month, 1).toLocaleDateString("en-CA", {
+		label: salonDateString(salonDate(2020, month, 1), "en-CA", {
 			month: "long",
 		}),
 	}));

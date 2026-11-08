@@ -11,7 +11,12 @@ import {
 import { workspaceStyles } from "@/components/workspace/screen";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useWorkspaceLayout } from "@/hooks/use-workspace-layout";
-import { cn, isToday, type Transaction } from "@/utils";
+import { cn, type Transaction } from "@/utils";
+import {
+	isOpenSalonDay,
+	salonDateString,
+	salonDateTimeString,
+} from "@/utils/salon-time";
 import { blurActiveElementOnWeb } from "@/utils/web-focus";
 
 function openTransactionEdit(transactionId: string) {
@@ -36,10 +41,10 @@ export const TransactionCard = ({
 }: Props) => {
 	const { colors } = useTheme();
 	const { isWide, isCompact } = useWorkspaceLayout();
-	const { endOfDay } = useAppDate();
+	const { endOfDay, now } = useAppDate();
 	const className = cn("text-lg text-muted");
 
-	const isSelectedDateToday = isToday(endOfDay.getTime());
+	const isSelectedDateToday = isOpenSalonDay(endOfDay, now);
 	const showClient =
 		transaction.client && transaction.client !== transaction.technician;
 
@@ -229,18 +234,18 @@ const getServiceDateString = (
 ) => {
 	if (!timestamp) return "";
 	const date = new Date(timestamp);
-	const time = date.toLocaleString("en-US", {
+	const time = salonDateTimeString(date, "en-US", {
 		hour: "numeric",
 		minute: "2-digit",
 		hour12: true,
 	});
-	const dayInWeek = date.toLocaleDateString("en-US", {
+	const dayInWeek = salonDateString(date, "en-US", {
 		weekday: "short",
 	});
 	if (isCurrent) {
 		return `At: ${time}.`;
 	}
-	const fullDate = date.toLocaleDateString("en-US", {
+	const fullDate = salonDateString(date, "en-US", {
 		month: "2-digit",
 		day: "2-digit",
 		year: "numeric",

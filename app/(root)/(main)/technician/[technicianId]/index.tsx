@@ -7,7 +7,6 @@ import Animated, {
 	FadeOut,
 	LinearTransition,
 } from "react-native-reanimated";
-
 import { TransactionCard } from "@/components/Cards/transaction-card";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { modalScreenClassName } from "@/components/workspace/modal-screen";
@@ -15,9 +14,10 @@ import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import { useAuthorization } from "@/hooks/use-authorization";
 import { cn, type Transaction, type User } from "@/utils";
+import { isOpenSalonDay } from "@/utils/salon-time";
 
 export default function TechnicianId() {
-	const { startOfDay, endOfDay } = useAppDate();
+	const { startOfDay, endOfDay, now } = useAppDate();
 	const { isAuthorized, user } = useAuthorization();
 	const params = useLocalSearchParams();
 
@@ -57,15 +57,18 @@ export default function TechnicianId() {
 				itemLayoutAnimation={LinearTransition}
 				ListEmptyComponent={<ListEmptyComponent item="transaction" />}
 			/>
-			<Link href=".." asChild>
-				<Button
-					className="absolute bottom-10 self-center overflow-hidden rounded-full"
-					icon="plus"
-					mode="contained"
-				>
-					Create Transaction
-				</Button>
-			</Link>
+			{(isAuthorized ||
+				(technicianId === user?._id && isOpenSalonDay(startOfDay, now))) && (
+				<Link href=".." asChild>
+					<Button
+						className="absolute bottom-10 self-center overflow-hidden rounded-full"
+						icon="plus"
+						mode="contained"
+					>
+						Create Transaction
+					</Button>
+				</Link>
+			)}
 		</Animated.View>
 	);
 }

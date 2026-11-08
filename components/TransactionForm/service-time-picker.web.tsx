@@ -7,8 +7,10 @@ import {
 } from "react-aria-components";
 import { useTheme } from "react-native-paper";
 import { PickerField } from "@/components/Form/picker-field.web";
+import { controlGeometry } from "@/components/workspace/control-styles";
 import type { EarningFormState } from "@/utils";
 import { isAfterEndOfDay, mergeLocalTime } from "@/utils/local-datetime";
+import { salonDate, salonParts, salonTimeString } from "@/utils/salon-time";
 
 interface ServiceTimePickerProps {
 	serviceDate: EarningFormState["serviceDate"];
@@ -20,8 +22,8 @@ interface ServiceTimePickerProps {
 }
 
 function serviceDateToTime(serviceDate: number) {
-	const date = new Date(serviceDate);
-	return new Time(date.getHours(), date.getMinutes());
+	const date = salonParts(serviceDate);
+	return new Time(date.hour, date.minute);
 }
 
 export function ServiceTimePicker({
@@ -33,7 +35,7 @@ export function ServiceTimePicker({
 	onDateChange,
 }: ServiceTimePickerProps) {
 	const { colors } = useTheme();
-	const display = new Date(serviceDate).toLocaleTimeString([], {
+	const display = salonTimeString(new Date(serviceDate), [], {
 		hour: "2-digit",
 		minute: "2-digit",
 	});
@@ -56,8 +58,14 @@ export function ServiceTimePicker({
 						hourCycle={12}
 						onChange={(time) => {
 							if (!time) return;
-							const timeSource = new Date(serviceDate);
-							timeSource.setHours(time.hour, time.minute, 0, 0);
+							const day = salonParts(serviceDate);
+							const timeSource = salonDate(
+								day.year,
+								day.month,
+								day.day,
+								time.hour,
+								time.minute,
+							);
 							const next = mergeLocalTime(new Date(serviceDate), timeSource);
 							if (isAfterEndOfDay(next, endOfDay)) return;
 							onDateChange(undefined, next);
@@ -66,12 +74,15 @@ export function ServiceTimePicker({
 						<DateInput
 							style={{
 								display: "flex",
+								minHeight: controlGeometry.fieldHeight,
+								alignItems: "center",
+								boxSizing: "border-box",
 								gap: 4,
-								padding: "12px 14px",
-								borderRadius: 12,
+								padding: "12px 16px",
+								borderRadius: controlGeometry.radius,
 								border: `1px solid ${colors.outlineVariant}`,
 								background: colors.surface,
-								fontSize: 18,
+								fontSize: 16,
 							}}
 						>
 							{(segment) => (
@@ -80,7 +91,6 @@ export function ServiceTimePicker({
 									style={{
 										padding: "2px 4px",
 										borderRadius: 4,
-										outline: "none",
 									}}
 								/>
 							)}

@@ -3,6 +3,11 @@ import * as Haptics from "expo-haptics";
 import { Pressable } from "react-native";
 import Animated, { FadeOut, ZoomIn } from "react-native-reanimated";
 import { withUniwind } from "uniwind";
+import {
+	controlGeometry,
+	controlStyles,
+	HeaderIconSurface,
+} from "@/components/workspace/control-styles";
 
 import { useAppTheme } from "@/contexts/app-theme-context";
 
@@ -17,17 +22,29 @@ export function ThemeToggleButton() {
 				Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 				toggleTheme();
 			}}
-			className="px-2.5"
+			accessibilityRole="button"
+			accessibilityLabel={isLight ? "Use dark theme" : "Use light theme"}
+			style={controlStyles.headerTarget}
 		>
-			{isLight ? (
-				<Animated.View key="moon" entering={ZoomIn} exiting={FadeOut}>
-					<StyledIonicons name="moon" size={18} className="text-foreground" />
-				</Animated.View>
-			) : (
-				<Animated.View key="sun" entering={ZoomIn} exiting={FadeOut}>
-					<StyledIonicons name="sunny" size={18} className="text-foreground" />
-				</Animated.View>
-			)}
+			<HeaderIconSurface>
+				{isLight ? (
+					<Animated.View key="moon" entering={ZoomIn} exiting={FadeOut}>
+						<StyledIonicons
+							name="moon"
+							size={controlGeometry.iconSize}
+							className="text-foreground"
+						/>
+					</Animated.View>
+				) : (
+					<Animated.View key="sun" entering={ZoomIn} exiting={FadeOut}>
+						<StyledIonicons
+							name="sunny"
+							size={controlGeometry.iconSize}
+							className="text-foreground"
+						/>
+					</Animated.View>
+				)}
+			</HeaderIconSurface>
 		</Pressable>
 	);
 }

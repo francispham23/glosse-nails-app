@@ -1,6 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { dateInputValue } from "@/components/workspace/date-value";
 import { getCompletedPayrollPeriod } from "@/components/workspace/payroll-period";
+import { salonDate, salonParts } from "@/utils/salon-time";
 
 test.each<[number, number, number, string, string]>([
 	[2026, 10, 5, "2026-09-16", "2026-09-30"],
@@ -17,13 +18,13 @@ test.each<[number, number, number, string, string]>([
 ])(
 	"Payroll on %i-%i-%i selects %s through %s",
 	(year, month, day, expectedStart, expectedEnd) => {
-		const today = new Date(year, month - 1, day, 23, 59);
+		const today = salonDate(year, month - 1, day, 23, 59);
 		const originalTime = today.getTime();
 		const period = getCompletedPayrollPeriod(today);
 		expect(dateInputValue(period.start)).toBe(expectedStart);
 		expect(dateInputValue(period.end)).toBe(expectedEnd);
-		expect(period.start.getHours()).toBe(12);
-		expect(period.end.getHours()).toBe(12);
+		expect(salonParts(period.start).hour).toBe(12);
+		expect(salonParts(period.end).hour).toBe(12);
 		expect(today.getTime()).toBe(originalTime);
 	},
 );

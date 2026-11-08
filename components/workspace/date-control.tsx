@@ -1,7 +1,8 @@
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
 import { Platform, View } from "react-native";
 import { Button, useTheme } from "react-native-paper";
+import DateTimePicker from "@/components/Form/salon-date-time-picker";
+import { salonDateString } from "@/utils/salon-time";
 
 export type DateControlProps = {
 	label: string;
@@ -25,13 +26,13 @@ export function DateControl({
 			<Button
 				mode="outlined"
 				icon="calendar-blank-outline"
-				accessibilityLabel={`${label}: ${value.toLocaleDateString()}`}
+				accessibilityLabel={`${label}: ${salonDateString(value)}`}
 				textColor={colors.onSurface}
 				contentStyle={{ minHeight: 48 }}
 				onPress={() => setOpen(!open)}
 			>
 				{label}:{" "}
-				{value.toLocaleDateString("en-CA", {
+				{salonDateString(value, "en-CA", {
 					month: "short",
 					day: "numeric",
 					year: "numeric",

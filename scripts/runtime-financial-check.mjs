@@ -3,12 +3,13 @@ import { randomBytes } from "node:crypto";
 import { readFile, stat, writeFile } from "node:fs/promises";
 import { ConvexHttpClient } from "convex/browser";
 import { anyApi } from "convex/server";
+import moment from "moment-timezone";
 
 const api = anyApi;
 const internal = anyApi;
 
 // Emit only to a disposable checkout; never deploy these helpers to a shared backend.
-const fixtureSource = String.raw`import { v } from "convex/values";
+const fixtureSource = `import { v } from "convex/values";
 import { internalMutation, internalQuery } from "./_generated/server";
 
 export const configureRoles = internalMutation({
@@ -98,6 +99,11 @@ for (const [i, client] of clients.entries()) {
 await writeFile(path, JSON.stringify({ ...config, actors }), { mode: 0o600 });
 const [manager, first, second, inactive] = clients;
 const date = Date.now();
+const dayClosed = moment.tz(date, "America/Vancouver").hour() >= 22;
+// Financial cases remain executable after closing; separate cases below assert
+// real technician denial and preserve ownership checks on the actual actors.
+const financialFirst = dayClosed ? manager : first;
+const financialSecond = dayClosed ? manager : second;
 const range = { startDate: date - 1000, endDate: date + 1000 };
 let sequence = 0;
 const card = (value) =>
@@ -132,13 +138,13 @@ const unchangedAfterRejection = async (operation, expectedError) => {
 	);
 };
 const exact = await card(105);
-await add(first, await body(exact, actors[1].userId));
+await add(financialFirst, await body(exact, actors[1].userId));
 assert.equal((await quote(exact)).balance, 52.5);
-await add(second, await body(exact, actors[2].userId));
+await add(financialSecond, await body(exact, actors[2].userId));
 assert.equal((await quote(exact)).balance, 0);
 assert.equal((await quote(exact)).transactionIds.length, 2);
 await unchangedAfterRejection(
-	async () => add(first, await body(exact, actors[1].userId, "0.01")),
+	async () => add(financialFirst, await body(exact, actors[1].userId, "0.01")),
 	/Insufficient gift card balance/,
 );
 await unchangedAfterRejection(
@@ -161,8 +167,8 @@ for (let round = 0; round < 10; round++) {
 		await body(id, actors[2].userId),
 	];
 	const results = await Promise.allSettled([
-		add(first, requests[0]),
-		add(second, requests[1]),
+		add(financialFirst, requests[0]),
+		add(financialSecond, requests[1]),
 	]);
 	assert.equal(
 		results.filter((result) => result.status === "fulfilled").length,
@@ -185,7 +191,7 @@ console.log(
 
 const origin = await card(52.5);
 const originalBody = await body(origin, actors[1].userId);
-await add(first, originalBody);
+await add(financialFirst, originalBody);
 const tx = (
 	await manager.query(api.transactions.listByGiftCard, { giftCardId: origin })
 )[0];
@@ -194,7 +200,20 @@ const edit = (client, next) =>
 		id: tx._id,
 		body: next,
 	});
-await edit(first, originalBody);
+await edit(financialFirst, originalBody);
+if (dayClosed) {
+	await unchangedAfterRejection(
+		() => add(first, originalBody),
+		/This day is closed/,
+	);
+	await unchangedAfterRejection(
+		() => edit(first, originalBody),
+		/This day is closed/,
+	);
+	console.log(
+		"PASS after-22:00 technician create/edit denial with complete stored rollback; financial success cases use manager",
+	);
+}
 assert.equal((await quote(origin)).balance, 0);
 await unchangedAfterRejection(
 	() => edit(second, { ...originalBody, technicianId: actors[2].userId }),
@@ -209,21 +228,25 @@ await unchangedAfterRejection(
 	/You do not have permission to access this user/,
 );
 await unchangedAfterRejection(
-	() => edit(first, { ...originalBody, compInGift: "50.01" }),
+	() => edit(financialFirst, { ...originalBody, compInGift: "50.01" }),
 	/Insufficient gift card balance/,
 );
 const small = await card(52.49);
 await unchangedAfterRejection(
-	async () => edit(first, { ...originalBody, giftCode: await code(small) }),
+	async () =>
+		edit(financialFirst, { ...originalBody, giftCode: await code(small) }),
 	/Insufficient gift card balance/,
 );
 const destination = await card(100);
-await edit(first, { ...originalBody, giftCode: await code(destination) });
+await edit(financialFirst, {
+	...originalBody,
+	giftCode: await code(destination),
+});
 assert.equal((await quote(origin)).balance, 52.5);
 assert.equal((await quote(destination)).balance, 47.5);
 assert.equal((await quote(origin)).transactionIds.length, 0);
 assert.deepEqual((await quote(destination)).transactionIds, [tx._id]);
-await edit(first, {
+await edit(financialFirst, {
 	...originalBody,
 	compensationMethods: ["Card"],
 	compInGift: "",
@@ -233,7 +256,7 @@ assert.equal((await quote(destination)).balance, 100);
 assert.equal((await quote(destination)).transactionIds.length, 0);
 await manager.mutation(api.transactions.deleteTransaction, { id: tx._id });
 const deletion = await card(100);
-await add(first, await body(deletion, actors[1].userId));
+await add(financialFirst, await body(deletion, actors[1].userId));
 const toDelete = (
 	await manager.query(api.transactions.listByGiftCard, { giftCardId: deletion })
 )[0];

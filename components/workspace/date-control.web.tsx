@@ -1,5 +1,6 @@
 import { Calendar, I18nProvider } from "react-aria-components";
 import { useTheme } from "react-native-paper";
+import { salonDateString } from "@/utils/salon-time";
 import {
 	CalendarDays,
 	CalendarHeader,
@@ -29,7 +30,7 @@ export function DateControl({
 				>
 					{label}:{" "}
 					<strong style={{ color: colors.onSurface }}>
-						{value.toLocaleDateString("en-CA", {
+						{salonDateString(value, "en-CA", {
 							month: "short",
 							day: "numeric",
 							year: "numeric",

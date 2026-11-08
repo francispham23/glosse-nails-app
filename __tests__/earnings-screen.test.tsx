@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import HomeRoute from "@/app/(root)/(main)/(tabs)/earnings";
 import { api } from "@/convex/_generated/api";
 import { useAuthorization } from "@/hooks/use-authorization";
-import { isToday, type User } from "@/utils";
+import type { User } from "@/utils";
 
 jest.mock("react-native-safe-area-context", () => ({
 	useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
@@ -28,10 +28,12 @@ jest.mock("@/convex/_generated/api", () => ({
 		shifts: { getShiftByDate: "getShiftByDate", saveShift: "saveShift" },
 	},
 }));
+let mockNow = Date.parse("2026-09-29T19:00:00Z");
 jest.mock("@/contexts/app-date-context", () => ({
 	useAppDate: () => ({
 		startOfDay: new Date("2026-09-29T00:00:00Z"),
-		endOfDay: new Date("2026-09-29T23:59:59Z"),
+		endOfDay: new Date("2026-09-30T06:59:59Z"),
+		now: mockNow,
 	}),
 }));
 jest.mock("@/contexts/app-theme-context", () => ({
@@ -185,7 +187,7 @@ beforeEach(() => {
 	jest
 		.mocked(useAuthorization)
 		.mockReturnValue({ isAuthorized: true, user: { _id: "manager" } } as never);
-	jest.mocked(isToday).mockReturnValue(true);
+	mockNow = Date.parse("2026-09-29T19:00:00Z");
 });
 
 function teamFixture() {
@@ -238,14 +240,14 @@ test("original team summaries show coworker earnings, tips and real zero rows", 
 test("original historical/off-shift display stays self-only", async () => {
 	const f = teamFixture();
 	const view = await render(<HomeRoute />);
-	jest.mocked(isToday).mockReturnValue(false);
+	mockNow = Date.parse("2026-09-30T05:00:00Z");
 	// The date predicate is memoized by selected date; remount to simulate that change.
 	await view.unmount();
 	const past = await render(<HomeRoute />);
 	expect(screen.queryByTestId("tech-second")).toBeNull();
 	expect(screen.getByTestId("tech-first")).toBeTruthy();
 	await past.unmount();
-	jest.mocked(isToday).mockReturnValue(true);
+	mockNow = Date.parse("2026-09-29T19:00:00Z");
 	f.setShift([f.coworker]);
 	await render(<HomeRoute />);
 	expect(screen.queryByTestId("tech-second")).toBeNull();

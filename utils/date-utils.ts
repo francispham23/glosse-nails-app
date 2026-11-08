@@ -1,29 +1,17 @@
+import { isSalonToday, salonDateString, salonDayKey } from "./salon-time";
+
 export function isToday(timestamp: number): boolean {
-	const today = new Date();
-	const txDate = new Date(timestamp);
-	return (
-		txDate.getDate() === today.getDate() &&
-		txDate.getMonth() === today.getMonth() &&
-		txDate.getFullYear() === today.getFullYear()
-	);
+	return isSalonToday(timestamp);
 }
-
 export function isBeforeToday(timestamp: number): boolean {
-	const today = new Date();
-	today.setHours(0, 0, 0, 0);
-	const txDate = new Date(timestamp);
-	txDate.setHours(0, 0, 0, 0);
-	return txDate < today;
+	return salonDayKey(timestamp) < salonDayKey(Date.now());
 }
-
 export function formatDate(
 	time: number | undefined | Date,
-	hasYear: boolean | undefined = true,
+	hasYear = true,
 ): string {
-	if (!time) return "Unknown";
-	const date = typeof time === "number" ? new Date(time) : time;
-
-	return date.toLocaleDateString("en-US", {
+	if (time === undefined) return "Unknown";
+	return salonDateString(time, "en-US", {
 		month: "short",
 		day: "numeric",
 		year: hasYear ? "numeric" : undefined,

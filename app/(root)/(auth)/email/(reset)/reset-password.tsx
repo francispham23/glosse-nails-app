@@ -2,9 +2,10 @@ import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { Link, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Text, View } from "react-native";
-import { Button, TextInput } from "react-native-paper";
-
+import { Button } from "react-native-paper";
 import FormHeader, { FormContainer } from "@/components/Form/form";
+import { FormTextInput as TextInput } from "@/components/Form/form-text-input";
+import { controlStyles } from "@/components/workspace/control-styles";
 import { useThemeColor } from "@/utils";
 
 // TODO: Implement password reset logic here
@@ -88,7 +89,11 @@ export default function ResetPasswordRoute() {
 						</Text>
 					</View>
 					<Link href="/(root)/(auth)/email/signin" asChild>
-						<Button mode="contained" className="rounded-3xl">
+						<Button
+							mode="contained"
+							style={controlStyles.button}
+							contentStyle={controlStyles.buttonContent}
+						>
 							<Ionicons
 								name="arrow-back-outline"
 								size={16}
@@ -122,7 +127,6 @@ export default function ResetPasswordRoute() {
 				onChangeText={setPassword}
 				left={<TextInput.Icon icon="lock-closed-outline" />}
 				right={<TextInput.Icon icon="eye-outline" />}
-				className="h-16 rounded-3xl"
 			/>
 			{/* confirm password */}
 			<TextInput
@@ -136,7 +140,6 @@ export default function ResetPasswordRoute() {
 				onChangeText={setConfirmPassword}
 				left={<TextInput.Icon icon="lock-closed-outline" />}
 				right={<TextInput.Icon icon="checkmark-outline" />}
-				className="h-16 rounded-3xl"
 			/>
 			{/* submit button */}
 			<Button
@@ -144,7 +147,8 @@ export default function ResetPasswordRoute() {
 				disabled={isLoading}
 				mode="contained"
 				loading={isLoading}
-				className="rounded-3xl"
+				style={controlStyles.button}
+				contentStyle={controlStyles.buttonContent}
 			>
 				{isLoading ? "Resetting..." : "Reset Password"}
 			</Button>

@@ -1,8 +1,10 @@
 /// <reference types="vite/client" />
 import { convexTest } from "convex-test";
-import { expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { api } from "./_generated/api";
 import schema from "./schema";
+
+afterEach(() => vi.restoreAllMocks());
 
 const modules = import.meta.glob([
 	"./**/*.ts",
@@ -154,6 +156,7 @@ test.each([undefined, "", "UNKNOWN"])(
 );
 
 test("shared gift usage accepts exact balance and rejects one cent over across staff", async () => {
+	vi.spyOn(Date, "now").mockReturnValue(date);
 	const f = await fixture(105);
 	await f.client.mutation(api.transactions.addTransaction, { body: f.gift }); // $52.50
 	await f.client.mutation(api.transactions.addTransaction, {

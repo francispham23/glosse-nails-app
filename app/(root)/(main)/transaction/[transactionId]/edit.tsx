@@ -12,6 +12,7 @@ import {
 	TransactionSaveFeedback,
 	useTransactionSave,
 } from "@/components/transaction-save-feedback";
+import { modalHeaderOptions } from "@/components/workspace/modal-header-options";
 import { useWebRouteDismiss } from "@/contexts/web-route-dismiss-context";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
@@ -117,15 +118,16 @@ function LoadedEditForm({
 		[isLockedNow],
 	);
 	const headerOptions = useMemo(
-		() => ({
-			headerLeft: () => (
-				<HeaderButton
-					iconName="close"
-					disabled={isLocked}
-					isBlocked={isLockedNow}
-				/>
-			),
-		}),
+		() =>
+			modalHeaderOptions({
+				headerLeft: () => (
+					<HeaderButton
+						iconName="close"
+						disabled={isLocked}
+						isBlocked={isLockedNow}
+					/>
+				),
+			}),
 		[isLocked, isLockedNow],
 	);
 

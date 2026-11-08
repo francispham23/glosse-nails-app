@@ -12,6 +12,7 @@ import { DateControl } from "@/components/workspace/date-control.web";
 import { DateRangeControl } from "@/components/workspace/date-range-control.web";
 import { dateInputValue } from "@/components/workspace/date-value";
 import { WorkspaceSheet } from "@/components/workspace/sheet.web";
+import { salonDate, salonParts } from "@/utils/salon-time";
 
 // Calendar, DOM dialog, local dates and event handlers are real; only app theme/layout are substituted.
 jest.mock("react-native-paper", () => ({
@@ -81,12 +82,13 @@ test("calendar conversion preserves local days across DST, leap day and year bou
 		[2024, 2, 29],
 		[2027, 1, 1],
 	]) {
-		const local = new Date(year, month - 1, day, 23, 59);
+		const local = salonDate(year, month - 1, day, 23, 59);
 		const roundTrip = calendarDate(calendarValue(local));
-		expect(roundTrip?.getFullYear()).toBe(year);
-		expect(roundTrip?.getMonth()).toBe(month - 1);
-		expect(roundTrip?.getDate()).toBe(day);
-		expect(roundTrip?.getHours()).toBe(12);
+		if (!roundTrip) throw new Error("Expected a valid salon date");
+		expect(salonParts(roundTrip).year).toBe(year);
+		expect(salonParts(roundTrip).month).toBe(month - 1);
+		expect(salonParts(roundTrip).day).toBe(day);
+		expect(salonParts(roundTrip).hour).toBe(12);
 	}
 	expect(
 		calendarDate(

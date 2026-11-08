@@ -8,6 +8,7 @@ import {
 	calendarValue,
 } from "@/components/workspace/calendar.web";
 import { mergeLocalCalendarDay } from "@/utils/local-datetime";
+import { salonDateString } from "@/utils/salon-time";
 import { PickerField } from "./picker-field.web";
 
 interface SellDatePickerProps {
@@ -31,7 +32,7 @@ export function SellDatePicker({
 			<div style={{ color: colors.onSurface, fontFamily: "inherit" }}>
 				<PickerField
 					label="Select service date"
-					value={date.toLocaleDateString([])}
+					value={salonDateString(date, [])}
 					open={open}
 					setOpen={setOpen}
 					icon="calendar"

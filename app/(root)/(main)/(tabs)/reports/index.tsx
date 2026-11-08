@@ -1,7 +1,6 @@
 import { useQuery } from "convex/react";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
-
 import { type Report, ReportCard } from "@/components/Cards/report-card";
 import { ListEmptyComponent } from "@/components/list-empty";
 import { ReportDateControls } from "@/components/workspace/report-date-controls";
@@ -14,18 +13,17 @@ import { api } from "@/convex/_generated/api";
 import { useAuthorization } from "@/hooks/use-authorization";
 import { getDiscount } from "@/utils";
 import { getCashCompensation, getCashTip } from "@/utils/financial-validation";
+import { salonDayBounds } from "@/utils/salon-time";
 
 export default function ReportsRoute() {
-	const { startOfDay, endOfDay } = useAppDate();
+	const { startOfDay, endOfDay, now } = useAppDate();
 	const { isAuthorized } = useAuthorization();
 
 	const [startDate, setStartDate] = useState<Date>(startOfDay);
 	const [endDate, setEndDate] = useState<Date>(endOfDay);
 
-	const rangeStart = new Date(startDate);
-	rangeStart.setHours(0, 0, 0, 0);
-	const rangeEnd = new Date(endDate);
-	rangeEnd.setHours(23, 59, 59, 999);
+	const rangeStart = salonDayBounds(startDate).startOfDay;
+	const rangeEnd = salonDayBounds(endDate).endOfDay;
 
 	// Query technicians with totals for the selected date range
 	const technicians = useQuery(api.users.usersByDateRange, {
@@ -205,8 +203,7 @@ export default function ReportsRoute() {
 	);
 	const data = noValues ? [] : filteredReportCards;
 
-	const endOfToday = new Date();
-	endOfToday.setHours(23, 59, 59, 999);
+	const endOfToday = salonDayBounds(now).endOfDay;
 
 	const loading =
 		technicians === undefined ||

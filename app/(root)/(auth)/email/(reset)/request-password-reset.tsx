@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Button, TextInput } from "react-native-paper";
-
+import { Button } from "react-native-paper";
 import FormHeader, { FormContainer } from "@/components/Form/form";
+import { FormTextInput as TextInput } from "@/components/Form/form-text-input";
+import { controlStyles } from "@/components/workspace/control-styles";
 
 // TODO: Implement password reset request logic here
 export default function RequestPasswordResetRoute() {
@@ -67,7 +68,6 @@ export default function RequestPasswordResetRoute() {
 				value={email}
 				onChangeText={setEmail}
 				left={<TextInput.Icon icon="email-outline" />}
-				className="h-16 rounded-3xl"
 			/>
 			{/* submit button */}
 			<Button
@@ -75,7 +75,8 @@ export default function RequestPasswordResetRoute() {
 				disabled={isLoading}
 				mode="contained"
 				loading={isLoading}
-				className="rounded-3xl"
+				style={controlStyles.button}
+				contentStyle={controlStyles.buttonContent}
 			>
 				{isLoading ? "Sending..." : "Send Reset Link"}
 			</Button>

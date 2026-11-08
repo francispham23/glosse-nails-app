@@ -1,4 +1,5 @@
 import { Platform, Text, View } from "react-native";
+import { controlStyles } from "@/components/workspace/control-styles";
 import { cn } from "@/utils";
 
 /* ----------------------------- form container ----------------------------- */
@@ -56,10 +57,19 @@ export default function FormHeader({
 }) {
 	return (
 		<View className="gap-2">
-			<Text className={cn("font-extrabold text-4xl text-foreground")}>
+			<Text
+				accessibilityRole="header"
+				style={controlStyles.title}
+				className="text-foreground"
+			>
 				{title}
 			</Text>
-			<Text className={cn("text-muted-foreground")}>{description}</Text>
+			<Text
+				style={controlStyles.description}
+				className={cn("text-muted-foreground")}
+			>
+				{description}
+			</Text>
 			{children}
 		</View>
 	);

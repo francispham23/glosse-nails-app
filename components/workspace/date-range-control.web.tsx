@@ -5,6 +5,7 @@ import {
 	RangeCalendarStateContext,
 } from "react-aria-components";
 import { useTheme } from "react-native-paper";
+import { salonDateString } from "@/utils/salon-time";
 import {
 	CalendarDays,
 	CalendarHeader,
@@ -69,7 +70,7 @@ function RangeSummary({
 	const { colors } = useTheme();
 	const anchor = state?.anchorDate ? calendarDate(state.anchorDate) : null;
 	const format = (date: Date) =>
-		date.toLocaleDateString("en-CA", {
+		salonDateString(date, "en-CA", {
 			month: "short",
 			day: "numeric",
 			year: "numeric",

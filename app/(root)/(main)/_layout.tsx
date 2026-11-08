@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { HeaderButton } from "@/components/Buttons/header-button";
 
 import { ThemeToggleButton } from "@/components/Buttons/theme-toggle-button";
 import { useNavigationOptions } from "@/hooks";
@@ -70,6 +71,8 @@ export default function MainLayout() {
 				name="settings"
 				options={{
 					title: "Settings",
+					headerLeft: ({ canGoBack }) =>
+						canGoBack ? <HeaderButton back iconName="chevron-back" /> : null,
 					headerBackButtonDisplayMode: "generic",
 					headerLargeTitle: true,
 					...standard,

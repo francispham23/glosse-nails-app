@@ -20,6 +20,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ConvexHttpClient } from "convex/browser";
 import { anyApi, makeFunctionReference } from "convex/server";
+import moment from "moment-timezone";
 
 const api = anyApi;
 
@@ -51,7 +52,7 @@ const ctl = (name) => makeFunctionReference(`runtimeControl:${name}`);
 const snapRef = makeFunctionReference("runtimeFixtures:snapshot");
 const json = async (path) => JSON.parse(await readFile(path, "utf8"));
 const save = (path, value) =>
-	writeFile(path, JSON.stringify(value, null, 2) + "\n", { mode: 0o600 });
+	writeFile(path, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600 });
 const git = (args) =>
 	execFileSync("git", args, { cwd: ROOT, encoding: "utf8" }).trim();
 
@@ -147,7 +148,7 @@ function owned(m, name) {
 }
 async function record(m, name, value) {
 	assert.match(name, /^[a-z-]+$/);
-	await save(join(m.evidence, name + ".json"), {
+	await save(join(m.evidence, `${name}.json`), {
 		runId: m.runId,
 		source: m.source,
 		platform: "Expo development web",
@@ -190,9 +191,9 @@ async function doctor(m) {
 		hash(await readFile(join(m.scratch, "convex-local-backend"))),
 		BINARY_SHA,
 	);
-	assert.equal(await (await get(URLS.api + "/instance_name")).text(), m.runId);
+	assert.equal(await (await get(`${URLS.api}/instance_name`)).text(), m.runId);
 	assert.deepEqual(
-		await (await get(URLS.app + "/runtime-identity.json")).json(),
+		await (await get(`${URLS.app}/runtime-identity.json`)).json(),
 		{ runId: m.runId, source: m.source, target: URLS.api },
 	);
 	const c = await creds(m);
@@ -215,7 +216,7 @@ async function doctor(m) {
 	return { c, admin };
 }
 async function start(m, name, command, args, options = {}) {
-	const fd = openSync(join(m.scratch, name + ".log"), "a", 0o600);
+	const fd = openSync(join(m.scratch, `${name}.log`), "a", 0o600);
 	const child = spawn(command, args, {
 		cwd: join(m.scratch, "source"),
 		env,
@@ -264,7 +265,7 @@ function command(m, args) {
 		);
 	}
 }
-const fixtureExtra = String.raw`
+const fixtureExtra = `
 import { internalQuery, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 export const identity = internalQuery({ args: {}, returns: v.object({runId:v.string(),source:v.string()}), handler: async () => ({runId:process.env.RUNTIME_TEST_RUN_ID!,source:process.env.RUNTIME_SOURCE!}) });
@@ -288,7 +289,7 @@ async function launch(evidence) {
 	await chmod(scratch, 0o700);
 	const m = {
 		kind: "glosse-runtime-v1",
-		runId: "runtime-" + randomBytes(8).toString("hex"),
+		runId: `runtime-${randomBytes(8).toString("hex")}`,
 		ownerToken: randomBytes(24).toString("hex"),
 		evidence: evidencePath,
 		scratch,
@@ -377,7 +378,7 @@ async function launch(evidence) {
 		await waitFor(async () => {
 			try {
 				return (
-					(await (await get(URLS.api + "/instance_name")).text()) === m.runId
+					(await (await get(`${URLS.api}/instance_name`)).text()) === m.runId
 				);
 			} catch {
 				return false;
@@ -397,7 +398,7 @@ async function launch(evidence) {
 			RUNTIME_TEST_RUN_ID: m.runId,
 			RUNTIME_SOURCE: m.source,
 		};
-		const update = await fetch(URLS.api + "/api/update_environment_variables", {
+		const update = await fetch(`${URLS.api}/api/update_environment_variables`, {
 			method: "POST",
 			headers: {
 				Authorization: `Convex ${adminKey}`,
@@ -444,8 +445,7 @@ async function launch(evidence) {
 		const actors = (await creds(m)).actors;
 		const manager = new ConvexHttpClient(URLS.api);
 		manager.setAuth(actors[0].token);
-		const today = new Date();
-		today.setHours(0, 0, 0, 0);
+		const today = moment.tz("America/Vancouver").startOf("day").toDate();
 		await manager.mutation(api.shifts.saveShift, {
 			technicians: [actors[1].userId],
 			shiftDate: today.getTime(),
@@ -468,13 +468,14 @@ async function launch(evidence) {
 				env: {
 					...env,
 					EXPO_PUBLIC_CONVEX_URL: URLS.api,
+					EXPO_PACKAGER_PROXY_URL: URLS.app,
 					EXPO_ROUTER_APP_ROOT: join(source, "app"),
 				},
 			},
 		);
 		await waitFor(async () => {
 			try {
-				return (await get(URLS.app + "/runtime-identity.json")).ok;
+				return (await get(`${URLS.app}/runtime-identity.json`)).ok;
 			} catch {
 				return false;
 			}
@@ -614,7 +615,7 @@ async function checkpoint(m, stage) {
 		console.log(
 			JSON.stringify({
 				stage,
-				editRoute: URLS.app + "/transaction/" + m.transactionId + "/edit",
+				editRoute: `${URLS.app}/transaction/${m.transactionId}/edit`,
 			}),
 		);
 	}

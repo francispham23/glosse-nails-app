@@ -11,6 +11,7 @@ import {
 	TransactionSaveFeedback,
 	useTransactionSave,
 } from "@/components/transaction-save-feedback";
+import { modalHeaderOptions } from "@/components/workspace/modal-header-options";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useWebRouteDismiss } from "@/contexts/web-route-dismiss-context";
 import { api } from "@/convex/_generated/api";
@@ -70,23 +71,24 @@ export default function CreateRoute() {
 		[isLockedNow],
 	);
 	const headerOptions = useMemo(
-		() => ({
-			headerLeft: () => (
-				<HeaderButton
-					iconName="close"
-					disabled={isLocked}
-					isBlocked={isLockedNow}
-				/>
-			),
-			headerRight: () => (
-				<HeaderButton
-					iconName="swap-horizontal-outline"
-					route={`/technician/${technicianId}`}
-					disabled={isLocked}
-					isBlocked={isLockedNow}
-				/>
-			),
-		}),
+		() =>
+			modalHeaderOptions({
+				headerLeft: () => (
+					<HeaderButton
+						iconName="close"
+						disabled={isLocked}
+						isBlocked={isLockedNow}
+					/>
+				),
+				headerRight: () => (
+					<HeaderButton
+						iconName="swap-horizontal-outline"
+						route={`/technician/${technicianId}`}
+						disabled={isLocked}
+						isBlocked={isLockedNow}
+					/>
+				),
+			}),
 		[isLocked, isLockedNow, technicianId],
 	);
 

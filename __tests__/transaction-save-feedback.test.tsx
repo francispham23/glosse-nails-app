@@ -6,6 +6,10 @@ import EditRoute from "@/app/(root)/(main)/transaction/[transactionId]/edit";
 import { HeaderButton } from "@/components/Buttons/header-button";
 import type { TransactionForm } from "@/components/TransactionForm";
 
+jest.mock("@/components/workspace/modal-header-options", () => ({
+	modalHeaderOptions: (options: unknown) => options,
+}));
+
 const mockMutation = jest.fn<(args: unknown) => Promise<unknown>>();
 let mockReturn: () => void;
 let mockHeader: {
@@ -136,6 +140,7 @@ jest.mock("react-native-paper", () => {
 	const { View, Text, Pressable } =
 		jest.requireActual<typeof import("react-native")>("react-native");
 	return {
+		useTheme: () => ({ colors: { surfaceVariant: "#eee" } }),
 		Text,
 		ActivityIndicator: View,
 		Button: ({
@@ -433,3 +438,20 @@ for (const [name, Route] of [
 		expect(mockForm.setSelectedInputs).toBe(setSelectedInputs);
 	});
 }
+
+test("shared Back control retains back navigation, history guard and pending lock", async () => {
+	let locked = false;
+	await render(
+		<HeaderButton back iconName="chevron-back" isBlocked={() => locked} />,
+	);
+	await fireEvent.press(screen.getByLabelText("Back"));
+	expect(mockRouter.back).toHaveBeenCalledTimes(1);
+	expect(mockRouter.dismiss).not.toHaveBeenCalled();
+	locked = true;
+	await fireEvent.press(screen.getByLabelText("Back"));
+	expect(mockRouter.back).toHaveBeenCalledTimes(1);
+	locked = false;
+	mockRouter.canGoBack.mockReturnValue(false);
+	await fireEvent.press(screen.getByLabelText("Back"));
+	expect(mockRouter.back).toHaveBeenCalledTimes(1);
+});

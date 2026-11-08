@@ -1,4 +1,4 @@
-import { TextInput } from "react-native-paper";
+import { FormTextInput as TextInput } from "@/components/Form/form-text-input";
 
 export const NumericInput = ({
 	placeholder,
@@ -19,7 +19,6 @@ export const NumericInput = ({
 }) => (
 	<TextInput
 		mode="outlined"
-		className="h-16 rounded-3xl"
 		placeholder={placeholder}
 		keyboardType={inputMode === "decimal" ? "decimal-pad" : "numeric"}
 		inputMode={inputMode}

@@ -4,11 +4,11 @@ import { useState } from "react";
 import { Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-
 import { ListEmptyComponent } from "@/components/list-empty";
 import { modalScreenClassName } from "@/components/workspace/modal-screen";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/utils";
+import { salonDateString } from "@/utils/salon-time";
 
 export default function SupplyRoute() {
 	const params = useLocalSearchParams();
@@ -80,7 +80,7 @@ const SupplyCard = ({ item }: Props) => {
 	return (
 		<View className="flex-row items-center gap-4 rounded-lg border-r-accent bg-background-secondary p-2 shadow-md">
 			<Text className={cn(classname, "min-w-[105]")}>
-				{new Date(item.serviceDate).toLocaleDateString("en-US", {
+				{salonDateString(new Date(item.serviceDate), "en-US", {
 					month: "short",
 					day: "numeric",
 					year: "numeric",
