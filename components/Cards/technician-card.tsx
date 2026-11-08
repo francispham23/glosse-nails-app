@@ -39,9 +39,11 @@ export const TechnicianCard = ({
 	const { colors } = useTheme();
 	const router = useRouter();
 
-	const technician = useQuery(api.users.getUserById, {
-		userId: item._id,
-	});
+	// Overview rows already contain the display name. Coworker accounts stay private.
+	const technician = useQuery(
+		api.users.getUserById,
+		overview ? "skip" : { userId: item._id },
+	);
 
 	const technicianClassName = cn("min-w-[50] text-left text-lg text-muted");
 

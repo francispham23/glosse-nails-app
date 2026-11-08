@@ -13,8 +13,10 @@ import { Button, Dialog, Portal, TextInput } from "react-native-paper";
 import Animated from "react-native-reanimated";
 import FormHeader, { FormContainer } from "@/components/Form/form";
 import { PasswordInput } from "@/components/Form/password-input";
+import { controlStyles } from "@/components/workspace/control-styles";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/utils";
+import { salonDateString } from "@/utils/salon-time";
 
 export default function SettingsRoute() {
 	const user = useQuery(api.users.viewer);
@@ -148,7 +150,6 @@ export default function SettingsRoute() {
 							value={oldPassword}
 							onChangeText={setOldPassword}
 							left={<TextInput.Icon icon="lock-outline" />}
-							className="h-16 rounded-3xl"
 						/>
 						<PasswordInput
 							mode="outlined"
@@ -157,7 +158,6 @@ export default function SettingsRoute() {
 							value={newPassword}
 							onChangeText={setNewPassword}
 							left={<TextInput.Icon icon="lock-reset" />}
-							className="h-16 rounded-3xl"
 						/>
 						<PasswordInput
 							mode="outlined"
@@ -166,7 +166,6 @@ export default function SettingsRoute() {
 							value={confirmNewPassword}
 							onChangeText={setConfirmNewPassword}
 							left={<TextInput.Icon icon="lock-check-outline" />}
-							className="h-16 rounded-3xl"
 						/>
 						{/* submit button */}
 						<Button
@@ -174,7 +173,8 @@ export default function SettingsRoute() {
 							disabled={isLoading}
 							mode="contained"
 							loading={isLoading}
-							className="rounded-3xl"
+							style={controlStyles.button}
+							contentStyle={controlStyles.buttonContent}
 						>
 							{isLoading ? "Updating..." : "Update Password"}
 						</Button>
@@ -182,7 +182,8 @@ export default function SettingsRoute() {
 							onPress={() => setIsResettingPassword(false)}
 							mode="text"
 							disabled={isLoading}
-							className="rounded-3xl"
+							style={controlStyles.button}
+							contentStyle={controlStyles.buttonContent}
 						>
 							Cancel
 						</Button>
@@ -193,7 +194,7 @@ export default function SettingsRoute() {
 							<Text className={className}>{user.name}</Text>
 							<Text className={className}>{user.email}</Text>
 							<Text className={className}>
-								created {new Date(user._creationTime).toDateString()}
+								created {salonDateString(user._creationTime)}
 							</Text>
 						</View>
 						<View className="mt-4 flex-row justify-end gap-4">

@@ -1,8 +1,8 @@
-export function dateInputValue(date: Date) {
-	return `${date.getFullYear().toString().padStart(4, "0")}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
-}
+import { salonDate, salonDayKey } from "@/utils/salon-time";
 
-// Parse calendar fields locally: Date("YYYY-MM-DD") would interpret UTC.
+export function dateInputValue(date: Date) {
+	return salonDayKey(date);
+}
 export function parseDateInput(
 	value: string,
 	minimumDate?: Date,
@@ -10,9 +10,7 @@ export function parseDateInput(
 ): Date | null {
 	if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
 	const [year, month, day] = value.split("-").map(Number);
-	const date = new Date(0);
-	date.setFullYear(year, month - 1, day);
-	date.setHours(12, 0, 0, 0);
+	const date = salonDate(year, month - 1, day);
 	if (dateInputValue(date) !== value) return null;
 	if (minimumDate && value < dateInputValue(minimumDate)) return null;
 	if (maximumDate && value > dateInputValue(maximumDate)) return null;

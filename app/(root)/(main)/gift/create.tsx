@@ -7,6 +7,7 @@ import FormHeader from "@/components/Form/form";
 import { NumericInput } from "@/components/Form/numeric-input";
 import { SellDatePicker } from "@/components/Form/sell-date-picker";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
+import { controlStyles } from "@/components/workspace/control-styles";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useWebRouteDismiss } from "@/contexts/web-route-dismiss-context";
 import { api } from "@/convex/_generated/api";
@@ -125,7 +126,8 @@ export default function CreateRoute() {
 				disabled={isLoading}
 				mode="contained"
 				loading={isLoading}
-				className="rounded-3xl"
+				style={controlStyles.button}
+				contentStyle={controlStyles.buttonContent}
 			>
 				{isLoading ? "Creating..." : "Create Gift Card"}
 			</Button>

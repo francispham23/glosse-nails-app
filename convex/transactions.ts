@@ -6,6 +6,10 @@ import {
 	normalizeFinancialInput,
 } from "../utils/financial-validation";
 import { giftUsageCents, moneyToCents } from "../utils/money";
+import {
+	isOpenSalonDay,
+	TRANSACTION_CLOSED_MESSAGE,
+} from "../utils/salon-time";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
@@ -246,7 +250,13 @@ export const addTransaction = mutation({
 		}),
 	},
 	handler: async (ctx, { body }) => {
-		await requireSelfOrRole(ctx, body.technicianId, ["owner", "manager"]);
+		const actor = await requireSelfOrRole(ctx, body.technicianId, [
+			"owner",
+			"manager",
+		]);
+		if (actor.role === "technician" && !isOpenSalonDay(body.serviceDate)) {
+			throw new Error(TRANSACTION_CLOSED_MESSAGE);
+		}
 		const payRateSnapshot = await resolveTechnicianPayRate(
 			ctx,
 			body.technicianId,
@@ -333,7 +343,10 @@ export const updateTransaction = mutation({
 		}),
 	},
 	handler: async (ctx, { id, body }) => {
-		await requireSelfOrRole(ctx, body.technicianId, ["owner", "manager"]);
+		const actor = await requireSelfOrRole(ctx, body.technicianId, [
+			"owner",
+			"manager",
+		]);
 		const existingTransaction = (await ctx.db.get(id)) as
 			| (Doc<"transactions"> & { payRateSnapshot?: number })
 			| null;
@@ -346,6 +359,16 @@ export const updateTransaction = mutation({
 			"owner",
 			"manager",
 		]);
+
+		if (
+			actor.role === "technician" &&
+			(!isOpenSalonDay(
+				existingTransaction.serviceDate ?? existingTransaction._creationTime,
+			) ||
+				!isOpenSalonDay(body.serviceDate))
+		) {
+			throw new Error(TRANSACTION_CLOSED_MESSAGE);
+		}
 
 		const payRateSnapshot =
 			existingTransaction.technician === body.technicianId

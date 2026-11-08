@@ -125,9 +125,10 @@ export const usersByDateRange = query({
 			.filter((q) => q.eq(q.field("isAnonymous"), undefined))
 			.collect();
 
-		const visibleTechnicians = !canViewAllReportUsers
-			? technicians.filter((tech) => tech._id === actor.userId)
-			: technicians;
+		const visibleTechnicians =
+			report && !canViewAllReportUsers
+				? technicians.filter((tech) => tech._id === actor.userId)
+				: technicians;
 
 		const datedTransactions = await ctx.db
 			.query("transactions")
@@ -169,11 +170,17 @@ export const usersByDateRange = query({
 					);
 				}
 
-				return {
-					...tech,
-					tip,
-					compensation,
-				};
+				// Restore the shared Earnings totals, without sharing private accounts.
+				const profile =
+					canViewAllReportUsers || tech._id === actor.userId
+						? tech
+						: {
+								_id: tech._id,
+								_creationTime: tech._creationTime,
+								name: tech.name,
+								image: tech.image,
+							};
+				return { ...profile, tip, compensation };
 			}),
 		);
 		if (report) {

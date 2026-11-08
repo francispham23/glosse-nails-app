@@ -4,9 +4,14 @@ import { useQuery } from "convex/react";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useTheme } from "react-native-paper";
+import {
+	controlGeometry,
+	controlStyles,
+	HeaderIconSurface,
+} from "@/components/workspace/control-styles";
 import { api } from "@/convex/_generated/api";
-
 import { cn, type Gift } from "@/utils";
+import { salonDateString } from "@/utils/salon-time";
 import { DeleteButton } from "../Buttons/delete-button";
 import { TransactionHistory } from "./transaction-history";
 
@@ -54,6 +59,7 @@ export const BottomModal = ({
 			ref={bottomSheetRef}
 			snapPoints={snapPoints}
 			onChange={handleSheetChanges}
+			onDismiss={() => setIsOpen(false)}
 			enablePanDownToClose
 			backgroundStyle={{ backgroundColor: colors.surface }}
 			handleIndicatorStyle={{
@@ -72,9 +78,17 @@ export const BottomModal = ({
 					</View>
 					<Pressable
 						onPress={closeBottomSheet}
-						className="rounded-full bg-background-secondary p-2"
+						accessibilityRole="button"
+						accessibilityLabel="Close gift card"
+						style={controlStyles.headerTarget}
 					>
-						<Ionicons name="close" size={24} color={colors.onSurface} />
+						<HeaderIconSurface>
+							<Ionicons
+								name="close"
+								size={controlGeometry.iconSize}
+								color={colors.onSurface}
+							/>
+						</HeaderIconSurface>
 					</Pressable>
 				</View>
 				<View className="mb-4 gap-2 rounded-lg bg-background-secondary p-4 shadow-md">
@@ -117,7 +131,7 @@ export const BottomModal = ({
 
 export const formatCreationDate = (timestamp: number) => {
 	const date = new Date(timestamp);
-	return date.toLocaleDateString("en-US", {
+	return salonDateString(date, "en-US", {
 		month: "long",
 		day: "numeric",
 		year: "numeric",

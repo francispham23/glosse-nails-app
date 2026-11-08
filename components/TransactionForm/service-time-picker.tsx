@@ -1,7 +1,7 @@
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { TextInput } from "react-native-paper";
-
+import { FormTextInput as TextInput } from "@/components/Form/form-text-input";
+import DateTimePicker from "@/components/Form/salon-date-time-picker";
 import type { EarningFormState } from "@/utils";
+import { salonTimeString } from "@/utils/salon-time";
 
 interface ServiceTimePickerProps {
 	serviceDate: EarningFormState["serviceDate"];
@@ -24,9 +24,8 @@ export function ServiceTimePicker({
 		<>
 			<TextInput
 				mode="outlined"
-				className="h-16 rounded-3xl"
 				placeholder="Select service time"
-				value={new Date(serviceDate).toLocaleTimeString([], {
+				value={salonTimeString(new Date(serviceDate), [], {
 					hour: "2-digit",
 					minute: "2-digit",
 				})}

@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { Platform, View } from "react-native";
 import { Button } from "react-native-paper";
 import { useWorkspaceLayout } from "@/hooks/use-workspace-layout";
+import { salonDateString, salonDayBounds } from "@/utils/salon-time";
 import { WorkspaceActions } from "./actions";
 import { DateControl } from "./date-control";
 import { DateRangeControl } from "./date-range-control";
@@ -48,7 +49,7 @@ export function ReportDateControls({
 						{
 							label: "Date range",
 							icon: "calendar-range",
-							accessibilityLabel: `Date range: ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`,
+							accessibilityLabel: `Date range: ${salonDateString(startDate)} to ${salonDateString(endDate)}`,
 							onPress: openRange,
 						},
 					]}
@@ -57,17 +58,17 @@ export function ReportDateControls({
 				<Button
 					mode="outlined"
 					icon="calendar-range"
-					accessibilityLabel={`Date range: ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`}
+					accessibilityLabel={`Date range: ${salonDateString(startDate)} to ${salonDateString(endDate)}`}
 					contentStyle={{ minHeight: 48 }}
 					onPress={openRange}
 				>
-					{startDate.toLocaleDateString("en-CA", {
+					{salonDateString(startDate, "en-CA", {
 						month: "short",
 						day: "numeric",
 						year: "numeric",
 					})}{" "}
 					–{" "}
-					{endDate.toLocaleDateString("en-CA", {
+					{salonDateString(endDate, "en-CA", {
 						month: "short",
 						day: "numeric",
 						year: "numeric",
@@ -141,15 +142,13 @@ export function ReportDateControls({
 						accessibilityLabel="Reset"
 						accessibilityHint="Set both dates to today"
 						onPress={() => {
-							const today = new Date();
-							today.setHours(12, 0, 0, 0);
+							const today = salonDayBounds(Date.now()).midDay;
 							setDraftStart(today);
 							setDraftEnd(new Date(today));
 							setSelectionPending(false);
 							setSelectionVersion((version) => version + 1);
 							// The screen's date ceiling can be stale if the modal stayed open overnight.
-							const endOfToday = new Date(today);
-							endOfToday.setHours(23, 59, 59, 999);
+							const endOfToday = salonDayBounds(today).endOfDay;
 							setResetMaximumDate(endOfToday);
 						}}
 					>

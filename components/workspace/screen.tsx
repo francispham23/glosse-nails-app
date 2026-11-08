@@ -12,7 +12,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { useWorkspaceLayout } from "@/hooks/use-workspace-layout";
+import { salonDateString } from "@/utils/salon-time";
 import { type WorkspaceAction, WorkspaceActions } from "./actions";
+import {
+	controlGeometry,
+	controlStyles,
+	HeaderIconSurface,
+} from "./control-styles";
 
 const FloatingControlsContext = createContext(false);
 
@@ -46,8 +52,8 @@ export function WorkspaceScreen({
 			? [
 					{
 						icon: "calendar-blank-outline",
-						label: `Choose date · ${date?.toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" })}`,
-						accessibilityLabel: `Choose date: ${date?.toLocaleDateString("en-CA")}`,
+						label: `Choose date · ${salonDateString(date, "en-CA", { month: "short", day: "numeric", year: "numeric" })}`,
+						accessibilityLabel: `Choose date: ${salonDateString(date, "en-CA")}`,
 						onPress: () => router.navigate("/pick-date"),
 					},
 				]
@@ -81,25 +87,29 @@ export function WorkspaceScreen({
 									isLight ? "Use dark theme" : "Use light theme"
 								}
 								onPress={toggleTheme}
-								style={styles.iconButton}
+								style={controlStyles.headerTarget}
 							>
-								<Ionicons
-									name={isLight ? "moon-outline" : "sunny-outline"}
-									size={20}
-									color={colors.onSurfaceVariant}
-								/>
+								<HeaderIconSurface>
+									<Ionicons
+										name={isLight ? "moon-outline" : "sunny-outline"}
+										size={controlGeometry.iconSize}
+										color={colors.onSurfaceVariant}
+									/>
+								</HeaderIconSurface>
 							</Pressable>
 							<Pressable
 								accessibilityRole="button"
 								accessibilityLabel="Settings"
 								onPress={() => router.navigate("/settings")}
-								style={styles.iconButton}
+								style={controlStyles.headerTarget}
 							>
-								<Ionicons
-									name="settings-outline"
-									size={20}
-									color={colors.onSurfaceVariant}
-								/>
+								<HeaderIconSurface>
+									<Ionicons
+										name="settings-outline"
+										size={controlGeometry.iconSize}
+										color={colors.onSurfaceVariant}
+									/>
+								</HeaderIconSurface>
 							</Pressable>
 						</View>
 					</View>
@@ -116,7 +126,7 @@ export function WorkspaceScreen({
 									textColor={colors.onSurface}
 									style={{ borderColor: colors.outline }}
 								>
-									{date?.toLocaleDateString("en-CA", {
+									{salonDateString(date, "en-CA", {
 										weekday: isCompact ? undefined : "short",
 										month: "short",
 										day: "numeric",
@@ -196,15 +206,8 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		flexWrap: "wrap",
 		justifyContent: "flex-end",
-		maxWidth: 88,
-	},
-	iconButton: {
-		width: 44,
-		height: 44,
-		alignItems: "center",
-		justifyContent: "center",
-		borderRadius: 12,
-		borderCurve: "continuous",
+		maxWidth: 92,
+		gap: 4,
 	},
 	toolbar: {
 		flexDirection: "row",

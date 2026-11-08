@@ -9,9 +9,11 @@ import FormHeader from "@/components/Form/form";
 import { getPaymentPlaceholder } from "@/components/Form/helpers";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { ServiceCategoryChips } from "@/components/TransactionForm/form-chips";
+import { controlStyles } from "@/components/workspace/control-styles";
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import { useFormValidation } from "@/hooks";
+import { useAuthorization } from "@/hooks/use-authorization";
 import {
 	type Category,
 	EarningFormSchema,
@@ -21,6 +23,7 @@ import {
 	useThemeColor,
 } from "@/utils";
 import { clearHiddenPaymentAmounts } from "@/utils/financial-validation";
+import { isOpenSalonDay, TRANSACTION_CLOSED_MESSAGE } from "@/utils/salon-time";
 import { CompensationSection } from "./compensation-section";
 import { OthersSection } from "./others-section";
 import { ServiceTimePicker } from "./service-time-picker";
@@ -77,8 +80,12 @@ export function TransactionForm({
 	isAuthorized,
 }: TransactionFormProps) {
 	const { colors } = useTheme();
+	const { isAuthorized: canManage } = useAuthorization();
+	const { now } = useAppDate();
+	const dayClosed = !canManage && !isOpenSalonDay(earning.serviceDate, now);
+	const displayedError = dayClosed ? TRANSACTION_CLOSED_MESSAGE : saveError;
 	const headerHeight = useHeaderHeight();
-	const draftLocked = isLoading || submitDisabled;
+	const draftLocked = isLoading || submitDisabled || dayClosed;
 	const setEarning = useCallback<typeof changeEarning>(
 		(update) => {
 			if (!draftLocked) changeEarning(update);
@@ -134,6 +141,7 @@ export function TransactionForm({
 		() =>
 			isLoading ||
 			submitDisabled ||
+			dayClosed ||
 			Object.keys(errors).length > 0 ||
 			!!giftError ||
 			(!!normalizedGiftCode && !giftCard) ||
@@ -141,6 +149,7 @@ export function TransactionForm({
 		[
 			isLoading,
 			submitDisabled,
+			dayClosed,
 			errors,
 			giftError,
 			normalizedGiftCode,
@@ -274,7 +283,7 @@ export function TransactionForm({
 	/* --------------------------------- Render --------------------------------- */
 	return (
 		<>
-			{!!saveError && (
+			{!!displayedError && (
 				<Text
 					accessibilityRole="alert"
 					style={{
@@ -283,7 +292,7 @@ export function TransactionForm({
 						paddingTop: Platform.OS === "web" ? 16 : headerHeight + 16,
 					}}
 				>
-					{saveError}
+					{displayedError}
 				</Text>
 			)}
 			<ScreenScrollView
@@ -363,7 +372,8 @@ export function TransactionForm({
 					disabled={isDisabled}
 					loading={isLoading}
 					mode="contained"
-					className="rounded-3xl"
+					style={controlStyles.button}
+					contentStyle={controlStyles.buttonContent}
 				>
 					{submitLabel}
 				</Button>

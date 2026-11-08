@@ -2,12 +2,12 @@ import BottomSheet, {
 	BottomSheetBackdrop,
 	BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Button, Text, useTheme } from "react-native-paper";
+import DateTimePicker from "@/components/Form/salon-date-time-picker";
 import { useAppDate } from "@/contexts/app-date-context";
 import { useAppTheme } from "@/contexts/app-theme-context";
 

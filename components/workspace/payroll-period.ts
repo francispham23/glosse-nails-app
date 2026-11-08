@@ -1,15 +1,12 @@
-// Use calendar fields rather than elapsed days, including across DST and year end.
+import { salonDate, salonParts } from "@/utils/salon-time";
+
 export function getCompletedPayrollPeriod(today: Date) {
-	const year = today.getFullYear();
-	const month = today.getMonth();
-	if (today.getDate() <= 15) {
+	const { year, month, day } = salonParts(today);
+	if (day <= 15) {
 		return {
-			start: new Date(year, month - 1, 16, 12),
-			end: new Date(year, month, 0, 12),
+			start: salonDate(year, month - 1, 16),
+			end: salonDate(year, month, 0),
 		};
 	}
-	return {
-		start: new Date(year, month, 1, 12),
-		end: new Date(year, month, 15, 12),
-	};
+	return { start: salonDate(year, month, 1), end: salonDate(year, month, 15) };
 }

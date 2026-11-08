@@ -5,6 +5,10 @@ import { TransactionForm } from "@/components/TransactionForm";
 import { normalizeFinancialInput } from "@/utils/financial-validation";
 import type { EarningFormState } from "@/utils/types";
 
+jest.mock("@/hooks/use-authorization", () => ({
+	useAuthorization: () => ({ isAuthorized: mockManager }),
+}));
+
 jest.mock("expo-router/react-navigation", () => ({ useHeaderHeight: () => 0 }));
 jest.mock("convex/react", () => ({
 	useQuery: (query: string, args: unknown) =>
@@ -18,7 +22,7 @@ jest.mock("@/convex/_generated/api", () => ({
 }));
 jest.mock("@/hooks", () => jest.requireActual("@/hooks/use-form-validation"));
 jest.mock("@/contexts/app-date-context", () => ({
-	useAppDate: () => ({ endOfDay: new Date(2000) }),
+	useAppDate: () => ({ endOfDay: new Date(2000), now: mockNow }),
 }));
 jest.mock("@/contexts/app-theme-context", () => ({
 	useAppTheme: () => ({ isLight: true }),
@@ -71,6 +75,9 @@ jest.mock("react-native-paper", () => {
 		useTheme: () => ({ colors: {} }),
 	};
 });
+
+let mockManager = true;
+let mockNow = Date.parse("2026-11-08T04:59:59Z");
 
 const initial: EarningFormState = {
 	technicianId: "tech" as EarningFormState["technicianId"],
@@ -207,4 +214,26 @@ test("real form displays server error and submitDisabled locks valid submission 
 	await fireEvent.press(screen.getByText("Save"));
 	expect(submitted).toHaveBeenCalledTimes(1);
 	expect(submitted.mock.calls[0][0].compensation).toBe("100");
+});
+
+test("open technician draft locks at cutoff and preserves entered values", async () => {
+	mockManager = false;
+	mockNow = Date.parse("2026-11-08T04:59:59Z");
+	const submitted = jest.fn<(value: EarningFormState) => void>();
+	const input = { ...initial, serviceDate: mockNow };
+	try {
+		const view = await render(<Harness input={input} onSubmit={submitted} />);
+		const field = screen.getByPlaceholderText(
+			"Enter Total Charge in Card, Cash and Gift Card",
+		);
+		await fireEvent.changeText(field, "125");
+		mockNow = Date.parse("2026-11-08T05:00:00Z");
+		await view.rerender(<Harness input={input} onSubmit={submitted} />);
+		expect(screen.getByText(/This day is closed/)).toBeTruthy();
+		expect(screen.getByDisplayValue("125")).toBeTruthy();
+		await fireEvent.press(screen.getByText("Save"));
+		expect(submitted).not.toHaveBeenCalled();
+	} finally {
+		mockManager = true;
+	}
 });

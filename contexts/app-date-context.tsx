@@ -5,11 +5,13 @@ import {
 	useMemo,
 	useState,
 } from "react";
-
 import { useReturnContext } from "@/hooks/use-return-context";
+import { useSalonClock } from "@/hooks/use-salon-clock";
+import { salonDayBounds, salonDayKey } from "@/utils/salon-time";
 
 type AppDateContextType = {
 	date: Date;
+	now: number;
 	startOfDay: Date;
 	endOfDay: Date;
 	midDay: Date;
@@ -19,19 +21,17 @@ type AppDateContextType = {
 const AppDateContext = createContext<AppDateContextType | undefined>(undefined);
 
 export const AppDateProvider = ({ children }: { children: ReactNode }) => {
-	const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
-
-	const setDate = useCallback((date: Date) => setCurrentDate(date), []);
-
+	const now = useSalonClock();
+	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+	const setDate = useCallback((date: Date) => {
+		setSelectedDate(
+			salonDayKey(date) === salonDayKey(Date.now()) ? null : date,
+		);
+	}, []);
 	const value = useMemo(() => {
-		const startOfDay = new Date(currentDate);
-		startOfDay.setHours(0, 0, 0, 0);
-		const endOfDay = new Date(currentDate);
-		endOfDay.setHours(23, 59, 59, 999);
-		const midDay = new Date(currentDate);
-		midDay.setHours(12, 0, 0, 0);
-		return { date: currentDate, startOfDay, endOfDay, midDay, setDate };
-	}, [currentDate, setDate]);
+		const date = selectedDate ?? new Date(now);
+		return { date, now, ...salonDayBounds(date), setDate };
+	}, [selectedDate, now, setDate]);
 
 	return (
 		<AppDateContext.Provider value={value}>{children}</AppDateContext.Provider>

@@ -3,9 +3,11 @@ import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { Link } from "expo-router";
 import { useRef, useState } from "react";
 import { Alert, Platform, Text } from "react-native";
-import { Button, TextInput } from "react-native-paper";
+import { Button } from "react-native-paper";
 import FormHeader, { FormContainer } from "@/components/Form/form";
+import { FormTextInput as TextInput } from "@/components/Form/form-text-input";
 import { PasswordInput } from "@/components/Form/password-input";
+import { controlStyles } from "@/components/workspace/control-styles";
 import { isProduction, useThemeColor } from "@/utils";
 
 export default function SignInRoute() {
@@ -83,7 +85,6 @@ export default function SignInRoute() {
 				value={email}
 				onChangeText={setEmail}
 				left={<TextInput.Icon icon="email-outline" />}
-				className="h-16 rounded-3xl"
 			/>
 			{/* password text-field */}
 			<PasswordInput
@@ -94,7 +95,6 @@ export default function SignInRoute() {
 				value={password}
 				onChangeText={setPassword}
 				left={<TextInput.Icon icon="form-textbox-password" />}
-				className="h-16 rounded-3xl"
 			/>
 
 			{/* submit button */}
@@ -108,7 +108,8 @@ export default function SignInRoute() {
 				disabled={isLoading}
 				mode="contained"
 				loading={isLoading}
-				className="rounded-3xl"
+				style={controlStyles.button}
+				contentStyle={controlStyles.buttonContent}
 			>
 				{isLoading ? "Signing In..." : "Sign In"}
 			</Button>

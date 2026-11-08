@@ -12,6 +12,7 @@ import { DateControl } from "@/components/workspace/date-control.web";
 import { DateRangeControl } from "@/components/workspace/date-range-control.web";
 import { dateInputValue } from "@/components/workspace/date-value";
 import { WorkspaceSheet } from "@/components/workspace/sheet.web";
+import { salonDate, salonParts } from "@/utils/salon-time";
 
 // Calendar, DOM dialog, local dates and event handlers are real; only app theme/layout are substituted.
 jest.mock("react-native-paper", () => ({
@@ -74,29 +75,30 @@ async function click(element: HTMLElement) {
 	await act(async () => element.click());
 }
 
-test("calendar conversion preserves local days across DST, leap day and year boundaries", () => {
+test("calendar conversion preserves Vancouver days across DST, leap day and year boundaries", () => {
 	for (const [year, month, day] of [
 		[2026, 3, 8],
 		[2026, 11, 1],
 		[2024, 2, 29],
 		[2027, 1, 1],
 	]) {
-		const local = new Date(year, month - 1, day, 23, 59);
+		const local = salonDate(year, month - 1, day, 23, 59);
 		const roundTrip = calendarDate(calendarValue(local));
-		expect(roundTrip?.getFullYear()).toBe(year);
-		expect(roundTrip?.getMonth()).toBe(month - 1);
-		expect(roundTrip?.getDate()).toBe(day);
-		expect(roundTrip?.getHours()).toBe(12);
+		if (!roundTrip) throw new Error("Expected a valid salon date");
+		expect(salonParts(roundTrip).year).toBe(year);
+		expect(salonParts(roundTrip).month).toBe(month - 1);
+		expect(salonParts(roundTrip).day).toBe(day);
+		expect(salonParts(roundTrip).hour).toBe(12);
 	}
 	expect(
 		calendarDate(
 			new CalendarDate(2026, 10, 6),
 			undefined,
-			new Date(2026, 9, 5, 23, 59),
+			salonDate(2026, 9, 5, 23, 59),
 		),
 	).toBeNull();
 	expect(
-		calendarDate(new CalendarDate(2026, 10, 4), new Date(2026, 9, 5)),
+		calendarDate(new CalendarDate(2026, 10, 4), salonDate(2026, 9, 5, 0)),
 	).toBeNull();
 });
 
@@ -105,8 +107,8 @@ test("single-date calendar selects an actual day and prevents future dates", asy
 	await mount(
 		<DateControl
 			label="Overview date"
-			value={new Date(2026, 9, 5)}
-			maximumDate={new Date(2026, 9, 5, 23, 59)}
+			value={salonDate(2026, 9, 5, 0)}
+			maximumDate={salonDate(2026, 9, 5, 23, 59)}
 			onChange={onChange}
 		/>,
 	);
@@ -123,9 +125,9 @@ test("range calendar waits for both endpoints and orders backwards selection", a
 	const onPendingChange = jest.fn<(pending: boolean) => void>();
 	await mount(
 		<DateRangeControl
-			startDate={new Date(2026, 9, 1)}
-			endDate={new Date(2026, 9, 2)}
-			maximumDate={new Date(2026, 9, 5, 23, 59)}
+			startDate={salonDate(2026, 9, 1, 0)}
+			endDate={salonDate(2026, 9, 2, 0)}
+			maximumDate={salonDate(2026, 9, 5, 23, 59)}
 			onChange={onChange}
 			onPendingChange={onPendingChange}
 		/>,
@@ -148,8 +150,8 @@ test("month navigation and month/year jumps preserve the selected date", async (
 	await mount(
 		<DateControl
 			label="Overview date"
-			value={new Date(2026, 9, 5)}
-			maximumDate={new Date(2026, 9, 5, 23, 59)}
+			value={salonDate(2026, 9, 5, 0)}
+			maximumDate={salonDate(2026, 9, 5, 23, 59)}
 			onChange={onChange}
 		/>,
 	);
@@ -208,9 +210,9 @@ test("same-day range is valid and future endpoints cannot complete a range", asy
 	const onChange = jest.fn<(start: Date, end: Date) => void>();
 	await mount(
 		<DateRangeControl
-			startDate={new Date(2026, 9, 1)}
-			endDate={new Date(2026, 9, 2)}
-			maximumDate={new Date(2026, 9, 5, 23, 59)}
+			startDate={salonDate(2026, 9, 1, 0)}
+			endDate={salonDate(2026, 9, 2, 0)}
+			maximumDate={salonDate(2026, 9, 5, 23, 59)}
 			onChange={onChange}
 		/>,
 	);
@@ -244,7 +246,7 @@ test("web dialog labels itself, closes on Escape, and returns focus to its trigg
 				>
 					<DateControl
 						label="Overview date"
-						value={new Date(2026, 9, 5)}
+						value={salonDate(2026, 9, 5, 0)}
 						onChange={() => {}}
 					/>
 				</WorkspaceSheet>

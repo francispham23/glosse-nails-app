@@ -1,7 +1,7 @@
 import { Link, Stack } from "expo-router";
 import { Button } from "react-native-paper";
-
 import { HeaderButton } from "@/components/Buttons/header-button";
+import { controlStyles } from "@/components/workspace/control-styles";
 import { ModalRouteLayout } from "@/components/workspace/modal-route-layout";
 import { useModalStackOptions } from "@/hooks/use-modal-stack-options";
 import { isProduction } from "@/utils";
@@ -23,18 +23,24 @@ export default function EmailLayout() {
 					name="signup"
 					options={{
 						title: "",
+						headerLeft: ({ canGoBack }) =>
+							canGoBack ? <HeaderButton back iconName="chevron-back" /> : null,
 					}}
 				/>
 				<Stack.Screen
 					name="(reset)/request-password-reset"
 					options={{
 						title: "",
+						headerLeft: ({ canGoBack }) =>
+							canGoBack ? <HeaderButton back iconName="chevron-back" /> : null,
 					}}
 				/>
 				<Stack.Screen
 					name="(reset)/reset-password"
 					options={{
 						title: "",
+						headerLeft: ({ canGoBack }) =>
+							canGoBack ? <HeaderButton back iconName="chevron-back" /> : null,
 					}}
 				/>
 			</Stack>
@@ -45,7 +51,11 @@ export default function EmailLayout() {
 const SignUpButton = () => {
 	return (
 		<Link href="/(root)/(auth)/email/signup" asChild>
-			<Button mode="text" className="rounded-full">
+			<Button
+				mode="text"
+				className="rounded-full"
+				contentStyle={controlStyles.headerLabel}
+			>
 				Sign Up
 			</Button>
 		</Link>

@@ -2,9 +2,11 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { Link } from "expo-router";
 import { useRef, useState } from "react";
 import { Alert, Text } from "react-native";
-import { Button, TextInput } from "react-native-paper";
+import { Button } from "react-native-paper";
 import FormHeader, { FormContainer } from "@/components/Form/form";
+import { FormTextInput as TextInput } from "@/components/Form/form-text-input";
 import { PasswordInput } from "@/components/Form/password-input";
+import { controlStyles } from "@/components/workspace/control-styles";
 
 export default function SignUpRoute() {
 	const { signIn } = useAuthActions();
@@ -80,7 +82,6 @@ export default function SignUpRoute() {
 				value={name}
 				onChangeText={setName}
 				left={<TextInput.Icon icon="account-outline" />}
-				className="h-16 rounded-3xl"
 			/>
 			{/* email */}
 			<TextInput
@@ -93,7 +94,6 @@ export default function SignUpRoute() {
 				value={email}
 				onChangeText={setEmail}
 				left={<TextInput.Icon icon="email-outline" />}
-				className="h-16 rounded-3xl"
 			/>
 			{/* password */}
 			<PasswordInput
@@ -104,7 +104,6 @@ export default function SignUpRoute() {
 				value={password}
 				onChangeText={setPassword}
 				left={<TextInput.Icon icon="form-textbox-password" />}
-				className="h-16 rounded-3xl"
 			/>
 			{/* confirm password */}
 			<PasswordInput
@@ -115,7 +114,6 @@ export default function SignUpRoute() {
 				value={confirmPassword}
 				onChangeText={setConfirmPassword}
 				left={<TextInput.Icon icon="form-textbox-password" />}
-				className="h-16 rounded-3xl"
 			/>
 			{/* submit button */}
 			<Button
@@ -123,7 +121,8 @@ export default function SignUpRoute() {
 				disabled={isLoading}
 				mode="contained"
 				loading={isLoading}
-				className="rounded-3xl"
+				style={controlStyles.button}
+				contentStyle={controlStyles.buttonContent}
 			>
 				{isLoading ? "Creating Account..." : "Sign Up"}
 			</Button>

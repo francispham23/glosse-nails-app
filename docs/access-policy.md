@@ -15,8 +15,15 @@ the caller's identity or permission.
   only; signed-in callers receive their own account/status, including when their
   role is missing/inactive. `isAuthorized` retains its management-area meaning.
 - `users.viewer`, `users.viewerRole`: active staff, caller's own profile/role.
-- `users.usersByDateRange`: active staff; technicians see themselves, managers and
-  owners see all. `report` changes calculation/display semantics, never access.
+- `users.usersByDateRange`: active staff. Normal Earnings (`report` omitted/false)
+  restores the original shared team compensation/tip summaries for the requested
+  date range. Coworker rows expose ID, creation timestamp, name/image and totals
+  only; private account fields remain self/management-only. Payroll (`report=true`)
+  remains self-only for technicians and all users for owners/managers. The Earnings
+  screen retains its original today/on-shift versus historical/off-shift filtering;
+  at 22:00 Vancouver the current day uses the historical screen rules.
+  that display filter is not a server restriction on normal aggregate summaries.
+  No new aggregate-query gate or transaction-detail read permission is added.
 - `users.getUserById`: active staff, self or owner/manager. Missing ID returns null
   after authentication, not an unauthenticated shortcut.
 - `users.changePassword`: signed-in account owner plus valid old password. Staff
@@ -28,10 +35,14 @@ the caller's identity or permission.
   technicians' transaction details through this alternate list endpoint.
 - `transactions.listByTechnicianAndDateRange`, `transactions.getById`: active
   staff, self or owner/manager. Stored ownership protects detail lookups.
-- `transactions.addTransaction`: active staff, self or owner/manager.
+- `transactions.addTransaction`: active staff, self or owner/manager. Technicians
+  may create only for the current Vancouver day before 22:00.
 - `transactions.updateTransaction`: active staff; both stored and requested
   technician must be permitted. A technician cannot acquire another's record by
   submitting their own ID, or transfer their own record to another technician.
+  For technicians, both stored and requested service dates must be the current
+  Vancouver day before 22:00. The server clock enforces the deadline. Owners and
+  managers retain historical correction access.
 - `transactions.deleteTransaction`: owner/manager only.
 - `giftCards.list`, `giftCards.getByCode`, `giftCards.listByDateRange`: active staff
   shared operational gift-card catalog and date-range data, including codes,

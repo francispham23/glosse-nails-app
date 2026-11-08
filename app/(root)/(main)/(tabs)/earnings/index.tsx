@@ -13,14 +13,15 @@ import {
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import { useAuthorization } from "@/hooks/use-authorization";
-import { getErrorMessage, isToday, type User } from "@/utils";
+import { getErrorMessage, type User } from "@/utils";
+import { isOpenSalonDay } from "@/utils/salon-time";
 
 export default function HomeRoute() {
 	const { colors } = useTheme();
 	const [saveError, setSaveError] = useState("");
 	const [saving, setSaving] = useState(false);
 	const saveLock = useRef(false);
-	const { startOfDay, endOfDay } = useAppDate();
+	const { startOfDay, endOfDay, now } = useAppDate();
 	const { isAuthorized: isAuthUser, user } = useAuthorization();
 
 	// Query Convex only when not showing today's data
@@ -51,8 +52,8 @@ export default function HomeRoute() {
 	}, [isSelecting, selection, onShiftTechs, technicians]);
 
 	const isSelectedDateToday = useMemo(
-		() => isToday(endOfDay.getTime()),
-		[endOfDay],
+		() => isOpenSalonDay(endOfDay, now),
+		[endOfDay, now],
 	);
 
 	const filteredSelectedTechnicians = useMemo(() => {

@@ -4,6 +4,15 @@ This document separates approved rounding rules from characterized behavior
 and unresolved decisions. It describes the single-business app. It does not
 authorize financial-policy changes, deployment or a storage migration.
 
+## Business calendar
+
+Daily query boundaries, sale/service displays, reports and payroll periods use
+America/Vancouver with the shared pinned timezone data in `utils/salon-time.ts`.
+Ranges retain inclusive endpoints: local midnight through next midnight minus
+1 millisecond. Stored transaction/sale instants and financial calculations are
+unchanged. Technician entry closes at 22:00 under [access policy](access-policy.md);
+this does not reallocate transactions to another financial day.
+
 ## Approved rounding rules
 
 Executable coverage is recorded in [the calculation regressions](../convex/calculations.test.ts).

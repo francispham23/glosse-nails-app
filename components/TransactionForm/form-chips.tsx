@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { View } from "react-native";
 import { Chip, Icon } from "react-native-paper";
+import { controlStyles } from "@/components/workspace/control-styles";
 
 import type { Category, EarningFormState, PaymentMethod } from "@/utils/types";
 
@@ -40,6 +41,7 @@ export const PaymentMethodChips = ({
 	<View className="flex-row flex-wrap gap-2">
 		{methods.map((method) => (
 			<Chip
+				style={controlStyles.chip}
 				key={method}
 				selected={selectedMethods.includes(method)}
 				disabled={disableGift && method === "Gift Card"}
@@ -83,6 +85,7 @@ export const ServiceCategoryChips = ({
 		<View className="mt-4 mb-4 flex-row flex-wrap gap-2">
 			{visibleCategories?.map((category) => (
 				<Chip
+					style={controlStyles.chip}
 					key={category._id}
 					selected={selectedServiceIds.has(category._id)}
 					onPress={() => onSelect(category._id)}
@@ -91,7 +94,11 @@ export const ServiceCategoryChips = ({
 				</Chip>
 			))}
 			{!show && hasHiddenCategories ? (
-				<Chip key="more" onPress={() => setShow(true)}>
+				<Chip
+					style={controlStyles.chip}
+					key="more"
+					onPress={() => setShow(true)}
+				>
 					More Services...
 				</Chip>
 			) : null}
@@ -131,6 +138,7 @@ export const OtherInputChips = ({
 		<View className="flex-row flex-wrap gap-2">
 			{otherInputs.map((input) => (
 				<Chip
+					style={controlStyles.chip}
 					key={input}
 					selected={selectedInputs.includes(input)}
 					disabled={
@@ -144,6 +152,7 @@ export const OtherInputChips = ({
 			))}
 			{selectedInputs.includes("Discount") ? (
 				<Chip
+					style={controlStyles.chip}
 					className="opacity-60"
 					onPress={() =>
 						updateEarning(

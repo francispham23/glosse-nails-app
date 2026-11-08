@@ -1,5 +1,6 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
+import { useFocusEffect } from "expo-router";
 import { useCallback, useRef } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Text as PaperText, useTheme } from "react-native-paper";
@@ -38,6 +39,8 @@ export const GiftCard = ({
 	const closeBottomSheet = useCallback(() => {
 		bottomSheetRef.current?.dismiss();
 	}, []);
+
+	useFocusEffect(useCallback(() => closeBottomSheet, [closeBottomSheet]));
 
 	const balanceClassName = cn(
 		"text-right font-semibold text-foreground text-md",

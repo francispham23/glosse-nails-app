@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useId, useRef } from "react";
 import { Button } from "react-aria-components";
 import { useTheme } from "react-native-paper";
+import { controlGeometry } from "@/components/workspace/control-styles";
 
 /** A read-only form value is a button on web, so touch and keyboard can open it. */
 export function PickerField({
@@ -39,9 +40,9 @@ export function PickerField({
 				onPress={() => setOpen(!open)}
 				style={{
 					width: "100%",
-					minHeight: 64,
-					borderRadius: 24,
-					border: `1px solid ${colors.outline}`,
+					minHeight: controlGeometry.fieldHeight,
+					borderRadius: controlGeometry.radius,
+					border: `1px solid ${colors.outlineVariant}`,
 					background: colors.surface,
 					color: colors.onSurface,
 					display: "flex",
@@ -102,8 +103,8 @@ export function PickerField({
 							minHeight: 44,
 							padding: "8px 16px",
 							color: colors.primary,
-							border: `1px solid ${colors.outline}`,
-							borderRadius: 12,
+							border: `1px solid ${colors.outlineVariant}`,
+							borderRadius: controlGeometry.radius,
 							background: colors.surface,
 							font: "inherit",
 							cursor: "pointer",

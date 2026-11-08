@@ -24,7 +24,12 @@
 			"!**/.alchemy",
 			"!**/wrangler.jsonc",
 			"!**/.source",
-			"!**/_generated"
+			"!**/_generated",
+			"!**/.agents",
+			"!**/.cursor",
+			"!.github/skills",
+			"!ios/Pods",
+			"!ios/build"
 		]
 	},
 	"formatter": {
@@ -65,6 +70,7 @@
 			}
 		}
 	},
+	"css": { "parser": { "tailwindDirectives": true } },
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"

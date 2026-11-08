@@ -11,10 +11,11 @@ import {
 import { useAppDate } from "@/contexts/app-date-context";
 import { api } from "@/convex/_generated/api";
 import { useAuthorization } from "@/hooks/use-authorization";
-import { isToday, type Transaction } from "@/utils";
+import type { Transaction } from "@/utils";
+import { isOpenSalonDay } from "@/utils/salon-time";
 
 export default function Transactions() {
-	const { startOfDay, endOfDay } = useAppDate();
+	const { startOfDay, endOfDay, now } = useAppDate();
 	const { isAuthorized, user } = useAuthorization();
 
 	const transactions = useQuery(api.transactions.listByDateRange, {
@@ -25,7 +26,7 @@ export default function Transactions() {
 		shiftDate: startOfDay.getTime(),
 	});
 
-	const isSelectedDateToday = isToday(endOfDay.getTime());
+	const isSelectedDateToday = isOpenSalonDay(endOfDay, now);
 	const isOnShift = onShiftTechs?.some((tech) => tech._id === user?._id);
 
 	const data = useMemo(

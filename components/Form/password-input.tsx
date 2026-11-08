@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 import { useState } from "react";
-import { TextInput } from "react-native-paper";
+import { FormTextInput as TextInput } from "@/components/Form/form-text-input";
 
 type Props = Omit<
 	ComponentProps<typeof TextInput>,

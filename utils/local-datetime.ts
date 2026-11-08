@@ -1,26 +1,33 @@
-/** Keep clock fields from `source` and replace the calendar day from `daySource`. */
+import { salonDate, salonParts } from "./salon-time";
+
+/** Keep salon clock fields from source and the salon calendar day from daySource. */
 export function mergeLocalCalendarDay(source: Date, daySource: Date) {
-	const next = new Date(source);
-	next.setFullYear(
-		daySource.getFullYear(),
-		daySource.getMonth(),
-		daySource.getDate(),
+	const time = salonParts(source);
+	const day = salonParts(daySource);
+	return salonDate(
+		day.year,
+		day.month,
+		day.day,
+		time.hour,
+		time.minute,
+		time.second,
+		time.millisecond,
 	);
-	return next;
 }
-
-/** Keep the calendar day from `source` and replace clock fields from `timeSource`. */
+/** Keep the salon calendar day from source and salon clock fields from timeSource. */
 export function mergeLocalTime(source: Date, timeSource: Date) {
-	const next = new Date(source);
-	next.setHours(
-		timeSource.getHours(),
-		timeSource.getMinutes(),
-		timeSource.getSeconds(),
-		timeSource.getMilliseconds(),
+	const day = salonParts(source);
+	const time = salonParts(timeSource);
+	return salonDate(
+		day.year,
+		day.month,
+		day.day,
+		time.hour,
+		time.minute,
+		time.second,
+		time.millisecond,
 	);
-	return next;
 }
-
 export function isAfterEndOfDay(candidate: Date, endOfDay: Date) {
 	return candidate.getTime() > endOfDay.getTime();
 }

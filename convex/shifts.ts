@@ -1,8 +1,24 @@
 import { v } from "convex/values";
+import { salonDayBounds } from "../utils/salon-time";
+import type { QueryCtx } from "./_generated/server";
 
 import { mutation, query } from "./_generated/server";
 import { requireActor, requireAnyRole } from "./authz";
 
+async function shiftForDay(ctx: QueryCtx, date: number) {
+	const { startOfDay, endOfDay } = salonDayBounds(date);
+	const matches = await ctx.db
+		.query("dailyTechnicianShifts")
+		.withIndex("by_shift_date", (q) =>
+			q.gte("shiftDate", +startOfDay).lte("shiftDate", +endOfDay),
+		)
+		.take(2);
+	if (matches.length > 1)
+		throw new Error(
+			"Multiple shifts exist for this Vancouver day. Please contact a manager.",
+		);
+	return matches[0] ?? null;
+}
 // Save technicians for today's shift
 export const saveShift = mutation({
 	returns: v.id("dailyTechnicianShifts"),
@@ -13,10 +29,7 @@ export const saveShift = mutation({
 	handler: async (ctx, args) => {
 		await requireAnyRole(ctx, ["owner", "manager"]);
 		// Check if shift already exists for this date
-		const existingShift = await ctx.db
-			.query("dailyTechnicianShifts")
-			.withIndex("by_shift_date", (q) => q.eq("shiftDate", args.shiftDate))
-			.first();
+		const existingShift = await shiftForDay(ctx, args.shiftDate);
 
 		if (existingShift) {
 			// Update existing shift
@@ -29,7 +42,7 @@ export const saveShift = mutation({
 		// Create new shift
 		const shiftId = await ctx.db.insert("dailyTechnicianShifts", {
 			technicians: args.technicians,
-			shiftDate: args.shiftDate,
+			shiftDate: +salonDayBounds(args.shiftDate).startOfDay,
 		});
 
 		return shiftId;
@@ -54,10 +67,7 @@ export const getShiftByDate = query({
 	},
 	handler: async (ctx, args) => {
 		await requireActor(ctx);
-		const shift = await ctx.db
-			.query("dailyTechnicianShifts")
-			.withIndex("by_shift_date", (q) => q.eq("shiftDate", args.shiftDate))
-			.first();
+		const shift = await shiftForDay(ctx, args.shiftDate);
 
 		if (!shift) {
 			return null;
