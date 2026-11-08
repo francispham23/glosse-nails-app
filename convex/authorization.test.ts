@@ -210,6 +210,34 @@ describe("protected backend surface", () => {
 });
 
 describe("technician financial boundaries", () => {
+	test("normal Earnings query shares coworker totals without private profiles", async () => {
+		const f = await fixture();
+		await f.t.run((ctx) =>
+			ctx.db.patch(f.techB, {
+				email: "private@example.test",
+				phone: "private",
+			}),
+		);
+		const client = f.t.withIdentity({ subject: f.techA });
+		for (const report of [undefined, false]) {
+			const rows = await client.query(api.users.usersByDateRange, {
+				...range(f),
+				report,
+			});
+			expect(rows.find((row) => row._id === f.techB)).toEqual({
+				_id: f.techB,
+				_creationTime: expect.any(Number),
+				name: "B",
+				compensation: 20,
+				tip: 5,
+			});
+			expect(rows.find((row) => row._id === f.manager)).toMatchObject({
+				compensation: 0,
+				tip: 0,
+			});
+		}
+	});
+
 	test("gift lookup cannot exclude another technician's redemption", async () => {
 		const f = await fixture();
 		await f.t.run(async (ctx) => {
@@ -273,7 +301,7 @@ describe("technician financial boundaries", () => {
 		).rejects.toThrow("Transaction not found");
 	});
 	for (const report of [undefined, false, true]) {
-		test(`lists stay self-only with report=${report}`, async () => {
+		test(`transactions stay self-only; payroll summaries stay self-only with report=${report}`, async () => {
 			const f = await fixture();
 			const client = f.t.withIdentity({ subject: f.techA });
 			expect(
@@ -284,14 +312,15 @@ describe("technician financial boundaries", () => {
 					})
 				).map((tx) => tx._id),
 			).toEqual([f.txA]);
-			expect(
-				(
-					await client.query(api.users.usersByDateRange, {
-						...range(f),
-						report,
-					})
-				).map((user) => user._id),
-			).toEqual([f.techA]);
+			const summaries = await client.query(api.users.usersByDateRange, {
+				...range(f),
+				report,
+			});
+			if (report) expect(summaries.map((user) => user._id)).toEqual([f.techA]);
+			else
+				expect(summaries.map((user) => user._id)).toEqual(
+					expect.arrayContaining([f.techA, f.techB]),
+				);
 		});
 	}
 	test("detail and alternate list endpoints cannot bypass ownership", async () => {

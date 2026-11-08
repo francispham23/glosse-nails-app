@@ -15,8 +15,14 @@ the caller's identity or permission.
   only; signed-in callers receive their own account/status, including when their
   role is missing/inactive. `isAuthorized` retains its management-area meaning.
 - `users.viewer`, `users.viewerRole`: active staff, caller's own profile/role.
-- `users.usersByDateRange`: active staff; technicians see themselves, managers and
-  owners see all. `report` changes calculation/display semantics, never access.
+- `users.usersByDateRange`: active staff. Normal Earnings (`report` omitted/false)
+  restores the original shared team compensation/tip summaries for the requested
+  date range. Coworker rows expose ID, creation timestamp, name/image and totals
+  only; private account fields remain self/management-only. Payroll (`report=true`)
+  remains self-only for technicians and all users for owners/managers. The Earnings
+  screen retains its original today/on-shift versus historical/off-shift filtering;
+  that display filter is not a server restriction on normal aggregate summaries.
+  No new endpoint, server timezone gate or transaction-detail permission is added.
 - `users.getUserById`: active staff, self or owner/manager. Missing ID returns null
   after authentication, not an unauthenticated shortcut.
 - `users.changePassword`: signed-in account owner plus valid old password. Staff
