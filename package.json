@@ -19,8 +19,10 @@
 		"test:backend": "vitest run",
 		"test:app": "jest --runInBand",
 		"verify:backend": "npm run typecheck && npm run lint:backend && npm run test:backend",
-		"verify:app": "npm run lint -- --no-cache --max-warnings 0 && npm run test:app",
-		"verify:quality": "npm run verify:backend && npm run verify:app && node --test scripts/export-web.test.mjs"
+		"verify:app": "npm run lint -- --no-cache --max-warnings 0 && npm run lint:biome && npm run test:app:timezones",
+		"verify:quality": "npm run verify:backend && npm run verify:app && node --test scripts/export-web.test.mjs",
+		"test:app:timezones": "node scripts/test-app-timezones.mjs",
+		"lint:biome": "biome lint . --error-on-warnings"
 	},
 	"dependencies": {
 		"@auth/core": "^0.41.3",

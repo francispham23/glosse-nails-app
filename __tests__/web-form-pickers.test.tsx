@@ -4,6 +4,7 @@ import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { SellDatePicker } from "@/components/Form/sell-date-picker.web";
 import { ServiceTimePicker } from "@/components/TransactionForm/service-time-picker.web";
+import { salonDate } from "@/utils/salon-time";
 
 jest.mock("react-native-paper", () => {
 	return {
@@ -58,10 +59,10 @@ function TimeFixture() {
 	const [open, setOpen] = useState(false);
 	return (
 		<ServiceTimePicker
-			serviceDate={new Date(2026, 9, 12, 13, 30).getTime()}
+			serviceDate={salonDate(2026, 9, 12, 13, 30).getTime()}
 			open={open}
 			setOpen={setOpen}
-			endOfDay={new Date(2026, 9, 13, 23, 59)}
+			endOfDay={salonDate(2026, 9, 13, 23, 59)}
 			mutedColor="gray"
 			onDateChange={jest.fn()}
 		/>
@@ -72,8 +73,8 @@ test("clicking gift date opens a real calendar", async () => {
 	await act(async () =>
 		root.render(
 			<SellDatePicker
-				date={new Date(2026, 9, 12, 13, 30)}
-				maximumDate={new Date(2026, 9, 13, 23, 59)}
+				date={salonDate(2026, 9, 12, 13, 30)}
+				maximumDate={salonDate(2026, 9, 13, 23, 59)}
 				mutedColor="gray"
 				onChange={jest.fn()}
 			/>,
@@ -97,8 +98,8 @@ test("date selection preserves clock fields, future days are disabled, and focus
 	await act(async () =>
 		root.render(
 			<SellDatePicker
-				date={new Date(2026, 9, 12, 13, 30)}
-				maximumDate={new Date(2026, 9, 13, 23, 59)}
+				date={salonDate(2026, 9, 12, 13, 30)}
+				maximumDate={salonDate(2026, 9, 13, 23, 59)}
 				mutedColor="gray"
 				onChange={change}
 			/>,
@@ -129,7 +130,7 @@ test("date selection preserves clock fields, future days are disabled, and focus
 	await act(async () => future.click());
 	expect(change).not.toHaveBeenCalled();
 	await act(async () => day.click());
-	expect(change).toHaveBeenCalledWith(new Date(2026, 9, 10, 13, 30));
+	expect(change).toHaveBeenCalledWith(salonDate(2026, 9, 10, 13, 30));
 	expect(container.querySelector("[role=grid]")).toBeNull();
 	expect(document.activeElement).toBe(trigger);
 });
@@ -177,10 +178,10 @@ test("editing time keeps the service day and Done returns focus", async () => {
 		const [open, setOpen] = useState(false);
 		return (
 			<ServiceTimePicker
-				serviceDate={new Date(2026, 9, 12, 13, 30).getTime()}
+				serviceDate={salonDate(2026, 9, 12, 13, 30).getTime()}
 				open={open}
 				setOpen={setOpen}
-				endOfDay={new Date(2026, 9, 12, 23, 59, 59)}
+				endOfDay={salonDate(2026, 9, 12, 23, 59, 59)}
 				mutedColor="gray"
 				onDateChange={change}
 			/>
@@ -195,7 +196,10 @@ test("editing time keeps the service day and Done returns focus", async () => {
 			new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }),
 		),
 	);
-	expect(change).toHaveBeenCalledWith(undefined, new Date(2026, 9, 12, 14, 30));
+	expect(change).toHaveBeenCalledWith(
+		undefined,
+		salonDate(2026, 9, 12, 14, 30),
+	);
 	const done = requireValue(
 		Array.from(container.querySelectorAll("button")).find(
 			(node) => node.textContent === "Done",
@@ -212,10 +216,10 @@ test("time edits past the existing cutoff are rejected", async () => {
 		const [open, setOpen] = useState(false);
 		return (
 			<ServiceTimePicker
-				serviceDate={new Date(2026, 9, 12, 13, 30).getTime()}
+				serviceDate={salonDate(2026, 9, 12, 13, 30).getTime()}
 				open={open}
 				setOpen={setOpen}
-				endOfDay={new Date(2026, 9, 12, 13, 30)}
+				endOfDay={salonDate(2026, 9, 12, 13, 30)}
 				mutedColor="gray"
 				onDateChange={change}
 			/>

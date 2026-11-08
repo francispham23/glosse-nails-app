@@ -17,6 +17,7 @@ import {
 	getWorkspaceLayout,
 	useWorkspaceLayout,
 } from "@/hooks/use-workspace-layout";
+import { salonDate, salonParts } from "@/utils/salon-time";
 
 jest.mock("react-native-safe-area-context", () => ({
 	useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
@@ -31,22 +32,25 @@ jest.mock("@/hooks/use-workspace-layout", () => ({
 	useWorkspaceLayout: jest.fn(),
 }));
 
-test("date input preserves the calendar day locally and rejects invalid/out-of-range dates", () => {
+test("date input preserves the Vancouver calendar day and rejects invalid/out-of-range dates", () => {
 	const selected = parseDateInput("2026-03-08");
 	expect(selected).not.toBeNull();
-	expect(selected?.getFullYear()).toBe(2026);
-	expect(selected?.getMonth()).toBe(2);
-	expect(selected?.getDate()).toBe(8);
 	if (!selected) {
 		throw new Error("Expected a valid date from parseDateInput");
 	}
+	expect(salonParts(selected)).toMatchObject({
+		year: 2026,
+		month: 2,
+		day: 8,
+		hour: 12,
+	});
 	expect(dateInputValue(selected)).toBe("2026-03-08");
 	expect(parseDateInput("2026-02-29")).toBeNull();
 	expect(parseDateInput("")).toBeNull();
 	expect(
-		parseDateInput("2026-03-09", undefined, new Date(2026, 2, 8, 23)),
+		parseDateInput("2026-03-09", undefined, salonDate(2026, 2, 8, 23)),
 	).toBeNull();
-	expect(parseDateInput("2026-03-07", new Date(2026, 2, 8))).toBeNull();
+	expect(parseDateInput("2026-03-07", salonDate(2026, 2, 8, 0))).toBeNull();
 	expect(parseDateInput("2024-02-29")).not.toBeNull();
 });
 

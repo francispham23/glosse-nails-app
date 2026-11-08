@@ -22,7 +22,11 @@ node scripts/check-agent-docs.mjs
 
 These checks use synthetic data without contacting a Convex deployment. The
 backend gate includes app/backend typechecks, backend lint and backend tests;
-`verify:quality` also runs full app lint and app interaction tests. Before each
+`verify:quality` also runs ESLint, Biome, export-script tests and the complete app
+suite in UTC, America/Vancouver and Asia/Tokyo. Each timezone runs in a separate
+Node process so date libraries read the intended timezone at startup. Use
+`npm run test:app` for a quick run in your current timezone, or
+`npm run test:app:timezones` to reproduce the commit/CI app test gate. Before each
 normal local commit, Husky runs staged JavaScript/TypeScript ESLint, then the full
 `verify:quality` gate. Any lint warning/error, typecheck error or failing test
 blocks the commit; files are not automatically fixed or staged.
@@ -30,8 +34,11 @@ blocks the commit; files are not automatically fixed or staged.
 Full checks run against the working tree, which may differ from a partially
 staged commit. Hooks can be bypassed with `--no-verify` or `HUSKY=0`; passing
 checks catches covered regressions, not every bug. PR CI checks the pushed commit
-in a fresh checkout. The GitHub pull-request workflow runs the backend and app gates
-plus iOS, Android and web exports. These checks do not replace device, browser
+in a fresh checkout. The GitHub workflow runs the same `verify:quality` command
+on pull requests and pushes to main/staging, followed by iOS, Android and web exports. It also supports
+manual runs, cancels superseded runs and limits job duration. Repository branch
+rules should require the `quality` check before merge; local hooks remain a
+convenience and can be bypassed. These checks do not replace device, browser
 interaction or live sign-in testing. See [the access policy](docs/access-policy.md)
 for role permissions, intentional public endpoints and callback configuration.
 See [financial policy](docs/financial-policy.md) for approved rounding rules,
@@ -51,7 +58,7 @@ updating a vendor skill; this does not authorize installation or deployment.
 - **Styling**: [Uniwind](https://github.com/nicksrandall/uniwind) (Tailwind for React Native) + TailwindCSS v4
 - **Theming**: [React Native Papers](https://github.com/callstack/react-native-paper) Material Design for React Native (Android & iOS)
 - **Forms**: Zod validation
-- **Code Quality**: ESLint with Expo configuration for lint and staged checks; Biome is available for formatting
+- **Code Quality**: ESLint with Expo configuration for lint and staged checks; Biome lint is enforced by the quality gate and is also available for formatting
 
 ## Getting Started
 

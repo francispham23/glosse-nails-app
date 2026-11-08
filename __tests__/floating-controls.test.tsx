@@ -8,6 +8,7 @@ import {
 	getWorkspaceLayout,
 	useWorkspaceLayout,
 } from "@/hooks/use-workspace-layout";
+import { salonDate } from "@/utils/salon-time";
 
 jest.mock("react-native-safe-area-context", () => ({
 	SafeAreaInsetsContext: jest
@@ -33,6 +34,10 @@ jest.mock("@/components/workspace/date-control", () => {
 	const { dateInputValue } = jest.requireActual<
 		typeof import("@/components/workspace/date-value")
 	>("@/components/workspace/date-value");
+	const { salonDate } =
+		jest.requireActual<typeof import("@/utils/salon-time")>(
+			"@/utils/salon-time",
+		);
 	return {
 		DateControl: ({
 			label,
@@ -53,15 +58,16 @@ jest.mock("@/components/workspace/date-control", () => {
 					accessibilityValue: {
 						text: maximumDate ? dateInputValue(maximumDate) : undefined,
 					},
-					onPress: () => onChange(new Date(2026, 9, 3)),
+					onPress: () => onChange(salonDate(2026, 9, 3, 0)),
 				},
 				React.createElement(Text, null, `${label}: ${dateInputValue(value)}`),
 			),
 	};
 });
 
-const start = new Date(2026, 9, 4);
-const end = new Date(2026, 9, 4, 23, 59);
+// Calendar fixtures and fake clocks use Vancouver time on every test host.
+const start = salonDate(2026, 9, 4, 0);
+const end = salonDate(2026, 9, 4, 23, 59);
 
 test("mobile range changes are drafts until Apply and survive layout changes", async () => {
 	jest.mocked(useWorkspaceLayout).mockReturnValue(getWorkspaceLayout(390));
@@ -85,7 +91,7 @@ test("mobile range changes are drafts until Apply and survive layout changes", a
 	expect(screen.getByText("From: 2026-10-03")).toBeTruthy();
 	await fireEvent.press(screen.getByRole("button", { name: "Apply range" }));
 	expect(onApply).toHaveBeenCalledTimes(1);
-	expect(onApply).toHaveBeenCalledWith(new Date(2026, 9, 3), end);
+	expect(onApply).toHaveBeenCalledWith(salonDate(2026, 9, 3, 0), end);
 });
 
 test("Cancel and backdrop dismiss do not commit and reopening starts from committed dates", async () => {
@@ -132,7 +138,7 @@ test("native desktop keeps direct inline range updates", async () => {
 	);
 	expect(screen.queryByRole("button", { name: /^Date range:/ })).toBeNull();
 	await fireEvent.press(screen.getByRole("button", { name: "From" }));
-	expect(onApply).toHaveBeenCalledWith(new Date(2026, 9, 3), end);
+	expect(onApply).toHaveBeenCalledWith(salonDate(2026, 9, 3, 0), end);
 });
 
 test("web desktop opens one range panel and retains draft/Apply semantics", async () => {
@@ -158,7 +164,7 @@ test("web desktop opens one range panel and retains draft/Apply semantics", asyn
 		expect(onApply).not.toHaveBeenCalled();
 		await fireEvent.press(screen.getByRole("button", { name: "Apply range" }));
 		expect(onApply).toHaveBeenCalledTimes(1);
-		expect(onApply).toHaveBeenCalledWith(new Date(2026, 9, 3), end);
+		expect(onApply).toHaveBeenCalledWith(salonDate(2026, 9, 3, 0), end);
 	} finally {
 		platform.restore();
 	}
@@ -166,7 +172,7 @@ test("web desktop opens one range panel and retains draft/Apply semantics", asyn
 
 test("Payroll fills a completed period without applying until confirmation", async () => {
 	jest.useFakeTimers();
-	jest.setSystemTime(new Date(2026, 9, 5, 10));
+	jest.setSystemTime(salonDate(2026, 9, 5, 10));
 	try {
 		jest.mocked(useWorkspaceLayout).mockReturnValue(getWorkspaceLayout(390));
 		const onApply = jest.fn<(start: Date, end: Date) => void>();
@@ -175,7 +181,7 @@ test("Payroll fills a completed period without applying until confirmation", asy
 				<ReportDateControls
 					startDate={start}
 					endDate={end}
-					maximumDate={new Date(2026, 9, 5, 23, 59)}
+					maximumDate={salonDate(2026, 9, 5, 23, 59)}
 					onApply={onApply}
 				/>
 			</PaperProvider>,
@@ -200,14 +206,14 @@ test.each(["Cancel", "Close date picker"])(
 	"Payroll respects %s, resets on reopen and reads the clock again after a boundary",
 	async (dismissLabel) => {
 		jest.useFakeTimers();
-		jest.setSystemTime(new Date(2026, 9, 15, 23, 59));
+		jest.setSystemTime(salonDate(2026, 9, 15, 23, 59));
 		try {
 			jest.mocked(useWorkspaceLayout).mockReturnValue(getWorkspaceLayout(390));
 			const onApply = jest.fn<(start: Date, end: Date) => void>();
 			const props = {
 				startDate: start,
 				endDate: end,
-				maximumDate: new Date(2026, 9, 31, 23, 59),
+				maximumDate: salonDate(2026, 9, 31, 23, 59),
 				onApply,
 			};
 			const view = await render(
@@ -231,7 +237,7 @@ test.each(["Cancel", "Close date picker"])(
 				screen.getByRole("button", { name: /^Date range:/ }),
 			);
 			expect(screen.getByText("From: 2026-10-04")).toBeTruthy();
-			jest.setSystemTime(new Date(2026, 9, 16, 0, 1));
+			jest.setSystemTime(salonDate(2026, 9, 16, 0, 1));
 			await fireEvent.press(screen.getByRole("button", { name: "Payroll" }));
 			expect(screen.getByText("From: 2026-10-01")).toBeTruthy();
 			expect(screen.getByText("To: 2026-10-15")).toBeTruthy();
@@ -259,16 +265,16 @@ test.each(["Cancel", "Close date picker"])(
 
 test("Reset uses today after Payroll, stays a draft and Apply commits once", async () => {
 	jest.useFakeTimers();
-	jest.setSystemTime(new Date(2026, 9, 5, 10));
+	jest.setSystemTime(salonDate(2026, 9, 5, 10));
 	try {
 		jest.mocked(useWorkspaceLayout).mockReturnValue(getWorkspaceLayout(390));
 		const onApply = jest.fn<(start: Date, end: Date) => void>();
 		await render(
 			<PaperProvider>
 				<ReportDateControls
-					startDate={new Date(2026, 7, 1)}
-					endDate={new Date(2026, 7, 15)}
-					maximumDate={new Date(2026, 9, 5, 23, 59)}
+					startDate={salonDate(2026, 7, 1, 0)}
+					endDate={salonDate(2026, 7, 15, 0)}
+					maximumDate={salonDate(2026, 9, 5, 23, 59)}
 					onApply={onApply}
 				/>
 			</PaperProvider>,
@@ -293,7 +299,7 @@ test("Reset uses today after Payroll, stays a draft and Apply commits once", asy
 
 test("Reset reads a new calendar day after midnight and keeps picker bounds compatible", async () => {
 	jest.useFakeTimers();
-	jest.setSystemTime(new Date(2026, 11, 31, 23, 59));
+	jest.setSystemTime(salonDate(2026, 11, 31, 23, 59));
 	try {
 		jest.mocked(useWorkspaceLayout).mockReturnValue(getWorkspaceLayout(390));
 		const onApply = jest.fn<(start: Date, end: Date) => void>();
@@ -302,13 +308,13 @@ test("Reset reads a new calendar day after midnight and keeps picker bounds comp
 				<ReportDateControls
 					startDate={start}
 					endDate={end}
-					maximumDate={new Date(2026, 11, 31, 23, 59, 59, 999)}
+					maximumDate={salonDate(2026, 11, 31, 23, 59, 59, 999)}
 					onApply={onApply}
 				/>
 			</PaperProvider>,
 		);
 		await fireEvent.press(screen.getByRole("button", { name: /^Date range:/ }));
-		jest.setSystemTime(new Date(2027, 0, 1, 0, 1));
+		jest.setSystemTime(salonDate(2027, 0, 1, 0, 1));
 		await fireEvent.press(screen.getByRole("button", { name: "Reset" }));
 		expect(screen.getByText("From: 2027-01-01")).toBeTruthy();
 		expect(screen.getByText("To: 2027-01-01")).toBeTruthy();
@@ -331,14 +337,14 @@ test.each(["Cancel", "Close date picker"])(
 	"Reset drafts survive resizing and %s discards them on reopening",
 	async (dismissLabel) => {
 		jest.useFakeTimers();
-		jest.setSystemTime(new Date(2026, 9, 5, 10));
+		jest.setSystemTime(salonDate(2026, 9, 5, 10));
 		try {
 			jest.mocked(useWorkspaceLayout).mockReturnValue(getWorkspaceLayout(390));
 			const onApply = jest.fn();
 			const props = {
 				startDate: start,
 				endDate: end,
-				maximumDate: new Date(2026, 9, 5, 23, 59),
+				maximumDate: salonDate(2026, 9, 5, 23, 59),
 				onApply,
 			};
 			const view = await render(

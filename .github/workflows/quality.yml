@@ -2,15 +2,24 @@ name: Quality
 
 on:
   pull_request:
+  push:
+    branches: [main, staging]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       CI: "1"
+      TZ: UTC
       HUSKY: "0"
       EXPO_NO_DOTENV: "1"
       EXPO_PUBLIC_CONVEX_URL: https://example.convex.cloud
@@ -21,9 +30,7 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
-      - name: Convex checks
-        run: npm run verify:backend
-      - name: App lint and tests
-        run: npm run verify:app
+      - name: Quality gate (same as pre-commit)
+        run: npm run verify:quality
       - name: Expo platform exports
         run: npx expo export --platform all --output-dir /tmp/glosse-quality-export --max-workers 2

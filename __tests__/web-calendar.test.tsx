@@ -75,7 +75,7 @@ async function click(element: HTMLElement) {
 	await act(async () => element.click());
 }
 
-test("calendar conversion preserves local days across DST, leap day and year boundaries", () => {
+test("calendar conversion preserves Vancouver days across DST, leap day and year boundaries", () => {
 	for (const [year, month, day] of [
 		[2026, 3, 8],
 		[2026, 11, 1],
@@ -94,11 +94,11 @@ test("calendar conversion preserves local days across DST, leap day and year bou
 		calendarDate(
 			new CalendarDate(2026, 10, 6),
 			undefined,
-			new Date(2026, 9, 5, 23, 59),
+			salonDate(2026, 9, 5, 23, 59),
 		),
 	).toBeNull();
 	expect(
-		calendarDate(new CalendarDate(2026, 10, 4), new Date(2026, 9, 5)),
+		calendarDate(new CalendarDate(2026, 10, 4), salonDate(2026, 9, 5, 0)),
 	).toBeNull();
 });
 
@@ -107,8 +107,8 @@ test("single-date calendar selects an actual day and prevents future dates", asy
 	await mount(
 		<DateControl
 			label="Overview date"
-			value={new Date(2026, 9, 5)}
-			maximumDate={new Date(2026, 9, 5, 23, 59)}
+			value={salonDate(2026, 9, 5, 0)}
+			maximumDate={salonDate(2026, 9, 5, 23, 59)}
 			onChange={onChange}
 		/>,
 	);
@@ -125,9 +125,9 @@ test("range calendar waits for both endpoints and orders backwards selection", a
 	const onPendingChange = jest.fn<(pending: boolean) => void>();
 	await mount(
 		<DateRangeControl
-			startDate={new Date(2026, 9, 1)}
-			endDate={new Date(2026, 9, 2)}
-			maximumDate={new Date(2026, 9, 5, 23, 59)}
+			startDate={salonDate(2026, 9, 1, 0)}
+			endDate={salonDate(2026, 9, 2, 0)}
+			maximumDate={salonDate(2026, 9, 5, 23, 59)}
 			onChange={onChange}
 			onPendingChange={onPendingChange}
 		/>,
@@ -150,8 +150,8 @@ test("month navigation and month/year jumps preserve the selected date", async (
 	await mount(
 		<DateControl
 			label="Overview date"
-			value={new Date(2026, 9, 5)}
-			maximumDate={new Date(2026, 9, 5, 23, 59)}
+			value={salonDate(2026, 9, 5, 0)}
+			maximumDate={salonDate(2026, 9, 5, 23, 59)}
 			onChange={onChange}
 		/>,
 	);
@@ -210,9 +210,9 @@ test("same-day range is valid and future endpoints cannot complete a range", asy
 	const onChange = jest.fn<(start: Date, end: Date) => void>();
 	await mount(
 		<DateRangeControl
-			startDate={new Date(2026, 9, 1)}
-			endDate={new Date(2026, 9, 2)}
-			maximumDate={new Date(2026, 9, 5, 23, 59)}
+			startDate={salonDate(2026, 9, 1, 0)}
+			endDate={salonDate(2026, 9, 2, 0)}
+			maximumDate={salonDate(2026, 9, 5, 23, 59)}
 			onChange={onChange}
 		/>,
 	);
@@ -246,7 +246,7 @@ test("web dialog labels itself, closes on Escape, and returns focus to its trigg
 				>
 					<DateControl
 						label="Overview date"
-						value={new Date(2026, 9, 5)}
+						value={salonDate(2026, 9, 5, 0)}
 						onChange={() => {}}
 					/>
 				</WorkspaceSheet>
